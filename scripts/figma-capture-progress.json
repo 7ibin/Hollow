@@ -1,8 +1,8 @@
 {
   "fileKey": "7HZoSj771NtrqwTyCF2UK1",
-  "sessionId": "263534e6-74f8-4b66-a3fb-106970507c41",
+  "sessionId": "2a2a424b-f504-4fd9-8fe9-7afb6d4c1580",
   "fileUrl": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1",
-  "completedAt": "2026-10-30",
+  "completedAt": "2026-11-01",
   "summary": {
     "total": 57,
     "completed": 57,
@@ -10,11 +10,11 @@
     "failed": 0
   },
   "completed": {
-    "home": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=123-2",
+    "home": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=165-2",
     "explore": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=56-2",
-    "policies": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=125-2",
-    "claims": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=126-2",
-    "help": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=59-2",
+    "policies": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=166-2",
+    "claims": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=167-2",
+    "help": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=168-2",
     "signup": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=61-2",
     "cover-guide": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=64-2",
     "health-1": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=85-2",
@@ -66,7 +66,14 @@
     "claim-start-motor-docs": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=155-2",
     "claim-detail": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=146-2",
     "claim-detail-motor": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=156-2",
-    "ai-panel-claim": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=157-2"
+    "ai-panel-claim": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=157-2",
+    "compare-health-all": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=187-2",
+    "compare-motor-all": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=191-2",
+    "compare-term-all": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=189-2",
+    "compare-home-all": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=190-2",
+    "health-results-compare-pick": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=194-2",
+    "compare-bar-health": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=199-2",
+    "health-results-compare-exact": "https://www.figma.com/design/7HZoSj771NtrqwTyCF2UK1?node-id=200-2"
   },
   "pending": {},
   "failed": {}

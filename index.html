@@ -172,18 +172,19 @@
             </div>
             <div class="form-group expert-consent-wrap">
               <label class="expert-consent">
-                <input type="checkbox" id="expertConsent" name="consent" aria-describedby="expertConsentError">
+                <input type="checkbox" id="expertConsent" name="consent" aria-describedby="expertConsentError expertConsentHint">
                 <span data-i18n="expert.consent">I agree to be called once on this number by a Hollow expert. No spam, no resale of my number.</span>
               </label>
+              <p class="expert-consent__hint" id="expertConsentHint" data-i18n="expert.consentHint">We use your number only for this one call. See our Privacy Policy in Account settings.</p>
               <p class="field-error" id="expertConsentError" role="alert" hidden></p>
             </div>
-            <button class="btn btn--primary btn--block" id="expertSubmit" type="submit" data-i18n="expert.cta">Get free callback in 5 min</button>
+            <button class="btn btn--primary btn--block" id="expertSubmit" type="submit" data-i18n="expert.cta">Request callback</button>
           </form>
         </div>
         <div id="expertSuccessPanel" class="expert-success" hidden>
           <div class="expert-success__badge" aria-hidden="true">✓</div>
           <h2 id="expertSuccessTitle" class="expert-success__title" tabindex="-1" data-i18n="expert.successTitle">Request received</h2>
-          <p id="expertSuccessSub" class="expert-success__sub">We'll call within 5 minutes</p>
+          <p id="expertSuccessSub" class="expert-success__sub">We'll call you in your chosen time window</p>
           <button type="button" class="btn btn--primary btn--block" id="expertSuccessClose" data-i18n="expert.close">Close</button>
         </div>
       </div>

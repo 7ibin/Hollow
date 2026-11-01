@@ -39,7 +39,7 @@ const i18n = {
     'nav.home': 'Home', 'nav.explore': 'Explore', 'nav.policies': 'Policies', 'nav.claims': 'Claims', 'nav.help': 'Help',
     'ai.title': 'Ask Hollow',
     'ai.subtitle': 'Find the right policy for you',
-    'ai.placeholder': 'e.g. health insurance for family...',
+    'ai.placeholder': 'e.g. Compare Star Health vs Care Health…',
     'ai.searchPrompt': 'Ask AI — find policy, compare, explain, claim, renew',
     'ai.powered': 'AI-powered plan guidance',
     'pay.title': 'Choose payment method', 'pay.upi': 'UPI', 'pay.card': 'Card', 'pay.netbank': 'Net banking',
@@ -112,7 +112,10 @@ const i18n = {
     'expert.productMotor': 'Motor insurance',
     'expert.productTerm': 'Term Life insurance',
     'expert.productHome': 'Home insurance',
-    'expert.cta': 'Get free callback in 5 min',
+    'expert.cta': 'Request callback',
+    'expert.ctaNow': 'Request callback now',
+    'expert.consentHint': 'We use your number only for this one call. See our Privacy Policy in Account settings.',
+    'expert.submitError': 'Something went wrong. Check the fields below and try again.',
     'expert.close': 'Close',
     'expert.closeAria': 'Close expert callback form',
     'expert.namePlaceholder': 'e.g. Priya Sharma',
@@ -128,7 +131,7 @@ const i18n = {
     'expert.phoneInvalid': 'Enter a valid 10-digit Indian mobile number',
     'expert.consentRequired': 'Please agree so we can call you once',
     'expert.successTitle': 'Request received',
-    'expert.successSub': "We'll call within 5 minutes",
+    'expert.successSub': "We'll call you as soon as an expert is available (9am–8pm IST).",
     'expert.successSubSlot': "We'll call you in the {slot} window",
     'ai.suggest.health': 'Health insurance',
     'ai.suggest.motor': 'Motor insurance',
@@ -138,7 +141,9 @@ const i18n = {
     'ai.suggest.finderMotor': 'Motor insurance',
     'ai.suggest.finderTerm': 'Term Life',
     'ai.suggest.finderHome': 'Home insurance',
-    'ai.disclaimer': 'General guidance only — confirm details in your policy document.',
+    'ai.disclaimer': 'General guidance only — not a quote or guarantee. Confirm coverage in your policy document or with an expert.',
+    'ai.welcomeTitle': 'How can Hollow help?',
+    'ai.welcomeHint': 'Ask about coverage, compare plans, claims, or renewals. Pick a topic or type your question.',
     'ai.expertHandoff': 'Talk to an expert',
     'ai.sourceLabel': 'Based on',
     'ai.cannotConfirm': 'I can\'t confirm this from policy documents available in the app. Please check your policy wording or talk to an expert.',
@@ -153,7 +158,18 @@ const i18n = {
     'compare.countOne': '{n} plan selected',
     'compare.countMany': '{n} plans selected',
     'compare.now': 'Compare now',
-    'compare.hideEqual': 'Hide rows where all plans match',
+    'compare.hideEqual': 'Show only rows that differ',
+    'compare.viewLabel': 'Comparison view',
+    'compare.viewAll': 'All details',
+    'compare.viewDiff': 'Key differences',
+    'compare.legendShort': 'Bold values differ · Green = strongest in that row',
+    'compare.legendDiffMode': 'Only rows that differ between plans',
+    'compare.notCovered': 'Not covered',
+    'compare.indicative': 'Premiums are indicative for your quote inputs — final price is on the insurer checkout.',
+    'compare.groupPremium': 'Premium',
+    'compare.tableFeatureCol': 'Feature',
+    'compare.groupCoverage': 'Coverage & network',
+    'compare.groupBenefits': 'Benefits & limits',
     'compare.monthly': 'Premium/mo',
     'footer.tagline': 'Compare & buy insurance online',
     'footer.colProducts': 'Insurance',
@@ -172,8 +188,14 @@ const i18n = {
     'results.retry': 'Try again',
     'footer.disclaimer': 'Insurance is the subject matter of solicitation.',
     'footer.copyrightShort': '© 2026 Hollow Insurance Services Pvt. Ltd.',
-    'home.heroTitle': 'Compare insurance quotes',
-    'home.heroSub': 'Health, motor, term life, and home in one app',
+    'home.heroTitle': 'Find the right insurance, faster',
+    'home.heroSub': 'Compare Health, Motor, Term Life & Home without the jargon — AI guidance and licensed experts when you need help.',
+    'home.heroCta': 'Find the Right Insurance',
+    'home.heroCtaVisible': 'Find the right insurance',
+    'home.quoteLabel': 'What do you need cover for?',
+    'home.supportTitle': 'Need help choosing?',
+    'home.supportAi': 'Ask Hollow AI',
+    'home.supportExpert': 'Talk to an expert',
     'home.whyTitle': 'Why people use Hollow',
     'home.why1.title': 'Compare in one place',
     'home.why1.desc': 'See plan options for four products without jumping between sites.',
@@ -294,6 +316,228 @@ function isOnCompareableResults() {
 function resolveComparePlans(product) {
   const catalog = plansForCompareProduct(product);
   return compareList.map((id) => catalog.find((p) => p.id === id)).filter(Boolean);
+}
+
+function compareRowGroupsForProduct(product) {
+  if (product === 'motor') {
+    return [
+      { titleKey: 'compare.groupPremium', labels: [t('compare.monthly'), 'Premium/yr'] },
+      { titleKey: 'compare.groupCoverage', labels: ['IDV', 'Your NCB', 'Zero depreciation', 'Claim settlement', 'Rating'] },
+    ];
+  }
+  if (product === 'term') {
+    return [
+      { titleKey: 'compare.groupPremium', labels: [t('compare.monthly'), 'Premium/yr'] },
+      { titleKey: 'compare.groupCoverage', labels: ['Life cover', 'Tenure', 'Claim settlement', 'Rating'] },
+    ];
+  }
+  if (product === 'home') {
+    return [
+      { titleKey: 'compare.groupPremium', labels: [t('compare.monthly'), 'Premium/yr'] },
+      { titleKey: 'compare.groupCoverage', labels: ['Structure', 'Contents', 'Perils', 'Earthquake', 'Rating'] },
+    ];
+  }
+  return [
+    { titleKey: 'compare.groupPremium', labels: [t('compare.monthly'), 'Premium/yr'] },
+    { titleKey: 'compare.groupCoverage', labels: ['Sum insured', 'Claim settlement', 'Hospitals', 'Room rent'] },
+    { titleKey: 'compare.groupBenefits', labels: ['Restoration', 'OPD', 'Maternity', 'Co-pay'] },
+  ];
+}
+
+function compareRowIconName(label) {
+  const monthly = t('compare.monthly');
+  const map = {
+    [monthly]: 'wallet',
+    'Premium/yr': 'money',
+    'Sum insured': 'shield',
+    'Claim settlement': 'award',
+    'Hospitals': 'hospital',
+    'Room rent': 'home',
+    'Restoration': 'repeat',
+    'OPD': 'health',
+    'Maternity': 'family',
+    'Co-pay': 'money',
+    'IDV': 'motor',
+    'Your NCB': 'award',
+    'Zero depreciation': 'shield',
+    'Rating': 'award',
+    'Life cover': 'shield',
+    'Tenure': 'calendar',
+    'Structure': 'home',
+    'Contents': 'home',
+    'Perils': 'info',
+    'Earthquake': 'info',
+  };
+  return map[label] || 'info';
+}
+
+function parseCompareMetric(value) {
+  if (value === '✓' || value === '✗' || value === '—') return null;
+  const n = parseFloat(String(value).replace(/[^\d.]/g, ''));
+  return Number.isFinite(n) ? n : null;
+}
+
+function bestCompareCellIndices(vals, label) {
+  const lowerBetter = new Set([t('compare.monthly'), 'Premium/yr', 'Co-pay']);
+  const higherBetter = new Set(['Claim settlement', 'Hospitals', 'Rating', 'Sum insured', 'Life cover']);
+  const nums = vals.map((v) => parseCompareMetric(v));
+  if (nums.some((n) => n === null)) return new Set();
+  let target;
+  if (lowerBetter.has(label)) target = Math.min(...nums);
+  else if (higherBetter.has(label)) target = Math.max(...nums);
+  else return new Set();
+  const out = new Set();
+  nums.forEach((n, i) => { if (n === target) out.add(i); });
+  return out;
+}
+
+function compareGroupSectionClass(titleKey) {
+  if (titleKey === 'compare.groupPremium') return 'compare-table__group--premium';
+  if (titleKey === 'compare.groupCoverage') return 'compare-table__group--coverage';
+  if (titleKey === 'compare.groupBenefits') return 'compare-table__group--benefits';
+  return '';
+}
+
+function formatCompareCellValue(value, { emphasize = false, best = false } = {}) {
+  if (value === '✓') {
+    return '<span class="compare-table__bool compare-table__bool--yes" aria-label="Included">✓</span>';
+  }
+  if (value === '✗') {
+    return `<span class="compare-table__status compare-table__status--no">${t('compare.notCovered')}</span>`;
+  }
+  let inner = value;
+  if (best) {
+    return `<span class="compare-table__value compare-table__value--best">${inner}</span>`;
+  }
+  if (emphasize) {
+    return `<span class="compare-table__value compare-table__value--diff">${inner}</span>`;
+  }
+  return inner;
+}
+
+function renderComparePlanRail(product, plans) {
+  return `<div class="compare-plan-rail" role="group" aria-label="Plans compared">
+    ${plans.map((p, i) => {
+      const premium = quotePremiumForPlan(p, product);
+      const monthly = formatPremium(yearlyToMonthly(premium));
+      const featured = p.featured || p.badge;
+      return `<div class="compare-plan-rail__col compare-plan-rail__col--${i}${featured ? ' compare-plan-rail__col--pick' : ''}">
+        <p class="compare-plan-rail__insurer">${p.insurer}</p>
+        <p class="compare-plan-rail__meta">${p.plan}</p>
+        <p class="compare-plan-rail__price">${monthly}<span>/mo</span></p>
+        ${p.badge ? `<span class="compare-plan-rail__badge">${p.badge}</span>` : ''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderCompareTableBody(product, plans) {
+  const rows = compareRowsForProduct(product);
+  const groups = compareRowGroupsForProduct(product);
+  const span = plans.length + 1;
+  let html = '';
+  groups.forEach((group) => {
+    const sectionCls = compareGroupSectionClass(group.titleKey);
+    html += `<tr class="compare-table__group ${sectionCls}"><td colspan="${span}"><span class="compare-table__group-label">${t(group.titleKey)}</span></td></tr>`;
+    group.labels.forEach((label) => {
+      const r = rows.find((row) => row.label === label);
+      if (!r) return;
+      const vals = plans.map((p) => r.key(p));
+      const allSame = vals.every((v) => v === vals[0]);
+      if (compareHideEqualRows && allSame) return;
+      const rowDiff = compareValuesDiffer(vals);
+      const bestCells = bestCompareCellIndices(vals, label);
+      const iconName = compareRowIconName(label);
+      const featureCls = 'compare-table__feature';
+      const cells = plans.map((_, i) => {
+        const v = vals[i];
+        const cellDiff = rowDiff && compareCellDiffers(vals, i);
+        const isBest = bestCells.has(i);
+        const parts = [];
+        if (isBest) parts.push('compare-table__cell--best');
+        else if (cellDiff) parts.push('compare-table__cell--diff');
+        return `<td class="${parts.join(' ')}">${formatCompareCellValue(v, { emphasize: cellDiff && !isBest, best: isBest })}</td>`;
+      }).join('');
+      html += `<tr class="compare-table__row">
+        <td class="${featureCls}">
+          <span class="compare-table__feature-inner">
+            <span class="compare-table__feature-icon" aria-hidden="true">${icon(iconName, ICON_SIZE.sm, 'hollow-icon')}</span>
+            <span class="compare-table__feature-label">${r.label}</span>
+          </span>
+        </td>${cells}</tr>`;
+    });
+  });
+  return html;
+}
+
+function renderCompareActionRow(product, plans) {
+  return plans.map((p, i) => {
+    const pick = !!(p.featured || p.badge);
+    const cls = pick ? 'btn btn--primary btn--sm btn--compare-buy btn--compare-buy--pick' : 'btn btn--primary btn--sm btn--compare-buy';
+    return `<td><button type="button" class="${cls}" data-action="buy-product" data-plan-id="${p.id}" data-product="${product}">Buy</button></td>`;
+  }).join('');
+}
+
+function renderComparePremiumSummary(product, plans) {
+  const cards = plans.map((p) => {
+    const premium = quotePremiumForPlan(p, product);
+    const monthly = formatPremium(yearlyToMonthly(premium));
+    const yearly = formatPremium(premium);
+    const sub = product === 'health'
+      ? `${p.plan} · ₹${p.si}L SI`
+      : product === 'motor'
+        ? `${p.plan || 'Comprehensive'} · IDV ${formatPremium(p.idv)}`
+        : product === 'term'
+          ? `₹${p.cover}L cover · ${p.tenure} yrs`
+          : `${p.plan || 'Home'} · Structure ₹${p.structure}L`;
+    return `<div class="compare-summary__card">
+      <div class="compare-summary__insurer">${p.insurer}</div>
+      <div class="compare-summary__meta">${sub}</div>
+      <div class="compare-summary__price">${monthly}<span>/mo</span></div>
+      <div class="compare-summary__yr">${yearly}/yr</div>
+    </div>`;
+  }).join('');
+  return `<div class="compare-summary" role="region" aria-label="Plan premiums">${cards}</div>`;
+}
+
+function renderHomeWhyHollow() {
+  return `<section class="home-why-hollow" aria-labelledby="homeWhyTitle">
+    <h2 id="homeWhyTitle" class="home-why-hollow__title">${t('home.whyTitle')}</h2>
+    <div class="why-hollow-panel">
+      <div class="why-hollow-item why-hollow-item--divider">
+        <div class="why-hollow-item__icon why-hollow-item__icon--compare" aria-hidden="true">${icon('compare', ICON_SIZE.lg)}</div>
+        <div class="why-hollow-item__text">
+          <p class="why-hollow-item__title">${t('home.why1.title')}</p>
+          <p class="why-hollow-item__desc">${t('home.why1.desc')}</p>
+        </div>
+      </div>
+      <div class="why-hollow-item why-hollow-item--divider">
+        <div class="why-hollow-item__icon why-hollow-item__icon--guide" aria-hidden="true">${icon('sparkles', ICON_SIZE.lg)}</div>
+        <div class="why-hollow-item__text">
+          <p class="why-hollow-item__title">${t('home.why2.title')}</p>
+          <p class="why-hollow-item__desc">${t('home.why2.desc')}</p>
+        </div>
+      </div>
+      <div class="why-hollow-item">
+        <div class="why-hollow-item__icon why-hollow-item__icon--support" aria-hidden="true">${icon('advisor', ICON_SIZE.lg)}</div>
+        <div class="why-hollow-item__text">
+          <p class="why-hollow-item__title">${t('home.why3.title')}</p>
+          <p class="why-hollow-item__desc">${t('home.why3.desc')}</p>
+        </div>
+      </div>
+    </div>
+  </section>`;
+}
+
+function expertSubmitLabel() {
+  const slot = document.getElementById('expertTime')?.value;
+  if (slot === 'now' && isExpertCallbackNowOpen()) return t('expert.ctaNow');
+  return t('expert.cta');
+}
+
+function syncExpertSubmitLabel() {
+  const btn = document.getElementById('expertSubmit');
+  if (btn) btn.textContent = expertSubmitLabel();
 }
 
 function compareRowsForProduct(product) {
@@ -1144,14 +1388,27 @@ const aiSuggestions = ['ai.suggest.health', 'ai.suggest.motor', 'ai.suggest.term
 
 const AI_PRODUCT_PROMPT_QUERIES = {
   en: {
-    'ai.suggest.health': 'What does my health policy cover?',
-    'ai.suggest.motor': 'What is covered under motor insurance?',
-    'ai.suggest.term': 'How much term life cover do I need?',
-    'ai.suggest.home': 'What does home insurance cover?',
+    'ai.suggest.health': 'What should I look for in a family health insurance plan?',
+    'ai.suggest.motor': 'What is covered under comprehensive motor insurance?',
+    'ai.suggest.term': 'How much term life cover do I need for my family?',
+    'ai.suggest.home': 'What does home insurance cover for structure and contents?',
+    'ai.suggest.compare': 'Help me compare two health plans side by side',
+    'ai.suggest.waiting': 'Explain waiting periods in health insurance in simple terms',
+    'ai.suggest.cashless': 'How does cashless hospitalisation work?',
+    'ai.suggest.claimHelp': 'What documents do I need to start a health claim?',
   }
 };
 
 const AI_STANDARD_SUGGESTIONS = ['ai.suggest.health', 'ai.suggest.motor', 'ai.suggest.term', 'ai.suggest.home'];
+
+const AI_CHAT_SUGGESTIONS = [
+  'ai.suggest.health',
+  'ai.suggest.motor',
+  'ai.suggest.compare',
+  'ai.suggest.waiting',
+  'ai.suggest.cashless',
+  'ai.suggest.claimHelp',
+];
 
 const AI_SUGGEST_TO_FINDER = {
   'ai.suggest.health': 'family',
@@ -1841,6 +2098,7 @@ function applyI18n() {
   });
   syncShellChrome();
   refreshExpertSuccessCopy();
+  syncExpertSubmitLabel();
   document.querySelectorAll('select.hollow-select__native').forEach(refreshHollowSelectOptions);
 }
 
@@ -1869,14 +2127,41 @@ function applyDesignCaptureTheme(theme) {
 /** Expand scroll regions so Figma html-to-design captures full page height, not one viewport slice. */
 function prepareDesignCaptureForFigma() {
   if (!document.body.classList.contains('design-capture')) return;
+  if (document.body.classList.contains('design-capture-viewport-exact')) {
+    prepareViewportExactCaptureScroll();
+    return;
+  }
   const main = document.getElementById('mainContent');
   if (main) main.scrollTop = 0;
   document.querySelectorAll(
-    '#app .wizard-body, #app .ai-panel__messages, #app .modal__content, #app .hollow-select__menu',
+    '#app .wizard-body, #app .ai-panel__messages, #app .modal__content, #app .hollow-select__menu, #app .compare-table-wrap',
   ).forEach((el) => {
     el.style.overflow = 'visible';
     el.style.maxHeight = 'none';
   });
+  document.querySelectorAll('.compare-table-wrap').forEach((el) => {
+    el.scrollLeft = 0;
+  });
+}
+
+/** One mobile viewport: results list scrolled to Max Bupa + fixed Compare now bar (attached reference). */
+function prepareViewportExactCaptureScroll() {
+  window.scrollTo(0, 0);
+  const main = document.getElementById('mainContent');
+  if (main) main.scrollTop = 0;
+  const run = () => {
+    const plan = document.querySelector('.plan-item[data-plan-id="max-reassure"]');
+    if (!plan) return;
+    const offset = 96;
+    const y = window.scrollY + plan.getBoundingClientRect().top - offset;
+    window.scrollTo(0, Math.max(0, y));
+    if (main) {
+      const top = plan.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop - offset;
+      main.scrollTop = Math.max(0, top);
+    }
+  };
+  run();
+  requestAnimationFrame(() => requestAnimationFrame(run));
 }
 
 /** Remove design-capture query params so refresh opens normal app state (not stuck on ?screen=). */
@@ -1986,6 +2271,39 @@ function prepareWizardCapture(product, step, { pay = false, formDepth = 0, resul
   } else if (step >= (PRODUCT_CONFIG[product]?.maxStep ?? 2)) {
     resetCheckoutSession(product);
   }
+}
+
+/** Health results + 3 plans selected + compare bar (before Compare now). */
+function seedHealthResultsComparePickForCapture() {
+  prepareWizardCapture('health', 3, { formDepth: 2 });
+  const h = quoteForm.health;
+  h.members.forEach((m) => { m.selected = m.id === 'self'; });
+  const self = h.members.find((m) => m.id === 'self');
+  if (self) self.age = 23;
+  h.pincode = '333333';
+  h.sumInsured = 50;
+  h.planType = 'individual';
+  h.existingPolicy = 'no';
+  h.maternity = 'not_needed';
+  compareList = ['aditya-activ', 'care-supreme', 'bajaj-guard'];
+  healthSort = 'premium';
+  healthFilter = 'all';
+}
+
+/** Compare wizard for Figma capture — 3 plans, optional “Key differences” mode. */
+function seedCompareForCapture(product, { diffOnly = false } = {}) {
+  const resultsStep = PRODUCT_CONFIG[product]?.resultsStep ?? 3;
+  const formDepth = product === 'health' ? 2 : 0;
+  prepareWizardCapture(product, resultsStep, { formDepth });
+  const plans = PLAN_DATA[product] || healthPlans;
+  const preferred = product === 'health'
+    ? ['aditya-activ', 'care-supreme', 'bajaj-guard']
+    : plans.slice(0, 3).map((p) => p.id);
+  compareList = preferred.filter((id) => plans.some((p) => p.id === id));
+  if (compareList.length < 2) compareList = plans.slice(0, 3).map((p) => p.id);
+  compareHideEqualRows = diffOnly;
+  wizardState = { type: 'compare', compareProduct: product };
+  document.body.classList.add('wizard-mode');
 }
 
 function seedSuccessScreenForCapture(product = 'health') {
@@ -2120,6 +2438,8 @@ const DESIGN_CAPTURE_SCREENS = new Set([
   'home-1', 'home-results', 'home-pay',
   'success', 'motor-success', 'term-success', 'home-success', 'expert-modal', 'ai-panel',
   'health-results-error', 'motor-results-error', 'term-results-error', 'home-results-error',
+  'compare-health-all', 'compare-motor-all', 'compare-term-all', 'compare-home-all',
+  'health-results-compare-pick', 'compare-bar-health', 'health-results-compare-exact',
 ]);
 
 /** @returns {'expert'|'ai'|'ai-claim'|null} overlay to open after first render */
@@ -2362,6 +2682,25 @@ function applyDesignCaptureScreen(screen) {
       return null;
     case 'home-pay':
       prepareWizardCapture('home', 2, { pay: true });
+      return null;
+    case 'compare-health-all':
+      seedCompareForCapture('health', { diffOnly: false });
+      return null;
+    case 'compare-motor-all':
+      seedCompareForCapture('motor', { diffOnly: false });
+      return null;
+    case 'compare-term-all':
+      seedCompareForCapture('term', { diffOnly: false });
+      return null;
+    case 'compare-home-all':
+      seedCompareForCapture('home', { diffOnly: false });
+      return null;
+    case 'health-results-compare-pick':
+    case 'compare-bar-health':
+      seedHealthResultsComparePickForCapture();
+      return null;
+    case 'health-results-compare-exact':
+      seedHealthResultsComparePickForCapture();
       return null;
     case 'success':
       seedSuccessScreenForCapture('health');
@@ -2910,14 +3249,39 @@ function planSortOptions(product) {
   return [{ value: 'premium', label: 'Price (low to high)' }];
 }
 
+function sortChipShortLabel(value) {
+  const labels = {
+    premium: 'Lowest price',
+    claims: 'Claims ratio',
+    hospitals: 'Hospitals',
+    idv: 'Highest IDV',
+  };
+  return labels[value] || value;
+}
+
 function renderPlanSortRow(product, metaText = '') {
   const sort = getPlanSortValue(product);
-  const selectId = product === 'health' ? 'healthSort' : `productSort-${product}`;
-  const options = planSortOptions(product).map((o) =>
-    `<option value="${o.value}" ${sort === o.value ? 'selected' : ''}>${o.label}</option>`,
-  ).join('');
-  const meta = metaText ? `<span class="sort-row__meta">${metaText}</span>` : '';
-  return `<div class="sort-row sort-row--plans">${meta}<label class="sort-row__control"><span class="sort-row__label">Sort by</span><select id="${selectId}" class="sort-row__select" data-product-sort="${product}">${options}</select></label></div>`;
+  const options = planSortOptions(product);
+  const meta = metaText ? `<p class="sort-bar__meta">${metaText}</p>` : '';
+
+  if (options.length <= 1) {
+    return metaText ? `<div class="sort-bar sort-bar--meta-only">${meta}</div>` : '';
+  }
+
+  const chips = options.map((o) => {
+    const on = sort === o.value;
+    return `<button type="button" class="sort-chip ${on ? 'sort-chip--on' : ''}" role="radio" aria-checked="${on}" data-action="plan-sort" data-product="${product}" data-sort-value="${o.value}" title="${o.label}">
+      ${sortChipShortLabel(o.value)}
+    </button>`;
+  }).join('');
+
+  return `<div class="sort-bar">
+    ${meta}
+    <div class="sort-bar__tools">
+      <span class="sort-bar__label" id="sortLabel-${product}">Sort by</span>
+      <div class="sort-chips" role="radiogroup" aria-labelledby="sortLabel-${product}">${chips}</div>
+    </div>
+  </div>`;
 }
 
 function applyProductSort(product, plans) {
@@ -3068,7 +3432,7 @@ function renderProductResults(product) {
     ? `<div class="cover-guide__applied" role="status">Showing plans for your cover guide · <strong>${quoteForm.term.cover >= 100 ? `₹${quoteForm.term.cover / 100} Cr` : `₹${quoteForm.term.cover}L`}</strong></div>`
     : '';
 
-  const filterBarHtml = filterChips ? `<div class="filter-bar">${filterChips}</div>` : '';
+  const filterBarHtml = filterChips ? `<div class="filter-bar filter-bar--fit">${filterChips}</div>` : '';
 
   return `
     ${guideNote}
@@ -3939,10 +4303,10 @@ function renderClaimDetail() {
       <p class="policy-card__meta">${c.amountNote}</p>
       <span class="status-chip ${statusChipClass(c.statusLabel || c.status)}">${c.statusLabel || c.status}</span>
     </div>
-    <div class="next-action-banner">
+    <div class="next-action-banner ${c.nextOwner === 'you' ? 'next-action-banner--you' : ''}">
       <strong>Next action</strong>
       <p>${c.nextAction}</p>
-      <p class="policy-card__meta">Owner: ${ownerLabel[c.nextOwner] || c.nextOwner} · Update: ${c.expectedUpdate}</p>
+      <p class="policy-card__meta">Owner: ${ownerLabel[c.nextOwner] || c.nextOwner} · Expected update: ${c.expectedUpdate}</p>
     </div>
     <h2>Progress</h2>
     <ul class="claim-timeline">${getClaimTimelineSteps(c).map((s) => `
@@ -3956,7 +4320,7 @@ function renderClaimDetail() {
           <span class="doc-check__box">${d.done ? '✓' : ''}</span>
           <span>${d.label}${d.required ? ' *' : ''}</span>
         </button></li>`).join('')}</ul>
-      <p class="policy-card__meta">* Required. Upload your supporting document.</p>` : ''}
+      <p class="policy-card__meta">* Required. Mark as uploaded when you have shared the document with us or the insurer.</p>` : ''}
     ${c.decision ? `<div class="card decision-card"><h3>${c.decision.label}</h3><p>${c.decision.text}</p></div>` : ''}
     <div class="claim-command__help">
       <button type="button" class="btn btn--secondary btn--block" data-action="open-policy-doctor" data-policy="${c.policyId}">Policy Doctor</button>
@@ -3972,7 +4336,9 @@ function renderHome() {
     ? motorPlans.slice(0, 2)
     : homeTrendingTab === 'term'
       ? termPlans.slice(0, 2)
-      : healthPlans.slice(0, 2);
+      : homeTrendingTab === 'home'
+        ? homePlans.slice(0, 2)
+        : healthPlans.slice(0, 2);
 
   const trendingHtml = trendingPlans.map(p => {
     if (homeTrendingTab === 'motor') {
@@ -3986,6 +4352,13 @@ function renderHome() {
       return `<button type="button" class="trending-mini" data-action="quote" data-product="term">
         <div class="trending-mini__logo" style="background:${insurerColor(p.insurer)}">${insurerInitials(p.insurer)}</div>
         <div class="trending-mini__info"><div class="trending-mini__name">${p.insurer}</div><div class="trending-mini__meta">₹${p.cover}L cover · ${p.claims}% claims</div></div>
+        <div class="trending-mini__price">${formatPremium(p.premium)}<span>/yr</span></div>
+      </button>`;
+    }
+    if (homeTrendingTab === 'home') {
+      return `<button type="button" class="trending-mini" data-action="quote" data-product="home">
+        <div class="trending-mini__logo" style="background:${insurerColor(p.insurer)}">${insurerInitials(p.insurer)}</div>
+        <div class="trending-mini__info"><div class="trending-mini__name">${p.insurer}</div><div class="trending-mini__meta">Structure ₹${p.structure}L · ${p.perils}</div></div>
         <div class="trending-mini__price">${formatPremium(p.premium)}<span>/yr</span></div>
       </button>`;
     }
@@ -4050,14 +4423,14 @@ function renderHome() {
         <p class="home-hero__sub">${t('home.heroSub')}</p>
 
         <div class="quote-card quote-card--v2">
-          <label class="quote-card__label">What are you looking for?</label>
+          <label class="quote-card__label" for="heroProduct">${t('home.quoteLabel')}</label>
           <div class="quote-card__row">
-            <select id="heroProduct" class="quote-card__select">
+            <select id="heroProduct" class="quote-card__select" aria-label="${t('home.quoteLabel')}">
               ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
             </select>
-            <button type="button" class="quote-card__btn" data-action="hero-quote">
-              Get quotes
-              ${icon('forward', ICON_SIZE.md, 'hollow-icon')}
+            <button type="button" class="quote-card__btn quote-card__btn--primary quote-card__btn--hero" data-action="hero-quote" aria-label="${t('home.heroCta')}">
+              <span class="quote-card__btn-title">${t('home.heroCtaVisible')}</span>
+              <span class="quote-card__btn-go" aria-hidden="true">${icon('forward', ICON_SIZE.sm, 'hollow-icon')}</span>
             </button>
           </div>
           <div class="quote-card__popular">
@@ -4066,17 +4439,33 @@ function renderHome() {
               <button type="button" data-action="quote" data-product="health">Family floater</button>
               <button type="button" data-action="quote" data-product="motor">Car insurance</button>
               <button type="button" data-action="quote" data-product="term">₹1 Cr term</button>
+              <button type="button" data-action="quote" data-product="home">Home cover</button>
             </div>
           </div>
-          <button type="button" class="quote-card__ai-link" data-action="open-ai" data-ai-mode="finder">
-            <span class="quote-card__ai-badge">AI</span>
-            <span class="quote-card__ai-text"><strong>Not sure?</strong> Let AI find your plan</span>
-            ${icon('sparkles', ICON_SIZE.md, 'hollow-icon quote-card__ai-sparkle')}
-          </button>
+          <div class="home-support-strip" role="group" aria-label="${t('home.supportTitle')}">
+            <span class="home-support-strip__label">${t('home.supportTitle')}</span>
+            <div class="home-support-strip__actions">
+              <button type="button" class="home-support-strip__btn" data-action="open-ai" data-ai-mode="finder">
+                ${icon('sparkles', ICON_SIZE.sm, 'hollow-icon hollow-icon--inline')} ${t('home.supportAi')}
+              </button>
+              <button type="button" class="home-support-strip__btn home-support-strip__btn--expert" data-action="expert-modal">
+                ${icon('advisor', ICON_SIZE.sm, 'hollow-icon hollow-icon--inline')} ${t('home.supportExpert')}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="home-v2__body">
+        <div class="home-cat-section home-cat-section--prominent">
+          <div class="section__head">
+            <h2>Buy insurance</h2>
+            <button type="button" class="section__link" data-action="set-view" data-view="explore">View all</button>
+          </div>
+          <div class="home-cat-grid">${featuredHtml}</div>
+          ${HOME_MORE_IDS.length ? `<div class="home-more-grid">${moreHtml}</div>` : ''}
+        </div>
+
         <div class="quick-actions quick-actions--v2">
           <button type="button" class="quick-action quick-action--renew" data-action="open-renewals" aria-label="Renew existing policies">
             <span class="quick-action__icon quick-action__icon--renew">${icon('renew', ICON_SIZE.md)}</span>
@@ -4122,14 +4511,7 @@ function renderHome() {
 
         ${renderServiceAlerts()}
 
-        <div class="home-cat-section">
-          <div class="section__head">
-            <h2>Buy insurance</h2>
-            <button type="button" class="section__link" data-action="set-view" data-view="explore">View all</button>
-          </div>
-          <div class="home-cat-grid">${featuredHtml}</div>
-          ${HOME_MORE_IDS.length ? `<div class="home-more-grid">${moreHtml}</div>` : ''}
-        </div>
+        ${renderHomeWhyHollow()}
 
         <div class="home-trending">
           <div class="section__head"><h2>Trending plans</h2></div>
@@ -4137,6 +4519,7 @@ function renderHome() {
             <button type="button" role="tab" aria-selected="${homeTrendingTab === 'health'}" class="trending-tab ${homeTrendingTab === 'health' ? 'active' : ''}" data-trending="health">Health</button>
             <button type="button" role="tab" aria-selected="${homeTrendingTab === 'motor'}" class="trending-tab ${homeTrendingTab === 'motor' ? 'active' : ''}" data-trending="motor">Motor</button>
             <button type="button" role="tab" aria-selected="${homeTrendingTab === 'term'}" class="trending-tab ${homeTrendingTab === 'term' ? 'active' : ''}" data-trending="term">Term</button>
+            <button type="button" role="tab" aria-selected="${homeTrendingTab === 'home'}" class="trending-tab ${homeTrendingTab === 'home' ? 'active' : ''}" data-trending="home">Home</button>
           </div>
           <div class="trending-list" role="tabpanel" aria-live="polite">${trendingHtml}</div>
         </div>
@@ -4419,8 +4802,8 @@ function renderClaimStart() {
 function renderClaims() {
   const hospitals = filterCashlessHospitals(hospitalSearchQuery);
   return `<div class="section main--padded" style="padding-top:1rem">
-    <h1>Claim Command Center</h1>
-    <p class="subtitle">Cashless & reimbursement tracking</p>
+    <h1>Claims</h1>
+    <p class="subtitle">Track cashless and reimbursement claims — see what’s pending and what to do next</p>
     ${renderPrototypeBanner('Sample claim data only.')}
     ${quoteContinueBtn('Start a claim', 'Cashless or reimbursement', 'open-claim-start')}
     <h2 class="claims-section-title">Find a cashless hospital</h2>
@@ -4447,6 +4830,8 @@ function renderClaims() {
     ${claims.length ? claims.map((c) => {
     const timeline = getClaimTimelineSteps(c);
     const activeStep = timeline.find((s) => s.active) || timeline[timeline.length - 1];
+    const pendingDocs = (c.docs || []).filter((d) => d.required && !d.done).length;
+    const ownerYou = c.nextOwner === 'you';
     return `
     <button type="button" class="card card--interactive claim-list-card" data-action="open-claim-detail" data-claim="${c.id}">
       <span class="policy-card__type">Claim #${c.id.toUpperCase()}</span>
@@ -4454,7 +4839,8 @@ function renderClaims() {
       <h2 style="margin:0.35rem 0;font-size:0.9375rem">${c.policy}</h2>
       <p class="policy-card__meta">${c.hospital} · ${c.date}</p>
       <div class="claim-mini-timeline" aria-hidden="true">${timeline.map((s) => `<span class="claim-mini-timeline__dot ${s.done ? 'done' : ''} ${s.active ? 'active' : ''}"></span>`).join('')}</div>
-      <p class="claim-list-card__next">Stage: ${activeStep?.label || '—'} · Next: ${c.nextAction}</p>
+      <p class="claim-list-card__next"><strong>Next:</strong> ${c.nextAction}${ownerYou ? ' · Your action' : ''}</p>
+      ${pendingDocs ? `<p class="claim-list-card__docs">${pendingDocs} required document${pendingDocs > 1 ? 's' : ''} pending</p>` : ''}
       <span class="link-card__cta">View details ${icon('chevronRight', ICON_SIZE.sm, 'hollow-icon')}</span>
     </button>`;
   }).join('') : `<div class="empty-state card">
@@ -4571,36 +4957,40 @@ function renderCompareView() {
     return renderProductWizard(product, step);
   }
 
-  const rows = compareRowsForProduct(product);
-
-  const bodyRows = rows.map((r) => {
-    const vals = plans.map((p) => r.key(p));
-    const allSame = vals.every((v) => v === vals[0]);
-    if (compareHideEqualRows && allSame) return '';
-    const rowDiff = compareValuesDiffer(vals);
-    const rowClass = rowDiff ? ' compare-table__row--diff' : '';
-    const cells = plans.map((p, i) => {
-      const v = vals[i];
-      let cls = v === '✓' ? 'check' : v === '✗' ? 'cross' : '';
-      if (rowDiff && compareCellDiffers(vals, i)) cls += ' compare-table__cell--diff';
-      return `<td class="${cls.trim()}">${v}</td>`;
-    }).join('');
-    return `<tr class="${rowClass.trim()}"><td>${r.label}</td>${cells}</tr>`;
-  }).join('');
+  const bodyRows = renderCompareTableBody(product, plans);
 
   return `
     <div class="page-header"><button class="back-btn" data-action="compare-back">${iconBack()}</button>
       <h1>${`Compare ${plans.length} plans`}</h1></div>
-    <div class="wizard-body">
-      <label class="compare-filter">
-        <input type="checkbox" data-action="compare-hide-equal" ${compareHideEqualRows ? 'checked' : ''}>
-        ${t('compare.hideEqual')}
-      </label>
-      <div class="compare-table-wrap"><table class="compare-table">
-        <thead><tr><th>Feature</th>${plans.map(p => `<th>${p.insurer}<br><small>${p.plan}</small></th>`).join('')}</tr></thead>
-        <tbody>${bodyRows}
-        <tr><td>Action</td>${plans.map((p) => `<td><button class="btn btn--primary btn--sm" data-action="buy-product" data-plan-id="${p.id}" data-product="${product}">Buy</button></td>`).join('')}</tr>
-      </tbody></table></div>
+    <div class="wizard-body compare-screen">
+      <p class="compare-note">${t('compare.indicative')}</p>
+      <div class="compare-toolbar">
+        <div class="compare-segment" role="tablist" aria-label="${t('compare.viewLabel')}">
+          <button type="button" role="tab" class="compare-segment__btn ${compareHideEqualRows ? '' : 'compare-segment__btn--active'}" data-action="compare-view-mode" data-mode="all" aria-selected="${!compareHideEqualRows}">
+            ${t('compare.viewAll')}
+          </button>
+          <button type="button" role="tab" class="compare-segment__btn ${compareHideEqualRows ? 'compare-segment__btn--active' : ''}" data-action="compare-view-mode" data-mode="diff" aria-selected="${compareHideEqualRows}">
+            ${t('compare.viewDiff')}
+          </button>
+        </div>
+        <p class="compare-toolbar__hint${compareHideEqualRows ? ' compare-toolbar__hint--mode' : ''}">${compareHideEqualRows ? t('compare.legendDiffMode') : t('compare.legendShort')}</p>
+      </div>
+      ${renderComparePlanRail(product, plans)}
+      <div class="compare-table-shell">
+        <div class="compare-table-wrap"><table class="compare-table">
+          <thead><tr>
+            <th scope="col" class="compare-table__th-feature"><span class="compare-table__head-label">${t('compare.tableFeatureCol')}</span></th>
+            ${plans.map((p, i) => `<th scope="col" class="compare-table__th-plan compare-table__th-plan--${i}"><span class="compare-table__col-tag">${esc(p.insurer.split(' ').slice(0, 2).join(' '))}</span><span class="compare-table__col-sub">${esc(p.plan)}</span></th>`).join('')}
+          </tr></thead>
+          <tbody>${bodyRows}</tbody>
+          <tfoot class="compare-table__foot">
+            <tr class="compare-table__row compare-table__row--action" aria-label="Buy a plan">
+              <td class="compare-table__feature compare-table__feature--foot" aria-hidden="true"></td>
+              ${renderCompareActionRow(product, plans)}
+            </tr>
+          </tfoot>
+        </table></div>
+      </div>
       <button class="btn btn--secondary btn--block" style="margin-top:1rem" data-action="open-ai" data-ai-mode="compare">
         ${icon('sparkles', ICON_SIZE.sm, 'hollow-icon hollow-icon--inline')} Explain differences with AI
       </button>
@@ -5035,10 +5425,10 @@ function renderHealthWizard(step) {
       <div class="page-header"><button class="back-btn" data-action="wizard-back">${iconBack()}</button>
         <h1>${resultsTitle}</h1></div>
       <div class="wizard-progress">${progress}</div>
-      <div class="filter-bar">
+      <div class="filter-bar filter-bar--fit">
         <button class="filter-chip ${healthFilter === 'all' ? 'active' : ''}" data-filter="all">All</button>
-        <button class="filter-chip ${healthFilter === 'nopay' ? 'active' : ''}" data-filter="nopay">Zero co-pay</button>
-        <button class="filter-chip ${healthFilter === 'restoration' ? 'active' : ''}" data-filter="restoration">Restoration</button>
+        <button class="filter-chip ${healthFilter === 'nopay' ? 'active' : ''}" data-filter="nopay">0% co-pay</button>
+        <button class="filter-chip ${healthFilter === 'restoration' ? 'active' : ''}" data-filter="restoration">Restore</button>
         <button class="filter-chip ${healthFilter === 'opd' ? 'active' : ''}" data-filter="opd">OPD</button>
         <button class="filter-chip ${healthFilter === 'maternity' ? 'active' : ''}" data-filter="maternity">Maternity</button>
       </div>
@@ -6489,6 +6879,16 @@ function bindEvents() {
   document.querySelectorAll('[data-action="results-retry"]').forEach((el) => {
     el.addEventListener('click', () => retryQuoteResults(el.dataset.product || wizardState?.type || activeProduct));
   });
+  document.querySelectorAll('[data-action="plan-sort"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const product = btn.dataset.product;
+      const value = btn.dataset.sortValue;
+      if (getPlanSortValue(product) === value) return;
+      if (product === 'health') healthSort = value;
+      else productSort[product] = value;
+      render();
+    });
+  });
   document.querySelectorAll('[data-product-sort]').forEach((el) => {
     el.addEventListener('change', (e) => {
       const product = e.target.dataset.productSort;
@@ -6511,9 +6911,11 @@ function bindEvents() {
     });
   });
 
-  document.querySelectorAll('[data-action="compare-hide-equal"]').forEach((el) => {
-    el.addEventListener('change', (e) => {
-      compareHideEqualRows = e.target.checked;
+  document.querySelectorAll('[data-action="compare-view-mode"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const diffOnly = btn.dataset.mode === 'diff';
+      if (compareHideEqualRows === diffOnly) return;
+      compareHideEqualRows = diffOnly;
       render();
     });
   });
@@ -7104,8 +7506,9 @@ function renderAIMessages() {
   renderAIFinderProgress();
   if (!aiMessages.length) {
     c.innerHTML = `<div class="quote-choice-card ai-welcome" role="status">
-      <p class="quote-choice-card__title">How can I help?</p>
-      <p class="quote-choice-card__hint">Ask about coverage, plans, claims, or renewals. Pick a topic below or type your question.</p>
+      <p class="quote-choice-card__title">${t('ai.welcomeTitle')}</p>
+      <p class="quote-choice-card__hint">${t('ai.welcomeHint')}</p>
+      <p class="ai-welcome__verified">${icon('shield', ICON_SIZE.sm, 'hollow-icon hollow-icon--inline ai-welcome__verified-icon')} Policy facts come from your documents in the app — general answers are not a guarantee.</p>
     </div>`;
   } else {
     c.innerHTML = aiMessages.map(m => `<div class="ai-msg ai-msg--${m.role}">${renderAIMessageHTML(m)}</div>`).join('');
@@ -7151,12 +7554,23 @@ function renderAISuggestions() {
   }
 
   const isFinderPick = aiMode === 'finder' && aiFinderStep === 'protect';
+  const suggestionKeys = isFinderPick ? AI_STANDARD_SUGGESTIONS : AI_CHAT_SUGGESTIONS;
+  const chatLabels = {
+    'ai.suggest.health': 'Health plans',
+    'ai.suggest.motor': 'Motor cover',
+    'ai.suggest.compare': 'Compare plans',
+    'ai.suggest.waiting': 'Waiting periods',
+    'ai.suggest.cashless': 'Cashless help',
+    'ai.suggest.claimHelp': 'Claim documents',
+    'ai.suggest.term': 'Term life',
+    'ai.suggest.home': 'Home cover',
+  };
   c.className = 'chip-group chip-group--choice chip-group--wrap ai-panel__chips';
 
-  c.innerHTML = AI_STANDARD_SUGGESTIONS.map((key) => {
+  c.innerHTML = suggestionKeys.map((key) => {
     const label = isFinderPick
-      ? (AI_SUGGEST_SHORT_LABEL[key] || t(key))
-      : t(key);
+      ? (AI_SUGGEST_SHORT_LABEL.en[key] || t(key))
+      : (chatLabels[key] || t(key));
     return `<button type="button" class="chip" data-suggestion-key="${key}"><span class="chip__line">${esc(label)}</span></button>`;
   }).join('');
 }
@@ -7966,6 +8380,10 @@ function enhanceHollowSelect(select) {
     if (e.key === 'Escape') closeHollowSelect(state, true);
   });
 
+  if (select.id === 'expertTime') {
+    select.addEventListener('change', syncExpertSubmitLabel);
+  }
+
   syncHollowSelectUi(select);
 }
 
@@ -7992,6 +8410,7 @@ function syncExpertNowOption() {
   if (nowOpt) nowOpt.disabled = !open;
   if (!open && select.value === 'now') select.value = 'morning';
   syncHollowSelectUi(select);
+  syncExpertSubmitLabel();
 }
 
 function expertSlotLabel(value) {
@@ -8244,7 +8663,7 @@ document.getElementById('aiSuggestions').addEventListener('click', (e) => {
     handleAIAction('finder-protect', { value: AI_SUGGEST_TO_FINDER[key] });
     return;
   }
-  const q = AI_PRODUCT_PROMPT_QUERIES[key] || t(key);
+  const q = AI_PRODUCT_PROMPT_QUERIES.en[key] || t(key);
   submitAIQuery(q);
 });
 document.getElementById('aiExpertHandoff')?.addEventListener('click', (e) => {
@@ -8356,6 +8775,15 @@ const designCaptureApplied = Boolean(
 if (designCaptureApplied) {
   document.documentElement.classList.add('design-capture');
   document.body.classList.add('design-capture');
+  if (designCaptureQuery.screen.startsWith('compare-')) {
+    document.body.classList.add('design-capture-compare');
+  } else if (designCaptureQuery.screen.startsWith('compare-bar-')) {
+    document.body.classList.add('design-capture-compare-bar');
+  } else if (designCaptureQuery.screen === 'health-results-compare-exact') {
+    document.body.classList.add('design-capture-viewport-exact');
+  } else if (designCaptureQuery.screen.endsWith('-compare-pick')) {
+    document.body.classList.add('design-capture-compare-pick');
+  }
   suppressHistory = true;
   designCaptureOverlay = applyDesignCaptureScreen(designCaptureQuery.screen);
   suppressHistory = false;

@@ -20,7 +20,8 @@ export function buildCaptureUrl(screen, captureId, delayMs = 3500) {
   const endpoint = encodeURIComponent(
     `https://mcp.figma.com/mcp/capture/${captureId}/submit?bindVariables=true`,
   );
-  const selector = encodeURIComponent(CAPTURE_SELECTOR);
+  const captureTarget = config.screenSelectors?.[screen] || CAPTURE_SELECTOR;
+  const selector = encodeURIComponent(captureTarget);
   const q = new URLSearchParams({ nosplash: '1', screen });
   return `${config.baseUrl}/?${q}#figmacapture=${captureId}&figmaendpoint=${endpoint}&figmadelay=${delayMs}&figmaselector=${selector}`;
 }

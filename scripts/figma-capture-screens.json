@@ -4,6 +4,9 @@
   "baseUrl": "http://localhost:8080",
   "viewport": { "width": 390, "height": 844 },
   "captureSelector": "#app",
+  "screenSelectors": {
+    "compare-bar-health": "#compareBar"
+  },
   "deviceScaleFactor": 1,
   "screens": [
     "home", "explore", "policies", "claims", "help", "renew",
@@ -21,6 +24,10 @@
     "home-1", "home-results", "home-pay",
     "success", "motor-success", "term-success", "home-success",
     "expert-modal", "ai-panel",
-    "health-results-error", "motor-results-error", "term-results-error", "home-results-error"
+    "health-results-error", "motor-results-error", "term-results-error", "home-results-error",
+    "compare-health-all", "compare-motor-all", "compare-term-all", "compare-home-all",
+    "health-results-compare-pick",
+    "compare-bar-health",
+    "health-results-compare-exact"
   ]
 }
