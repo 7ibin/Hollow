@@ -5260,7 +5260,7 @@ function renderHealthWizard(step) {
       : '';
     const showFields = m.selected;
     return `
-    <div class="member-row ${m.selected ? 'member-row--on' : ''} ${individual ? 'member-row--radio' : ''}" data-member-row="${m.id}" data-action="pick-member" data-member="${m.id}" role="${individual ? 'radio' : 'checkbox'}" aria-checked="${m.selected}" tabindex="0">
+    <div class="member-row ${m.selected ? 'member-row--on' : ''}" data-member-row="${m.id}" data-action="pick-member" data-member="${m.id}" role="${individual ? 'radio' : 'checkbox'}" aria-checked="${m.selected}" tabindex="0">
       <div class="member-row__body">
         <div class="member-row__head">
           <button type="button" class="member-row__check" data-action="toggle-member" data-member="${m.id}" aria-pressed="${m.selected}" aria-label="${m.selected ? `Remove ${m.label}` : `Add ${m.label}`}">
