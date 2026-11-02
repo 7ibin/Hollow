@@ -906,7 +906,7 @@ function addHealthChildMember() {
     if (wizardState) {
       wizardState.formError = `You can add up to ${MAX_HEALTH_CHILDREN} children on one family floater quote.`;
     }
-    render();
+    renderPreserveScroll();
     return;
   }
   const id = nextHealthChildMemberId(h);
@@ -921,7 +921,7 @@ function addHealthChildMember() {
     medical: defaultMemberMedical(),
   });
   if (wizardState) wizardState.formError = '';
-  render();
+  renderPreserveScroll();
 }
 
 function removeHealthChildMember(id) {
@@ -933,7 +933,7 @@ function removeHealthChildMember(id) {
   h.members.splice(idx, 1);
   if (wizardState?.medicalMemberId === id) wizardState.medicalMemberId = null;
   if (wizardState) wizardState.formError = '';
-  render();
+  renderPreserveScroll();
 }
 
 function applyHealthQuotePreset(form, preset) {
@@ -5141,7 +5141,11 @@ function captureHealthFormFromDOM() {
   });
 }
 
-/** Individual = exactly one insured; family floater = one or more. */
+/** Individual = exactly one insured; family floater = at least two. */
+function minHealthFloaterMembers() {
+  return 2;
+}
+
 function applyHealthMemberSelectionRules() {
   const h = quoteForm.health;
   syncHealthMemberImplicitGenders(h);
@@ -5168,20 +5172,20 @@ function toggleHealthMember(id) {
   if (h.planType === 'individual') {
     h.members.forEach((x) => { x.selected = x.id === id; });
     if (wizardState) wizardState.formError = '';
-    render();
+    renderPreserveScroll();
     return;
   }
   const selCount = h.members.filter((x) => x.selected).length;
   if (m.selected && selCount <= 1) {
     if (wizardState) {
-      wizardState.formError = 'Select at least one member for family cover';
+      wizardState.formError = 'Keep at least one member selected while you edit';
     }
-    render();
+    renderPreserveScroll();
     return;
   }
   m.selected = !m.selected;
   if (wizardState) wizardState.formError = '';
-  render();
+  renderPreserveScroll();
 }
 
 function captureMotorFormFromDOM() {
@@ -5198,6 +5202,10 @@ function validateHealthStep(step) {
     const sel = h.members.filter((m) => m.selected);
     if (!sel.length) {
       wizardState.formError = 'Select at least one member to insure';
+      return false;
+    }
+    if (h.planType === 'floater' && sel.length < minHealthFloaterMembers()) {
+      wizardState.formError = 'Family floater needs at least 2 members — add spouse, child, or parents';
       return false;
     }
     for (const m of sel) {
@@ -5340,7 +5348,7 @@ function renderHealthWizard(step) {
     : ('Who do you want to cover?')}</h2>
       <p class="quote-form__hint">${individual
     ? ('Individual cover is for one person only. Tap another member to switch.')
-    : ('Family floater can cover parents and kids. Use Son/Daughter for your first two children, then add more if needed.')}</p>
+    : ('Family floater covers 2 or more people on one sum insured. Add spouse, children, or parents.')}</p>
       <div class="member-list-panel">
         <div class="member-list ${individual ? 'member-list--single' : ''}">${memberRows}</div>
         ${!individual && countHealthChildSlots(h) < MAX_HEALTH_CHILDREN
