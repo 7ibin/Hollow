@@ -2818,6 +2818,20 @@ body.wizard-mode.compare-open .ai-fab {
   outline-color: #fff;
   box-shadow: 0 0 0 2px var(--color-primary), 0 2px 6px rgba(13, 79, 139, 0.28);
 }
+.member-gender-field--locked { cursor: default; }
+.member-gender-field--locked .member-gender-btn:disabled {
+  pointer-events: none; cursor: default;
+}
+.member-gender-field--locked .member-gender-btn--locked-off:disabled {
+  opacity: 0.55; color: #5a6d82; background: transparent;
+  border-color: transparent; box-shadow: none; font-weight: 600;
+}
+.member-gender-field--locked .member-gender-btn.selected:disabled {
+  color: #fff; background: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 6px rgba(13, 79, 139, 0.28);
+  opacity: 1; font-weight: 700;
+}
 @container hollow-app (max-width: 360px) {
   .member-row__inputs { flex-direction: column; align-items: stretch; }
   .member-input-block--age { flex: 1 1 auto; max-width: none; }

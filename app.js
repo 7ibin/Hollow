@@ -863,6 +863,20 @@ function isHealthChildMemberId(id) {
   return id === 'son' || id === 'daughter' || (typeof id === 'string' && id.startsWith('child-'));
 }
 
+/** Gender implied by member role — no picker on the members step. */
+function healthMemberImplicitGender(id) {
+  if (id === 'son' || id === 'father') return 'male';
+  if (id === 'daughter' || id === 'mother') return 'female';
+  return null;
+}
+
+function syncHealthMemberImplicitGenders(h) {
+  h.members.forEach((m) => {
+    const g = healthMemberImplicitGender(m.id);
+    if (g) m.gender = g;
+  });
+}
+
 function countHealthChildSlots(h) {
   return h.members.filter((m) => isHealthChildMemberId(m.id)).length;
 }
@@ -5121,13 +5135,16 @@ function captureHealthFormFromDOM() {
     if (!row) return;
     const ageVal = row.querySelector('.member-row__age')?.value;
     m.age = ageVal === '' ? '' : parseInt(ageVal, 10);
-    m.gender = row.querySelector('[data-member-gender].selected')?.dataset.gender || m.gender;
+    const implicit = healthMemberImplicitGender(m.id);
+    if (implicit) m.gender = implicit;
+    else m.gender = row.querySelector('[data-member-gender].selected')?.dataset.gender || m.gender;
   });
 }
 
 /** Individual = exactly one insured; family floater = one or more. */
 function applyHealthMemberSelectionRules() {
   const h = quoteForm.health;
+  syncHealthMemberImplicitGenders(h);
   const selected = h.members.filter((m) => m.selected);
   if (h.planType === 'individual') {
     const keep = selected.find((m) => m.id === 'self') || selected[0] || h.members.find((m) => m.id === 'self');
@@ -5259,6 +5276,40 @@ function renderHealthWizard(step) {
       ? '<span class="member-row__cta" aria-hidden="true">Add</span>'
       : '';
     const showFields = m.selected;
+    const implicitGender = healthMemberImplicitGender(m.id);
+    let genderFields;
+    if (implicitGender) {
+      const isMale = implicitGender === 'male';
+      genderFields = `<div class="member-input-block member-input-block--gender">
+              <span class="member-input-block__label">Gender</span>
+              <div class="member-gender-field member-gender-field--locked" role="radiogroup" aria-label="${m.label} gender ${isMale ? 'Male' : 'Female'}">
+                <button type="button" class="member-gender-btn ${isMale ? 'selected' : 'member-gender-btn--locked-off'}" disabled aria-disabled="true" aria-checked="${isMale}" aria-label="Male">Male</button>
+                <button type="button" class="member-gender-btn ${!isMale ? 'selected' : 'member-gender-btn--locked-off'}" disabled aria-disabled="true" aria-checked="${!isMale}" aria-label="Female">Female</button>
+              </div>
+            </div>`;
+    } else {
+      genderFields = `<div class="member-input-block member-input-block--gender">
+              <span class="member-input-block__label" id="memberGenderLabel-${m.id}">Gender</span>
+              <div class="member-gender-field" role="radiogroup" aria-labelledby="memberGenderLabel-${m.id}">
+                <button type="button" class="member-gender-btn ${m.gender === 'male' ? 'selected' : ''}" data-member-gender data-member="${m.id}" data-gender="male" role="radio" aria-checked="${m.gender === 'male'}" aria-label="Male">Male</button>
+                <button type="button" class="member-gender-btn ${m.gender === 'female' ? 'selected' : ''}" data-member-gender data-member="${m.id}" data-gender="female" role="radio" aria-checked="${m.gender === 'female'}" aria-label="Female">Female</button>
+              </div>
+            </div>`;
+    }
+    const detailBlock = showFields
+      ? `<div class="member-row__detail">
+          <div class="member-row__inputs" role="group" aria-label="${m.label} age and gender">
+            <label class="member-input-block member-input-block--age">
+              <span class="member-input-block__label">Age</span>
+              <div class="member-age-field">
+                <input type="number" class="member-row__age" min="0" max="99" inputmode="numeric" value="${esc(m.age)}" placeholder="0" aria-label="${m.label} age in years">
+                <span class="member-age-field__suffix" aria-hidden="true">yrs</span>
+              </div>
+            </label>
+            ${genderFields}
+          </div>
+        </div>`
+      : '';
     return `
     <div class="member-row ${m.selected ? 'member-row--on' : ''}" data-member-row="${m.id}" data-action="pick-member" data-member="${m.id}" role="${individual ? 'radio' : 'checkbox'}" aria-checked="${m.selected}" tabindex="0">
       <div class="member-row__body">
@@ -5270,24 +5321,7 @@ function renderHealthWizard(step) {
           ${removeChildBtn}
           ${cta}
         </div>
-        ${showFields ? `<div class="member-row__detail">
-          <div class="member-row__inputs" role="group" aria-label="${m.label} age and gender">
-            <label class="member-input-block member-input-block--age">
-              <span class="member-input-block__label">Age</span>
-              <div class="member-age-field">
-                <input type="number" class="member-row__age" min="0" max="99" inputmode="numeric" value="${esc(m.age)}" placeholder="0" aria-label="${m.label} age in years">
-                <span class="member-age-field__suffix" aria-hidden="true">yrs</span>
-              </div>
-            </label>
-            <div class="member-input-block member-input-block--gender">
-              <span class="member-input-block__label" id="memberGenderLabel-${m.id}">Gender</span>
-              <div class="member-gender-field" role="radiogroup" aria-labelledby="memberGenderLabel-${m.id}">
-                <button type="button" class="member-gender-btn ${m.gender === 'male' ? 'selected' : ''}" data-member-gender data-member="${m.id}" data-gender="male" role="radio" aria-checked="${m.gender === 'male'}" aria-label="Male">Male</button>
-                <button type="button" class="member-gender-btn ${m.gender === 'female' ? 'selected' : ''}" data-member-gender data-member="${m.id}" data-gender="female" role="radio" aria-checked="${m.gender === 'female'}" aria-label="Female">Female</button>
-              </div>
-            </div>
-          </div>
-        </div>` : ''}
+        ${detailBlock}
       </div>
     </div>`;
   }).join('');
