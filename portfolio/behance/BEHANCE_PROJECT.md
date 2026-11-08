@@ -42,7 +42,7 @@ Indian insurance shoppers juggle **family floater vs individual**, medical discl
 
 ### Outcome
 
-A cohesive **clickable prototype** (static HTML/JS) suitable for usability review, Figma capture, and portfolio storytelling. Code: `https://github.com/7ibin/hollow`
+A cohesive **clickable prototype** (static HTML/JS) suitable for usability review, Figma capture, and portfolio storytelling. Code: `https://github.com/7ibin/Hollow`
 
 ### Tools
 
@@ -54,7 +54,7 @@ UI/UX · UX Design · Mobile App · Insurance · Product Design · Interaction D
 
 ### Project URL
 
-https://github.com/7ibin/hollow
+https://github.com/7ibin/Hollow
 
 ---
 
