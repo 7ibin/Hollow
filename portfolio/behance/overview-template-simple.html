@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Hollow — Overview (simple)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 2800px;
+      height: 2190px;
+      overflow: hidden;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    #overview-simple {
+      width: 2800px;
+      height: 2190px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 120px 180px;
+      background: linear-gradient(168deg, #fafbfc 0%, #f1f5f9 100%);
+      color: #0f172a;
+    }
+    .simple__kicker {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 32px;
+    }
+    .simple__title {
+      font-size: 140px;
+      font-weight: 800;
+      letter-spacing: -0.055em;
+      line-height: 0.92;
+      color: #062d52;
+      margin-bottom: 48px;
+    }
+    .simple__tagline {
+      font-size: 44px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: #334155;
+      max-width: 1800px;
+      margin-bottom: 64px;
+    }
+    .simple__list {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 1600px;
+      margin-bottom: 96px;
+    }
+    .simple__list p {
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1.45;
+      color: #475569;
+      padding-left: 28px;
+      border-left: 4px solid #0d4f8b;
+    }
+    .simple__foot {
+      display: flex;
+      align-items: center;
+      gap: 56px;
+      flex-wrap: wrap;
+      padding-top: 48px;
+      border-top: 1px solid #e2e8f0;
+    }
+    .simple__stat {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+    }
+    .simple__stat strong {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #062d52;
+    }
+    .simple__stat span {
+      font-size: 26px;
+      font-weight: 600;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+  <div id="overview-simple">
+    <p class="simple__kicker">UI / UX case study · Overview</p>
+    <h1 class="simple__title">Hollow</h1>
+    <p class="simple__tagline">
+      Mobile insurance for India — quote, compare, buy, and manage policies on a 390px prototype.
+    </p>
+    <div class="simple__list">
+      <p>Health, motor, term, and home in one consistent shell.</p>
+      <p>Member-first quote flows and a compare table built for small screens.</p>
+      <p>Post-purchase: policies, claims, and plain-language help.</p>
+    </div>
+    <footer class="simple__foot">
+      <div class="simple__stat"><strong>4</strong><span>product lines</span></div>
+      <div class="simple__stat"><strong>13</strong><span>screens</span></div>
+      <div class="simple__stat"><strong>390</strong><span>px layout</span></div>
+      <div class="simple__stat"><strong>1</strong><span>design system</span></div>
+    </footer>
+  </div>
+</body>
+</html>

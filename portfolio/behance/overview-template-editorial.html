@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Hollow — Overview (editorial)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 2800px;
+      height: 2190px;
+      overflow: hidden;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    #overview-editorial {
+      width: 2800px;
+      height: 2190px;
+      display: grid;
+      grid-template-columns: 920px 1fr;
+      gap: 88px;
+      padding: 100px 132px;
+      background: #fafbfc;
+      color: #0f172a;
+    }
+    .rail {
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #e2e8f0;
+      padding-right: 72px;
+    }
+    .rail__meta {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 48px;
+    }
+    .rail__chapter {
+      font-size: 200px;
+      font-weight: 800;
+      line-height: 0.85;
+      letter-spacing: -0.06em;
+      color: #e2e8f0;
+      margin-bottom: 40px;
+    }
+    .rail__title {
+      font-size: 64px;
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      color: #062d52;
+      margin-bottom: 32px;
+    }
+    .rail__lede {
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: #475569;
+      margin-bottom: 56px;
+    }
+  .principles {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+    .principle {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      font-size: 26px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: #334155;
+    }
+    .principle::before {
+      content: '';
+      flex-shrink: 0;
+      width: 10px;
+      height: 10px;
+      margin-top: 12px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0d4f8b, #5eb8ff);
+    }
+    .bento {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 28px;
+      align-content: start;
+    }
+    .panel {
+      background: #fff;
+      border: 1px solid #e8edf2;
+      border-radius: 24px;
+      padding: 40px 44px;
+      box-shadow: 0 12px 40px -16px rgba(15, 23, 42, 0.12);
+    }
+    .panel__label {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #0d4f8b;
+      margin-bottom: 16px;
+    }
+    .panel__title {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+      margin-bottom: 16px;
+    }
+    .panel__body {
+      font-size: 27px;
+      font-weight: 500;
+      line-height: 1.5;
+      color: #64748b;
+    }
+    .panel--wide { grid-column: 1 / -1; }
+    .panel--dark {
+      background: linear-gradient(145deg, #041f38 0%, #062d52 42%, #0d4f8b 100%);
+      border-color: rgba(255, 255, 255, 0.06);
+      padding: 48px 52px;
+    }
+    .panel--dark .panel__label { color: #7ec8ff; }
+    .panel--dark .panel__title { color: #f8fafc; font-size: 38px; }
+    .panel--dark .panel__body { color: #94a3b8; }
+    .deliverables {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px 40px;
+    }
+    .deliverables li {
+      list-style: none;
+      font-size: 24px;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .deliverables li::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 2px;
+      background: #5eb8ff;
+    }
+    .metrics {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    .metric {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 36px 28px;
+      text-align: center;
+    }
+    .metric__n {
+      font-size: 56px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: #062d52;
+      margin-bottom: 8px;
+    }
+    .metric__t {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #64748b;
+    }
+    .rail__logo {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: #0d4f8b;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="overview-editorial">
+    <aside class="rail">
+      <p class="rail__meta">Case study · Overview</p>
+      <p class="rail__logo">Hollow</p>
+      <p class="rail__chapter">01</p>
+      <h1 class="rail__title">Clarity for high-stakes insurance choices on mobile</h1>
+      <p class="rail__lede">
+        A product UX exploration for quoting, comparing, and caring for policies—built as a
+        click-through prototype, not a marketing site.
+      </p>
+      <div class="principles" aria-label="Design principles">
+        <p class="principle">One shell for health, motor, term, and home</p>
+        <p class="principle">Compare that surfaces gaps, not fine print walls</p>
+        <p class="principle">Post-purchase flows in the same visual language</p>
+        <p class="principle">AI and human help without crowding the quote path</p>
+      </div>
+    </aside>
+    <main class="bento">
+      <article class="panel panel--wide">
+        <p class="panel__label">Context</p>
+        <h2 class="panel__title">Why this project exists</h2>
+        <p class="panel__body">
+          Aggregators teach users to expect speed, but health quotes still mean member lists,
+          disclosures, and dense compare tables. Hollow prototypes how those steps can stay honest
+          and legible on a 390px canvas.
+        </p>
+      </article>
+      <article class="panel">
+        <p class="panel__label">Role</p>
+        <h2 class="panel__title">End-to-end product UX</h2>
+        <p class="panel__body">
+          Information architecture, interaction patterns, visual system, and exported hi-fi
+          screens for portfolio and usability walkthroughs.
+        </p>
+      </article>
+      <article class="panel">
+        <p class="panel__label">Constraints</p>
+        <h2 class="panel__title">Real-device framing</h2>
+        <p class="panel__body">
+          Static HTML prototype with representative data—designed for capture, critique, and Figma
+          alignment, not live pricing APIs.
+        </p>
+      </article>
+      <article class="panel panel--wide panel--dark">
+        <p class="panel__label">Deliverables</p>
+        <h2 class="panel__title">What you'll see in this case study</h2>
+        <p class="panel__body">
+          Quote wizards, plan compare, checkout, sign-in, and post-purchase tools—shown as styled
+          Behance slides matching the project cover.
+        </p>
+        <ul class="deliverables">
+          <li>Member &amp; medical wizards</li>
+          <li>Compare tray + full table</li>
+          <li>Motor parallel journey</li>
+          <li>Policy doctor &amp; claims</li>
+        </ul>
+      </article>
+      <div class="metrics">
+        <div class="metric"><p class="metric__n">4</p><p class="metric__t">product lines</p></div>
+        <div class="metric"><p class="metric__n">13</p><p class="metric__t">gallery slides</p></div>
+        <div class="metric"><p class="metric__n">390</p><p class="metric__t">px layout</p></div>
+        <div class="metric"><p class="metric__n">3</p><p class="metric__t">core flows · quote, compare, care</p></div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

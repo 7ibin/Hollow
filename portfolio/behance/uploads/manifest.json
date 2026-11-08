@@ -1,0 +1,62 @@
+[
+  {
+    "behanceCover": true,
+    "uploadFile": "00-cover-1616x1264.png",
+    "caption": "Mobile insurance for India — quote, compare plans, checkout & post-purchase care",
+    "fullRes": "00-cover.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "01-overview-1616x1264.png",
+    "caption": "Mobile insurance prototype — quote, compare, and post-purchase care.",
+    "fullRes": "01-overview.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "01-overview-cards-1616x1264.png",
+    "caption": "Alternate overview layout (three insight cards + scope bar).",
+    "fullRes": "01-overview-cards.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "02-gallery-home-1616x1264.png",
+    "caption": "Three real 390px viewports — scroll through home: hero, buy grid, post-purchase & tab bar.",
+    "fullRes": "02-gallery-home.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "03-gallery-health-quote-1616x1264.png",
+    "caption": "Members, medical history, sum insured, then priced plan results.",
+    "fullRes": "03-gallery-health-quote.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "04-gallery-health-buy-1616x1264.png",
+    "caption": "Compare tray, full feature table, add-ons, and checkout.",
+    "fullRes": "04-gallery-health-buy.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "05-gallery-motor-1616x1264.png",
+    "caption": "Vehicle details, priced results, and payment.",
+    "fullRes": "05-gallery-motor.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "06-gallery-claim-1616x1264.png",
+    "caption": "Start a claim, pick type, and submit documents.",
+    "fullRes": "06-gallery-claim.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "07-gallery-policy-doctor-1616x1264.png",
+    "caption": "Choose a policy, pick a clause, read it in plain language.",
+    "fullRes": "07-gallery-policy-doctor.png"
+  },
+  {
+    "behanceCover": false,
+    "uploadFile": "08-gallery-signup-1616x1264.png",
+    "caption": "Mobile number, OTP verification, profile, and welcome.",
+    "fullRes": "08-gallery-signup.png"
+  }
+]

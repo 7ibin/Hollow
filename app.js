@@ -870,6 +870,47 @@ function healthMemberImplicitGender(id) {
   return null;
 }
 
+/** Example age in placeholder (health members step). */
+function healthMemberAgeExample(id) {
+  if (id === 'self') return '32';
+  if (id === 'spouse') return '30';
+  if (id === 'son' || id === 'daughter' || id.startsWith('child-')) return '8';
+  if (id === 'father' || id === 'mother') return '58';
+  return '32';
+}
+
+function parseHealthMemberAge(raw) {
+  if (raw === '' || raw == null) return '';
+  if (typeof raw === 'number') {
+    return Number.isFinite(raw) && raw >= 0 && raw <= 99 ? raw : '';
+  }
+  const trimmed = String(raw).trim();
+  if (!trimmed) return '';
+  const n = parseInt(trimmed, 10);
+  if (!Number.isFinite(n) || n < 0 || n > 99) return '';
+  return n;
+}
+
+/** Value shown in the age input (never "NaN"). */
+function healthMemberAgeInputValue(age) {
+  const n = parseHealthMemberAge(age);
+  return n === '' ? '' : String(n);
+}
+
+/** Same rules as validateHealthStep step 0. */
+function isHealthMemberAgeValid(raw) {
+  return parseHealthMemberAge(raw) !== '';
+}
+
+function syncMemberAgeFieldValidity(input) {
+  const block = input.closest('.member-input-block--age');
+  if (!block) return;
+  const valid = isHealthMemberAgeValid(input.value);
+  block.classList.toggle('member-input-block--age--ok', valid);
+  block.classList.toggle('member-input-block--age--needs', !valid);
+  input.setAttribute('aria-invalid', valid ? 'false' : 'true');
+}
+
 function syncHealthMemberImplicitGenders(h) {
   h.members.forEach((m) => {
     const g = healthMemberImplicitGender(m.id);
@@ -2141,6 +2182,21 @@ function applyDesignCaptureTheme(theme) {
 /** Expand scroll regions so Figma html-to-design captures full page height, not one viewport slice. */
 function prepareDesignCaptureForFigma() {
   if (!document.body.classList.contains('design-capture')) return;
+  if (document.body.classList.contains('design-capture-behance-frame')) {
+    if (document.body.classList.contains('design-capture-behance-frame--clauses')) {
+      preparePolicyDoctorClausesCaptureScroll();
+    } else if (document.body.classList.contains('design-capture-behance-frame--home-top')) {
+      prepareHomeBehanceTopScroll();
+    } else if (document.body.classList.contains('design-capture-behance-frame--home-mid')) {
+      prepareHomeBehanceMidScroll();
+    } else if (document.body.classList.contains('design-capture-behance-frame--home-bottom')) {
+      prepareHomeBehanceBottomScroll();
+    } else {
+      const main = document.getElementById('mainContent');
+      if (main) main.scrollTop = 0;
+    }
+    return;
+  }
   if (document.body.classList.contains('design-capture-viewport-exact')) {
     prepareViewportExactCaptureScroll();
     return;
@@ -2156,6 +2212,18 @@ function prepareDesignCaptureForFigma() {
   document.querySelectorAll('.compare-table-wrap').forEach((el) => {
     el.scrollLeft = 0;
   });
+  if (!document.body.classList.contains('design-capture-viewport-exact')) {
+    const app = document.getElementById('app');
+    if (app) app.style.paddingBottom = '0.75rem';
+    document.querySelectorAll('#app .sticky-bar').forEach((el) => {
+      el.style.position = 'relative';
+      el.style.left = 'auto';
+      el.style.transform = 'none';
+      el.style.width = '100%';
+      el.style.maxWidth = '100%';
+      el.style.marginTop = '0.5rem';
+    });
+  }
 }
 
 /** One mobile viewport: results list scrolled to Max Bupa + fixed Compare now bar (attached reference). */
@@ -2173,6 +2241,74 @@ function prepareViewportExactCaptureScroll() {
       const top = plan.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop - offset;
       main.scrollTop = Math.max(0, top);
     }
+  };
+  run();
+  requestAnimationFrame(() => requestAnimationFrame(run));
+}
+
+function seedHomeBehanceCapture() {
+  authUser = {
+    name: 'Customer',
+    phone: '9876543210',
+    email: 'customer@example.com',
+    verified: true,
+  };
+  currentView = 'home';
+  wizardState = null;
+  document.body.classList.remove('wizard-mode', 'signup-mode');
+  syncBottomNav('home');
+}
+
+function seedPolicyDoctorBehanceCustomer() {
+  authUser = {
+    name: 'Customer',
+    phone: '9876543210',
+    email: 'customer@example.com',
+    verified: true,
+  };
+}
+
+function prepareHomeBehanceTopScroll() {
+  const main = document.getElementById('mainContent');
+  if (main) main.scrollTop = 0;
+}
+
+function prepareHomeBehanceMidScroll() {
+  const main = document.getElementById('mainContent');
+  if (!main) return;
+  const run = () => {
+    const anchor = document.querySelector('.customer-tools') || document.querySelector('.quick-actions--v2');
+    if (!anchor) return;
+    const mainRect = main.getBoundingClientRect();
+    const anchorRect = anchor.getBoundingClientRect();
+    const pad = 200;
+    main.scrollTop = Math.max(0, main.scrollTop + (anchorRect.top - mainRect.top) - pad);
+  };
+  run();
+  requestAnimationFrame(() => requestAnimationFrame(run));
+}
+
+function prepareHomeBehanceBottomScroll() {
+  const main = document.getElementById('mainContent');
+  if (!main) return;
+  const run = () => {
+    main.scrollTop = Math.max(0, main.scrollHeight - main.clientHeight);
+  };
+  run();
+  requestAnimationFrame(() => requestAnimationFrame(run));
+}
+
+/** Behance frame: scroll summary to clauses + “Good to know” (header & tab bar stay in 844px chrome). */
+function preparePolicyDoctorClausesCaptureScroll() {
+  const main = document.getElementById('mainContent');
+  if (!main) return;
+  const run = () => {
+    const anchor = document.querySelector('.doctor-alert') || document.querySelector('.doctor-card--clauses');
+    if (!anchor) return;
+    const mainRect = main.getBoundingClientRect();
+    const anchorRect = anchor.getBoundingClientRect();
+    const pad = 108;
+    main.scrollTop = Math.max(0, main.scrollTop + (anchorRect.top - mainRect.top) - pad);
   };
   run();
   requestAnimationFrame(() => requestAnimationFrame(run));
@@ -2437,8 +2573,10 @@ function seedClaimStartForCapture({ step = 0, policyId = 'h1', claimType, checke
 }
 
 const DESIGN_CAPTURE_SCREENS = new Set([
-  'home', 'explore', 'policies', 'claims', 'help', 'renew',
-  'policy-doctor', 'policy-doctor-pick', 'policy-doctor-clause',
+  'home', 'home-behance-top', 'home-behance-mid', 'home-behance-bottom',
+  'explore', 'policies', 'claims', 'help', 'renew',
+  'policy-doctor', 'policy-doctor-pick', 'policy-doctor-pick-behance', 'policy-doctor-clauses-pick',
+  'policy-doctor-clause', 'policy-doctor-clause-behance',
   'cases', 'case-create', 'case-detail',
   'help-motor', 'help-garage', 'help-roadside', 'help-network',
   'policy-detail',
@@ -2478,6 +2616,11 @@ function applyDesignCaptureScreen(screen) {
   }
 
   switch (screen) {
+    case 'home-behance-top':
+    case 'home-behance-mid':
+    case 'home-behance-bottom':
+      seedHomeBehanceCapture();
+      return null;
     case 'renew':
       currentView = 'renew';
       syncBottomNav('renew');
@@ -2510,7 +2653,52 @@ function applyDesignCaptureScreen(screen) {
       wizardState = null;
       syncBottomNav('policy-doctor');
       return null;
+    case 'policy-doctor-pick-behance':
+      seedPolicyDoctorBehanceCustomer();
+      doctorQuestion = '';
+      doctorAnswer = '';
+      policyDoctorState = {
+        policyId: null,
+        view: 'select',
+        clauseKey: null,
+        uploadLabel: null,
+        uploadLoading: false,
+      };
+      currentView = 'policy-doctor';
+      wizardState = null;
+      syncBottomNav('policy-doctor');
+      return null;
+    case 'policy-doctor-clauses-pick':
+      seedPolicyDoctorBehanceCustomer();
+      doctorQuestion = '';
+      doctorAnswer = '';
+      policyDoctorState = {
+        policyId: 'h1',
+        view: 'summary',
+        clauseKey: null,
+        uploadLabel: null,
+        uploadLoading: false,
+      };
+      currentView = 'policy-doctor';
+      wizardState = null;
+      syncBottomNav('policy-doctor');
+      return null;
     case 'policy-doctor-clause':
+      doctorQuestion = '';
+      doctorAnswer = '';
+      policyDoctorState = {
+        policyId: 'h1',
+        view: 'clause',
+        clauseKey: 'waiting',
+        uploadLabel: null,
+        uploadLoading: false,
+      };
+      currentView = 'policy-doctor';
+      wizardState = null;
+      syncBottomNav('policy-doctor');
+      return null;
+    case 'policy-doctor-clause-behance':
+      seedPolicyDoctorBehanceCustomer();
       doctorQuestion = '';
       doctorAnswer = '';
       policyDoctorState = {
@@ -5134,7 +5322,7 @@ function captureHealthFormFromDOM() {
     const row = document.querySelector(`[data-member-row="${m.id}"]`);
     if (!row) return;
     const ageVal = row.querySelector('.member-row__age')?.value;
-    m.age = ageVal === '' ? '' : parseInt(ageVal, 10);
+    m.age = parseHealthMemberAge(ageVal);
     const implicit = healthMemberImplicitGender(m.id);
     if (implicit) m.gender = implicit;
     else m.gender = row.querySelector('[data-member-gender].selected')?.dataset.gender || m.gender;
@@ -5209,7 +5397,7 @@ function validateHealthStep(step) {
       return false;
     }
     for (const m of sel) {
-      if (m.age === '' || m.age < 0 || m.age > 99) {
+      if (!isHealthMemberAgeValid(m.age)) {
         wizardState.formError = 'Enter valid age for each selected member';
         return false;
       }
@@ -5268,6 +5456,9 @@ function validateMotorStep(step) {
 
 function renderHealthWizard(step) {
   const h = quoteForm.health;
+  h.members.forEach((m) => {
+    m.age = parseHealthMemberAge(m.age);
+  });
   if (step === 0) applyHealthMemberSelectionRules();
   const steps = ['Members', 'Medical', 'Cover', 'Plans', 'Add-ons', 'Pay'];
   const formErr = wizardState?.formError
@@ -5304,14 +5495,32 @@ function renderHealthWizard(step) {
               </div>
             </div>`;
     }
+    const ageExample = healthMemberAgeExample(m.id);
+    const ageValue = esc(healthMemberAgeInputValue(m.age));
+    const ageOk = isHealthMemberAgeValid(m.age);
+    const ageStateClass = ageOk ? 'member-input-block--age--ok' : 'member-input-block--age--needs';
     const detailBlock = showFields
       ? `<div class="member-row__detail">
           <div class="member-row__inputs" role="group" aria-label="${m.label} age and gender">
-            <label class="member-input-block member-input-block--age">
-              <span class="member-input-block__label">Age</span>
+            <label class="member-input-block member-input-block--age ${ageStateClass}">
+              <span class="member-input-block__label" id="memberAgeLabel-${m.id}">Age<span class="member-input-block__required" aria-hidden="true">*</span></span>
               <div class="member-age-field">
-                <input type="number" class="member-row__age" min="0" max="99" inputmode="numeric" value="${esc(m.age)}" placeholder="0" aria-label="${m.label} age in years">
-                <span class="member-age-field__suffix" aria-hidden="true">yrs</span>
+                <input
+                  type="text"
+                  class="member-row__age"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="2"
+                  enterkeyhint="done"
+                  autocomplete="off"
+                  required
+                  value="${ageValue}"
+                  placeholder="${ageExample}"
+                  aria-labelledby="memberAgeLabel-${m.id} memberAgeSuffix-${m.id}"
+                  aria-required="true"
+                  aria-invalid="${ageOk ? 'false' : 'true'}"
+                >
+                <span class="member-age-field__suffix" id="memberAgeSuffix-${m.id}" lang="en">Years</span>
               </div>
             </label>
             ${genderFields}
@@ -5565,6 +5774,23 @@ function bindQuoteFormEvents() {
       e.stopPropagation();
       toggleHealthMember(btn.dataset.member);
     });
+  });
+  document.querySelectorAll('.member-age-field').forEach((field) => {
+    const input = field.querySelector('.member-row__age');
+    if (!input) return;
+    field.addEventListener('click', (e) => {
+      if (e.target === input) return;
+      input.focus();
+    });
+    const refreshAgeValidity = () => {
+      const cleaned = input.value.replace(/\D/g, '').slice(0, 2);
+      if (input.value !== cleaned) input.value = cleaned;
+      if (input.value.toLowerCase() === 'nan') input.value = '';
+      syncMemberAgeFieldValidity(input);
+    };
+    syncMemberAgeFieldValidity(input);
+    input.addEventListener('input', refreshAgeValidity);
+    input.addEventListener('blur', () => syncMemberAgeFieldValidity(input));
   });
   document.querySelectorAll('[data-action="switch-medical-member"]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -8823,6 +9049,18 @@ if (designCaptureApplied) {
     document.body.classList.add('design-capture-compare-bar');
   } else if (designCaptureQuery.screen === 'health-results-compare-exact') {
     document.body.classList.add('design-capture-viewport-exact');
+  } else if (designCaptureQuery.screen === 'policy-doctor-clauses-pick') {
+    document.body.classList.add('design-capture-behance-frame', 'design-capture-behance-frame--clauses');
+  } else if (designCaptureQuery.screen === 'policy-doctor-pick-behance') {
+    document.body.classList.add('design-capture-behance-frame');
+  } else if (designCaptureQuery.screen === 'policy-doctor-clause-behance') {
+    document.body.classList.add('design-capture-behance-frame');
+  } else if (designCaptureQuery.screen === 'home-behance-top') {
+    document.body.classList.add('design-capture-behance-frame', 'design-capture-behance-frame--home-top');
+  } else if (designCaptureQuery.screen === 'home-behance-mid') {
+    document.body.classList.add('design-capture-behance-frame', 'design-capture-behance-frame--home-mid');
+  } else if (designCaptureQuery.screen === 'home-behance-bottom') {
+    document.body.classList.add('design-capture-behance-frame', 'design-capture-behance-frame--home-bottom');
   } else if (designCaptureQuery.screen.endsWith('-compare-pick')) {
     document.body.classList.add('design-capture-compare-pick');
   }

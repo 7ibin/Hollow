@@ -32,11 +32,27 @@
     "ok": true
   },
   {
+    "file": "03b-health-sum-insured",
+    "screen": "health-3",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=health-3",
+    "path": "screens/03b-health-sum-insured.png",
+    "ok": true
+  },
+  {
     "file": "05-health-plan-results",
     "screen": "health-results",
     "waitMs": 2000,
     "url": "http://localhost:8080/?nosplash=1&screen=health-results",
     "path": "screens/05-health-plan-results.png",
+    "ok": true
+  },
+  {
+    "file": "05b-health-addons",
+    "screen": "health-addons",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=health-addons",
+    "path": "screens/05b-health-addons.png",
     "ok": true
   },
   {
@@ -48,11 +64,27 @@
     "ok": true
   },
   {
+    "file": "07a-motor-quote",
+    "screen": "motor-1",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=motor-1",
+    "path": "screens/07a-motor-quote.png",
+    "ok": true
+  },
+  {
     "file": "07-motor-results",
     "screen": "motor-results",
     "waitMs": 2000,
     "url": "http://localhost:8080/?nosplash=1&screen=motor-results",
     "path": "screens/07-motor-results.png",
+    "ok": true
+  },
+  {
+    "file": "07b-motor-pay",
+    "screen": "motor-pay",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=motor-pay",
+    "path": "screens/07b-motor-pay.png",
     "ok": true
   },
   {
@@ -72,6 +104,30 @@
     "ok": true
   },
   {
+    "file": "09-signup-otp",
+    "screen": "signup-otp",
+    "waitMs": 1200,
+    "url": "http://localhost:8080/?nosplash=1&screen=signup-otp",
+    "path": "screens/09-signup-otp.png",
+    "ok": true
+  },
+  {
+    "file": "09-signup-profile",
+    "screen": "signup-profile",
+    "waitMs": 1200,
+    "url": "http://localhost:8080/?nosplash=1&screen=signup-profile",
+    "path": "screens/09-signup-profile.png",
+    "ok": true
+  },
+  {
+    "file": "09-signup-success",
+    "screen": "signup-success",
+    "waitMs": 1200,
+    "url": "http://localhost:8080/?nosplash=1&screen=signup-success",
+    "path": "screens/09-signup-success.png",
+    "ok": true
+  },
+  {
     "file": "10-policy-doctor",
     "screen": "policy-doctor",
     "waitMs": 1500,
@@ -80,11 +136,43 @@
     "ok": true
   },
   {
+    "file": "10b-policy-pick",
+    "screen": "policy-doctor-pick",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=policy-doctor-pick",
+    "path": "screens/10b-policy-pick.png",
+    "ok": true
+  },
+  {
+    "file": "10c-policy-clause",
+    "screen": "policy-doctor-clause",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=policy-doctor-clause",
+    "path": "screens/10c-policy-clause.png",
+    "ok": true
+  },
+  {
     "file": "11-claim-start",
     "screen": "claim-start",
     "waitMs": 1500,
     "url": "http://localhost:8080/?nosplash=1&screen=claim-start",
     "path": "screens/11-claim-start.png",
+    "ok": true
+  },
+  {
+    "file": "11b-claim-type",
+    "screen": "claim-start-type",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=claim-start-type",
+    "path": "screens/11b-claim-type.png",
+    "ok": true
+  },
+  {
+    "file": "11c-claim-docs",
+    "screen": "claim-start-docs",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=claim-start-docs",
+    "path": "screens/11c-claim-docs.png",
     "ok": true
   },
   {

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Hollow — Overview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 2800px;
+      height: 2190px;
+      overflow: hidden;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    #overview {
+      width: 2800px;
+      height: 2190px;
+      display: flex;
+      flex-direction: column;
+      padding: 112px 140px 100px;
+      background:
+        radial-gradient(ellipse 85% 55% at 100% 0%, rgba(13, 79, 139, 0.06) 0%, transparent 55%),
+        linear-gradient(175deg, #f7f9fc 0%, #f0f4f8 48%, #eaeff5 100%);
+      color: #0f172a;
+    }
+    .overview__eyebrow {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #0d4f8b;
+      margin-bottom: 36px;
+    }
+  .overview__eyebrow span {
+      color: #64748b;
+      font-weight: 600;
+    }
+    .overview__headline {
+      font-size: 76px;
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.035em;
+      color: #062d52;
+      max-width: 2280px;
+      margin-bottom: 72px;
+    }
+    .overview__cards {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 36px;
+      align-content: start;
+      min-height: 0;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 28px;
+      padding: 44px 48px 52px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 16px 48px -12px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      min-height: 520px;
+    }
+    .card__num {
+      font-size: 22px;
+      font-weight: 800;
+      color: #5eb8ff;
+      letter-spacing: 0.04em;
+      margin-bottom: 28px;
+    }
+    .card__title {
+      font-size: 40px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #0f172a;
+      margin-bottom: 24px;
+    }
+    .card__body {
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 1.55;
+      color: #475569;
+    }
+    .card--accent {
+      background: linear-gradient(152deg, #062d52 0%, #0d4f8b 62%, #0a3d6e 100%);
+      border-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 24px 64px -16px rgba(6, 45, 82, 0.45);
+    }
+    .card--accent .card__num { color: #7ec8ff; }
+    .card--accent .card__title { color: #f8fafc; }
+    .card--accent .card__body { color: #cbd5e1; }
+    .overview__stats {
+      margin-top: 64px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      padding: 48px 56px;
+      border-radius: 32px;
+      background: linear-gradient(98deg, #0d4f8b 0%, #1a6bb8 48%, #5eb8ff 100%);
+      box-shadow: 0 20px 48px -12px rgba(13, 79, 139, 0.35);
+    }
+    .stat {
+      text-align: center;
+      padding: 8px 16px;
+    }
+    .stat__value {
+      font-size: 80px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .stat__label {
+      font-size: 24px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: rgba(255, 255, 255, 0.88);
+    }
+    .overview__brand {
+      position: absolute;
+      top: 112px;
+      right: 140px;
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #94a3b8;
+    }
+    #overview { position: relative; }
+  </style>
+</head>
+<body>
+  <div id="overview">
+    <p class="overview__brand">Hollow</p>
+    <p class="overview__eyebrow"><span>UI / UX case study</span> · Overview</p>
+    <h1 class="overview__headline">
+      Mobile insurance has to explain complexity fast—without turning every quote into a form marathon.
+    </h1>
+    <div class="overview__cards">
+      <article class="card">
+        <p class="card__num">01</p>
+        <h2 class="card__title">Where friction shows up</h2>
+        <p class="card__body">
+          Shoppers switch between individual and family floater, answer health questions per person,
+          then stack three plans in a table built for desktop. On 390px, half-read rows and buried
+          differences feel like hidden risk.
+        </p>
+      </article>
+      <article class="card">
+        <p class="card__num">02</p>
+        <h2 class="card__title">What I optimised for</h2>
+        <p class="card__body">
+          Clear member rules up front, compare that highlights gaps—not noise—and journeys that
+          still work after purchase: policies, claims, and plain-language help in the same shell.
+        </p>
+      </article>
+      <article class="card card--accent">
+        <p class="card__num">03</p>
+        <h2 class="card__title">What Hollow delivers</h2>
+        <p class="card__body">
+          A cohesive mobile prototype across health, motor, term, and home—shared wizards, sticky
+          CTAs, AI and expert touchpoints, and a Hollow token system tuned for real device widths.
+        </p>
+      </article>
+    </div>
+    <div class="overview__stats" aria-label="Project scope">
+      <div class="stat">
+        <p class="stat__value">4</p>
+        <p class="stat__label">insurance lines in one app shell</p>
+      </div>
+      <div class="stat">
+        <p class="stat__value">12</p>
+        <p class="stat__label">hi-fi screens, quote through care</p>
+      </div>
+      <div class="stat">
+        <p class="stat__value">390</p>
+        <p class="stat__label">px-wide mobile prototype</p>
+      </div>
+      <div class="stat">
+        <p class="stat__value">1</p>
+        <p class="stat__label">design system across flows</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
