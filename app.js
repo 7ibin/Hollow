@@ -911,6 +911,14 @@ function syncMemberAgeFieldValidity(input) {
   input.setAttribute('aria-invalid', valid ? 'false' : 'true');
 }
 
+function syncHealthMemberAgeFromInput(input) {
+  const row = input.closest('[data-member-row]');
+  if (!row || !quoteForm.health) return;
+  const m = quoteForm.health.members.find((x) => x.id === row.dataset.memberRow);
+  if (!m) return;
+  m.age = parseHealthMemberAge(input.value);
+}
+
 function syncHealthMemberImplicitGenders(h) {
   h.members.forEach((m) => {
     const g = healthMemberImplicitGender(m.id);
@@ -4237,8 +4245,20 @@ function renderDoctorFacts(items) {
 
 function renderDoctorSectionCard(title, subtitle, innerHtml, variant = '') {
   const sub = subtitle ? `<p class="doctor-card__subtitle">${subtitle}</p>` : '';
+  const badge = variant === 'doctor-card--exclusions'
+    ? '<p class="doctor-card__badge doctor-card__badge--alert">Read carefully</p>'
+    : variant === 'doctor-card--coverage'
+      ? '<p class="doctor-card__badge doctor-card__badge--positive">Included benefits</p>'
+      : variant === 'doctor-card--timing'
+        ? '<p class="doctor-card__badge doctor-card__badge--timing">Timing matters</p>'
+        : variant === 'doctor-card--deductibles'
+          ? '<p class="doctor-card__badge doctor-card__badge--deductibles">Your share</p>'
+          : variant === 'doctor-card--limits'
+            ? '<p class="doctor-card__badge doctor-card__badge--limits">Policy caps</p>'
+            : '';
   return `<section class="doctor-card ${variant}">
     <header class="doctor-card__head">
+      ${badge}
       <h3 class="doctor-card__title">${title}</h3>${sub}
     </header>
     <div class="doctor-card__body">${innerHtml}</div>
@@ -4313,7 +4333,17 @@ function renderPolicyDoctor() {
     if (!items?.length) return '';
     const isFacts = key === 'waiting' || key === 'deductibles' || key === 'limits';
     const body = isFacts ? renderDoctorFacts(items) : renderDoctorBullets(items);
-    const variant = key === 'exclusions' ? 'doctor-card--muted' : (key === 'waiting' ? 'doctor-card--timing' : '');
+    const variant = key === 'exclusions'
+      ? 'doctor-card--exclusions'
+      : key === 'coverage'
+        ? 'doctor-card--coverage'
+        : key === 'waiting'
+          ? 'doctor-card--timing'
+          : key === 'deductibles'
+            ? 'doctor-card--deductibles'
+            : key === 'limits'
+              ? 'doctor-card--limits'
+              : '';
     return renderDoctorSectionCard(title, subtitle, body, variant);
   };
 
@@ -5321,8 +5351,10 @@ function captureHealthFormFromDOM() {
   h.members.forEach((m) => {
     const row = document.querySelector(`[data-member-row="${m.id}"]`);
     if (!row) return;
-    const ageVal = row.querySelector('.member-row__age')?.value;
-    m.age = parseHealthMemberAge(ageVal);
+    const ageInput = row.querySelector('.member-row__age');
+    if (ageInput) {
+      m.age = parseHealthMemberAge(ageInput.value);
+    }
     const implicit = healthMemberImplicitGender(m.id);
     if (implicit) m.gender = implicit;
     else m.gender = row.querySelector('[data-member-gender].selected')?.dataset.gender || m.gender;
@@ -5531,7 +5563,7 @@ function renderHealthWizard(step) {
     <div class="member-row ${m.selected ? 'member-row--on' : ''}" data-member-row="${m.id}" data-action="pick-member" data-member="${m.id}" role="${individual ? 'radio' : 'checkbox'}" aria-checked="${m.selected}" tabindex="0">
       <div class="member-row__body">
         <div class="member-row__head">
-          <button type="button" class="member-row__check" data-action="toggle-member" data-member="${m.id}" aria-pressed="${m.selected}" aria-label="${m.selected ? `Remove ${m.label}` : `Add ${m.label}`}">
+          <button type="button" class="member-row__check" data-action="toggle-member" data-member="${m.id}" tabindex="-1" aria-hidden="true" aria-pressed="${m.selected}" aria-label="${m.selected ? `Remove ${m.label}` : `Add ${m.label}`}">
             <span class="member-row__check-icon" aria-hidden="true"></span>
           </button>
           <span class="member-row__title">${m.label}</span>
@@ -5756,29 +5788,28 @@ function bindQuoteFormEvents() {
     });
   });
   document.querySelectorAll('[data-action="pick-member"]').forEach((row) => {
-    row.addEventListener('click', (e) => {
-      if (e.target.closest('[data-action="toggle-member"]')) return;
-      if (e.target.closest('[data-action="remove-child-member"]')) return;
-      if (e.target.closest('.member-row__age') || e.target.closest('[data-member-gender]')) return;
-      toggleHealthMember(row.dataset.member);
-    });
+    const head = row.querySelector('.member-row__head');
+    if (head) {
+      head.addEventListener('click', (e) => {
+        if (e.target.closest('[data-action="remove-child-member"]')) return;
+        toggleHealthMember(row.dataset.member);
+      });
+    }
     row.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
-      if (e.target.closest('.member-row__age') || e.target.closest('[data-member-gender]')) return;
+      if (e.target.closest('.member-row__detail')) return;
       e.preventDefault();
       toggleHealthMember(row.dataset.member);
     });
   });
-  document.querySelectorAll('[data-action="toggle-member"]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleHealthMember(btn.dataset.member);
-    });
+  document.querySelectorAll('.member-row__detail').forEach((detail) => {
+    detail.addEventListener('click', (e) => e.stopPropagation());
   });
   document.querySelectorAll('.member-age-field').forEach((field) => {
     const input = field.querySelector('.member-row__age');
     if (!input) return;
     field.addEventListener('click', (e) => {
+      e.stopPropagation();
       if (e.target === input) return;
       input.focus();
     });
@@ -5787,10 +5818,11 @@ function bindQuoteFormEvents() {
       if (input.value !== cleaned) input.value = cleaned;
       if (input.value.toLowerCase() === 'nan') input.value = '';
       syncMemberAgeFieldValidity(input);
+      syncHealthMemberAgeFromInput(input);
     };
     syncMemberAgeFieldValidity(input);
     input.addEventListener('input', refreshAgeValidity);
-    input.addEventListener('blur', () => syncMemberAgeFieldValidity(input));
+    input.addEventListener('blur', refreshAgeValidity);
   });
   document.querySelectorAll('[data-action="switch-medical-member"]').forEach((btn) => {
     btn.addEventListener('click', () => {

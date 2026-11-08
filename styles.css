@@ -2702,7 +2702,7 @@ body.wizard-mode.compare-open .ai-fab {
 .member-row__check {
   flex-shrink: 0; width: 20px; height: 20px; margin: 0;
   border-radius: 6px; border: 1.5px solid #b8c4d4; background: var(--color-white);
-  cursor: pointer; padding: 0;
+  cursor: pointer; padding: 0; pointer-events: none;
   display: flex; align-items: center; justify-content: center;
   transition: border-color 0.15s, background 0.15s;
 }
@@ -2730,12 +2730,20 @@ body.wizard-mode.compare-open .ai-fab {
 .member-row__remove:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 2px; }
 .member-row__head {
   display: flex; align-items: center; gap: 0.65rem;
-  width: 100%; min-height: 1.5rem;
+  width: 100%; min-height: var(--touch-target);
+  margin: -0.15rem -0.25rem;
+  padding: 0.15rem 0.25rem;
+  border-radius: 10px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
+.member-row__head:active { background: rgba(13, 79, 139, 0.06); }
 .member-row__title {
   margin: 0; flex: 1; min-width: 0;
   font-weight: 600; font-size: 0.9375rem; line-height: 1.35;
   color: var(--color-ink);
+  cursor: pointer;
+  user-select: none;
 }
 .member-row__title-block {
   flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.1rem;
@@ -4160,8 +4168,154 @@ body.wizard-mode .app-view {
 .doctor-card--muted {
   background: #fafbfc; border-color: #e2e8f0;
 }
+.doctor-card--exclusions {
+  border-color: #e8a54b;
+  background: linear-gradient(180deg, #fffbf6 0%, #fff4e8 100%);
+  box-shadow: 0 4px 16px rgba(154, 52, 18, 0.1);
+}
+.doctor-card__badge {
+  display: inline-block;
+  margin: 0 0 0.4rem;
+  padding: 0.22rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.doctor-card__badge--alert {
+  color: #9a3412;
+  background: rgba(234, 88, 12, 0.14);
+  border: 1px solid rgba(234, 88, 12, 0.28);
+}
+.doctor-card__badge--positive {
+  color: #166534;
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.28);
+}
+.doctor-card--coverage {
+  border-color: #7bc9a0;
+  background: linear-gradient(180deg, #f6fdf9 0%, #ecf8f1 100%);
+  box-shadow: 0 4px 16px rgba(22, 101, 52, 0.08);
+}
+.doctor-card--coverage .doctor-card__title {
+  font-size: 1.0625rem;
+  color: #14532d;
+}
+.doctor-card--coverage .doctor-card__subtitle {
+  color: #15803d;
+  font-weight: 600;
+}
+.doctor-card--coverage .doctor-list li {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.doctor-card--coverage .doctor-list li::before {
+  background: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.16);
+}
+.doctor-card--exclusions .doctor-card__title {
+  font-size: 1.0625rem;
+  color: #9a3412;
+}
+.doctor-card--exclusions .doctor-card__subtitle {
+  color: #b45309;
+  font-weight: 600;
+}
+.doctor-card--exclusions .doctor-list li {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.doctor-card--exclusions .doctor-list li::before {
+  background: #ea580c;
+  box-shadow: 0 0 0 2px rgba(234, 88, 12, 0.18);
+}
+.doctor-card__badge--timing {
+  color: #0d4f8b;
+  background: rgba(13, 79, 139, 0.1);
+  border: 1px solid rgba(13, 79, 139, 0.24);
+}
 .doctor-card--timing {
-  border-color: #d5e3f3; background: #f8fbff;
+  border-color: #8eb8e0;
+  background: linear-gradient(180deg, #f4f9ff 0%, #e8f2fc 100%);
+  box-shadow: 0 4px 16px rgba(13, 79, 139, 0.08);
+}
+.doctor-card--timing .doctor-card__title {
+  font-size: 1.0625rem;
+  color: #0d4f8b;
+}
+.doctor-card--timing .doctor-card__subtitle {
+  color: #1565b8;
+  font-weight: 600;
+}
+.doctor-card--timing .doctor-fact {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(13, 79, 139, 0.14);
+}
+.doctor-card--timing .doctor-fact__label {
+  color: #0d4f8b;
+}
+.doctor-card--timing .doctor-fact__value {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.doctor-card__badge--deductibles {
+  color: #6d28d9;
+  background: rgba(124, 58, 237, 0.1);
+  border: 1px solid rgba(124, 58, 237, 0.24);
+}
+.doctor-card--deductibles {
+  border-color: #c4b5fd;
+  background: linear-gradient(180deg, #faf8ff 0%, #f3edff 100%);
+  box-shadow: 0 4px 16px rgba(109, 40, 217, 0.08);
+}
+.doctor-card--deductibles .doctor-card__title {
+  font-size: 1.0625rem;
+  color: #5b21b6;
+}
+.doctor-card--deductibles .doctor-card__subtitle {
+  color: #7c3aed;
+  font-weight: 600;
+}
+.doctor-card--deductibles .doctor-fact {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(124, 58, 237, 0.14);
+}
+.doctor-card--deductibles .doctor-fact__label {
+  color: #6d28d9;
+}
+.doctor-card--deductibles .doctor-fact__value {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+.doctor-card__badge--limits {
+  color: #0f766e;
+  background: rgba(20, 184, 166, 0.1);
+  border: 1px solid rgba(20, 184, 166, 0.24);
+}
+.doctor-card--limits {
+  border-color: #7dd3c7;
+  background: linear-gradient(180deg, #f4fdfa 0%, #e6faf8 100%);
+  box-shadow: 0 4px 16px rgba(15, 118, 110, 0.08);
+}
+.doctor-card--limits .doctor-card__title {
+  font-size: 1.0625rem;
+  color: #115e59;
+}
+.doctor-card--limits .doctor-card__subtitle {
+  color: #0f766e;
+  font-weight: 600;
+}
+.doctor-card--limits .doctor-fact {
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(20, 184, 166, 0.16);
+}
+.doctor-card--limits .doctor-fact__label {
+  color: #0f766e;
+}
+.doctor-card--limits .doctor-fact__value {
+  color: var(--color-ink);
+  font-weight: 600;
 }
 .doctor-card__head { margin-bottom: 0.65rem; }
 .doctor-card__title {
