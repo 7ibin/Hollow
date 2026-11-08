@@ -1,5 +1,12 @@
 {
   "dependencies": {
     "sharp": "^0.35.5"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.1"
+  },
+  "scripts": {
+    "behance:export": "node scripts/export-behance-screenshots.mjs",
+    "behance:cover": "node portfolio/behance/generate-cover.mjs"
   }
 }

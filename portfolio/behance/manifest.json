@@ -1,0 +1,98 @@
+[
+  {
+    "file": "01-cover-health-results-compare",
+    "screen": "health-results-compare-exact",
+    "waitMs": 2500,
+    "url": "http://localhost:8080/?nosplash=1&screen=health-results-compare-exact",
+    "path": "screens/01-cover-health-results-compare.png",
+    "ok": true
+  },
+  {
+    "file": "02-home",
+    "screen": "home",
+    "waitMs": 1200,
+    "url": "http://localhost:8080/?nosplash=1&screen=home",
+    "path": "screens/02-home.png",
+    "ok": true
+  },
+  {
+    "file": "03-health-members",
+    "screen": "health-1",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=health-1",
+    "path": "screens/03-health-members.png",
+    "ok": true
+  },
+  {
+    "file": "04-health-medical",
+    "screen": "health-2",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=health-2",
+    "path": "screens/04-health-medical.png",
+    "ok": true
+  },
+  {
+    "file": "05-health-plan-results",
+    "screen": "health-results",
+    "waitMs": 2000,
+    "url": "http://localhost:8080/?nosplash=1&screen=health-results",
+    "path": "screens/05-health-plan-results.png",
+    "ok": true
+  },
+  {
+    "file": "06-compare-table-health",
+    "screen": "compare-health-all",
+    "waitMs": 2500,
+    "url": "http://localhost:8080/?nosplash=1&screen=compare-health-all",
+    "path": "screens/06-compare-table-health.png",
+    "ok": true
+  },
+  {
+    "file": "07-motor-results",
+    "screen": "motor-results",
+    "waitMs": 2000,
+    "url": "http://localhost:8080/?nosplash=1&screen=motor-results",
+    "path": "screens/07-motor-results.png",
+    "ok": true
+  },
+  {
+    "file": "08-health-checkout",
+    "screen": "health-pay",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=health-pay",
+    "path": "screens/08-health-checkout.png",
+    "ok": true
+  },
+  {
+    "file": "09-signup",
+    "screen": "signup",
+    "waitMs": 1200,
+    "url": "http://localhost:8080/?nosplash=1&screen=signup",
+    "path": "screens/09-signup.png",
+    "ok": true
+  },
+  {
+    "file": "10-policy-doctor",
+    "screen": "policy-doctor",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=policy-doctor",
+    "path": "screens/10-policy-doctor.png",
+    "ok": true
+  },
+  {
+    "file": "11-claim-start",
+    "screen": "claim-start",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=claim-start",
+    "path": "screens/11-claim-start.png",
+    "ok": true
+  },
+  {
+    "file": "12-cover-guide",
+    "screen": "cover-guide",
+    "waitMs": 1500,
+    "url": "http://localhost:8080/?nosplash=1&screen=cover-guide",
+    "path": "screens/12-cover-guide.png",
+    "ok": true
+  }
+]

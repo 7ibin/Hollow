@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="393" height="852" viewBox="0 0 393 852" fill="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="frameGrad" x1="0" y1="0" x2="393" y2="852" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ddd0f5"/>
+      <stop offset="0.45" stop-color="#c9b8e8"/>
+      <stop offset="1" stop-color="#b39fd8"/>
+    </linearGradient>
+  </defs>
+  <!-- Bezel ring only — center stays transparent -->
+  <path fill="url(#frameGrad)" fill-rule="evenodd" d="
+    M54,0 H339 Q393,0 393,54 V798 Q393,852 339,852 H54 Q0,852 0,798 V54 Q0,0 54,0 Z
+    M54,10 H339 Q383,10 383,54 V798 Q383,842 339,842 H54 Q10,842 10,798 V54 Q10,10 54,10 Z
+  "/>
+  <rect x="10" y="10" width="373" height="832" rx="44" stroke="#1a1a1c" stroke-width="2" fill="none"/>
+</svg>
