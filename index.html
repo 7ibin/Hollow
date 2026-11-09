@@ -117,19 +117,19 @@
         <div class="ai-panel__messages" id="aiMessages" aria-live="polite" aria-relevant="additions text"></div>
       </div>
       <div class="ai-panel__footer">
-        <div class="ai-panel__topics" id="aiSuggestionsWrap">
-          <div class="quote-choice-card ai-panel__choice-card">
-            <p class="quote-choice-card__title" id="aiSuggestionsLabel" data-i18n="ai.quickTopics" hidden>Quick topics</p>
-            <div class="chip-group chip-group--choice chip-group--wrap ai-panel__chips" id="aiSuggestions" role="group" aria-labelledby="aiSuggestionsLabel"></div>
-          </div>
+        <div class="ai-panel__topics" id="aiSuggestionsWrap" hidden>
+          <p class="ai-panel__topics-label" id="aiSuggestionsLabelFooter" data-i18n="ai.quickTopics">Try asking</p>
+          <div class="ai-panel__suggestion-grid" id="aiSuggestionsFooter" role="group" aria-labelledby="aiSuggestionsLabelFooter"></div>
         </div>
         <div class="ai-panel__composer">
           <form class="ai-panel__input" id="aiForm">
-            <input type="text" id="aiInput" placeholder="Compare plans, ask about coverage..." autocomplete="off" data-i18n-placeholder="ai.placeholder">
+            <input type="text" id="aiInput" placeholder="Ask about plans or coverage…" autocomplete="off" data-i18n-placeholder="ai.placeholder" enterkeyhint="send" inputmode="text">
             <button type="submit" class="btn btn--primary ai-panel__send" id="aiSend" data-i18n-aria="a11y.send" aria-label="Send"></button>
           </form>
-          <button type="button" class="btn btn--secondary btn--block btn--sm" id="aiExpertHandoff" data-action="open-expert-from-ai" data-i18n="ai.expertHandoff">Talk to an expert</button>
-          <p class="ai-panel__disclaimer" id="aiDisclaimer" data-i18n="ai.disclaimer">General guidance only — confirm details in your policy document.</p>
+          <div class="ai-panel__composer-foot">
+            <button type="button" class="ai-panel__expert-link" id="aiExpertHandoff" data-action="open-expert-from-ai" data-i18n="ai.expertHandoff">Talk to an expert</button>
+            <p class="ai-panel__disclaimer" id="aiDisclaimer" data-i18n="ai.disclaimer">General guidance only — confirm details in your policy document.</p>
+          </div>
         </div>
       </div>
     </div>

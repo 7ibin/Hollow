@@ -39,7 +39,8 @@ const i18n = {
     'nav.home': 'Home', 'nav.explore': 'Explore', 'nav.policies': 'Policies', 'nav.claims': 'Claims', 'nav.help': 'Help',
     'ai.title': 'Ask Hollow',
     'ai.subtitle': 'Find the right policy for you',
-    'ai.placeholder': 'e.g. Compare Star Health vs Care Health…',
+    'ai.subtitleFinder': 'Pick a product to get a personalised match',
+    'ai.placeholder': 'Ask about plans or coverage…',
     'ai.searchPrompt': 'Ask AI — find policy, compare, explain, claim, renew',
     'ai.powered': 'AI-powered plan guidance',
     'pay.title': 'Choose payment method', 'pay.upi': 'UPI', 'pay.card': 'Card', 'pay.netbank': 'Net banking',
@@ -143,11 +144,11 @@ const i18n = {
     'ai.suggest.finderHome': 'Home insurance',
     'ai.disclaimer': 'General guidance only — not a quote or guarantee. Confirm coverage in your policy document or with an expert.',
     'ai.welcomeTitle': 'How can Hollow help?',
-    'ai.welcomeHint': 'Ask about coverage, compare plans, claims, or renewals. Pick a topic or type your question.',
+    'ai.welcomeHint': 'Plain-language answers on plans, coverage, claims, and renewals.',
     'ai.expertHandoff': 'Talk to an expert',
     'ai.sourceLabel': 'Based on',
     'ai.cannotConfirm': 'I can\'t confirm this from policy documents available in the app. Please check your policy wording or talk to an expert.',
-    'ai.quickTopics': 'Start with a topic',
+    'ai.quickTopics': 'Try asking',
     'ai.pickProduct': 'Choose a product',
     'plan.plainSummary': 'Plain-language summary',
     'plan.notCovered': "What's NOT covered",
@@ -230,6 +231,30 @@ const i18n = {
     'guide.result.health': 'Suggested health cover',
     'guide.result.term': 'Suggested life cover',
     'guide.term.age': 'Your age',
+    'term.agePlaceholder': '32',
+    'term.ageGuide': 'Enter your current age.',
+    'term.ageHintEmpty': 'Must be 18–65 years',
+    'term.ageHintPartial': 'Use a complete age from 18 to 65.',
+    'term.ageHintOk': 'We’ll show plans for this age.',
+    'term.ageYears': 'Years',
+    'home.pincodePlaceholder': '110001',
+    'home.pincodeGuide': 'Enter your property pincode.',
+    'home.pincodeHintEmpty': 'Must be 6 digits',
+    'home.pincodeHintPartial': 'Enter all 6 digits',
+    'home.pincodeHintOk': 'We’ll match plans for this area.',
+    'home.pincodeSuffix': 'PIN',
+    'home.areaPlaceholder': '1200',
+    'home.areaGuide': 'Total carpet + wall area you want covered.',
+    'home.areaHintEmpty': 'Required — 100 to 50,000',
+    'home.areaHintPartial': 'Enter area between 100 and 50,000 sq ft',
+    'home.areaHintOk': 'Used to size structure cover.',
+    'home.areaSuffix': 'Sq ft',
+    'home.structurePlaceholder': '50',
+    'home.structureGuide': 'Rebuilding cost of the structure (not contents).',
+    'home.structureHintEmpty': 'Required — ₹5L to ₹500L',
+    'home.structureHintPartial': 'Enter value between 5 and 500 (lakhs)',
+    'home.structureHintOk': 'Used for building cover premium.',
+    'home.structureSuffix': '₹L',
     'guide.term.income': 'Annual income (approx.)',
     'guide.term.dependents': 'Financial dependents',
     'guide.term.dependents.0': 'None',
@@ -311,6 +336,36 @@ function isOnCompareableResults() {
   const type = wizardState?.type;
   if (!COMPARE_PRODUCTS.includes(type)) return false;
   return wizardState.step === PRODUCT_CONFIG[type].resultsStep;
+}
+
+/** Quote steps with inner scroll + docked footer (health 0–2, term/home details). */
+function usesWizardDockedStepLayout() {
+  if (!wizardState?.type) return false;
+  const step = wizardState.step ?? 0;
+  if (wizardState.type === 'health' && step >= 0 && step <= 2) return true;
+  if ((wizardState.type === 'term' || wizardState.type === 'home') && step === 0) return true;
+  if (wizardState.type === 'motor' && step === 0) return true;
+  return false;
+}
+
+/** Review & pay — dock declaration + primary CTA at bottom. */
+function usesWizardCheckoutDock() {
+  const ws = wizardState;
+  if (!ws || ws.type === 'signup' || ws.type === 'compare') return false;
+  const cfg = PRODUCT_CONFIG[ws.type];
+  if (!cfg || ws.step !== cfg.maxStep) return false;
+  return checkoutPhase === 'review' || checkoutPhase === 'payment' || checkoutPhase === 'failed';
+}
+
+function syncCheckoutReviewCta() {
+  const btn = document.querySelector('[data-action="checkout-to-payment"]');
+  if (!btn) return;
+  const product = btn.dataset.product || wizardState?.type || activeProduct || 'health';
+  captureCheckoutFormFromDOM();
+  const ready = !validateCheckoutReviewState(product);
+  btn.disabled = !ready;
+  btn.setAttribute('aria-disabled', ready ? 'false' : 'true');
+  btn.classList.toggle('quote-form__continue--ready', ready);
 }
 
 function resolveComparePlans(product) {
@@ -600,6 +655,10 @@ let healthSort = 'premium';
 let quoteResultsLoading = null;
 let quoteResultsError = null;
 let checkoutShouldFocusPayment = false;
+let termAgeShouldFocus = false;
+let homePincodeShouldFocus = false;
+let homeAreaShouldFocus = false;
+let homeStructureShouldFocus = false;
 let productFilter = {};
 let productSort = {};
 let selectedPlanId = null;
@@ -919,6 +978,20 @@ function syncHealthMemberAgeFromInput(input) {
   m.age = parseHealthMemberAge(input.value);
 }
 
+function isHealthPincodeValid(raw) {
+  return /^\d{6}$/.test(String(raw || '').trim());
+}
+
+function syncHealthPincodeFieldUi() {
+  const input = document.getElementById('healthPincode');
+  const group = document.getElementById('healthPincodeGroup');
+  if (!input || !group) return;
+  const ok = isHealthPincodeValid(input.value);
+  group.classList.toggle('pincode-footer-row--ok', ok);
+  group.classList.toggle('pincode-footer-row--needs', !ok);
+  input.setAttribute('aria-invalid', ok ? 'false' : 'true');
+}
+
 function syncHealthMemberImplicitGenders(h) {
   h.members.forEach((m) => {
     const g = healthMemberImplicitGender(m.id);
@@ -1054,7 +1127,7 @@ function defaultHomeQuoteForm() {
     propertyType: 'owned_apartment',
     areaSqFt: '',
     coverType: 'both',
-    structureValueLakh: 50,
+    structureValueLakh: '',
   };
 }
 
@@ -1082,6 +1155,61 @@ function homePremiumForPlan(plan, form = quoteForm.home) {
   return p;
 }
 
+function homePincodeInputValue(raw) {
+  if (raw === '' || raw == null) return '';
+  return String(raw).replace(/\D/g, '').slice(0, 6);
+}
+
+function isValidHomePincode(pin) {
+  return /^\d{6}$/.test(homePincodeInputValue(pin));
+}
+
+function homePincodeInvalidMessage(digits) {
+  if (digits.length === 0) return 'Enter a 6-digit pincode';
+  if (digits.length < 6) return 'Enter all 6 digits of your pincode';
+  return 'Enter a valid 6-digit pincode';
+}
+
+function homeAreaInputValue(raw) {
+  if (raw === '' || raw == null) return '';
+  return String(raw).replace(/\D/g, '').slice(0, 5);
+}
+
+function isValidHomeAreaSqFt(area) {
+  const digits = homeAreaInputValue(area);
+  if (digits === '') return false;
+  const n = parseInt(digits, 10);
+  return Number.isFinite(n) && n >= 100 && n <= 50000;
+}
+
+function homeAreaInvalidMessage(digits) {
+  if (digits === '') return 'Enter built-up area in sq ft';
+  const n = parseInt(digits, 10);
+  if (!Number.isFinite(n) || n < 100) return 'Minimum 100 sq ft';
+  if (n > 50000) return 'Maximum 50,000 sq ft';
+  return 'Enter area between 100 and 50,000 sq ft';
+}
+
+function homeStructureInputValue(raw) {
+  if (raw === '' || raw == null) return '';
+  return String(raw).replace(/\D/g, '').slice(0, 3);
+}
+
+function isValidHomeStructureValueLakh(value) {
+  const digits = homeStructureInputValue(value);
+  if (digits === '') return false;
+  const n = parseInt(digits, 10);
+  return Number.isFinite(n) && n >= 5 && n <= 500;
+}
+
+function homeStructureInvalidMessage(digits) {
+  if (digits === '') return 'Enter structure value in lakhs';
+  const n = parseInt(digits, 10);
+  if (!Number.isFinite(n) || n < 5) return 'Minimum ₹5 lakh';
+  if (n > 500) return 'Maximum ₹500 lakh';
+  return 'Enter value between 5 and 500 (lakhs)';
+}
+
 function captureHomeFormFromDOM() {
   const h = quoteForm.home || defaultHomeQuoteForm();
   quoteForm.home = h;
@@ -1091,34 +1219,33 @@ function captureHomeFormFromDOM() {
   h.coverType = document.querySelector('[data-home-cover].chip.selected')?.dataset.homeCover || h.coverType;
   const areaEl = document.getElementById('homeAreaSqFt');
   if (areaEl) {
-    const raw = areaEl.value.trim();
-    h.areaSqFt = raw === '' ? '' : parseInt(raw, 10);
+    const digits = homeAreaInputValue(areaEl.value);
+    h.areaSqFt = digits === '' ? '' : parseInt(digits, 10);
   }
   const structEl = document.getElementById('homeStructureValueLakh');
   if (structEl) {
-    const raw = structEl.value.trim();
-    h.structureValueLakh = raw === '' ? '' : parseInt(raw, 10);
+    const digits = homeStructureInputValue(structEl.value);
+    h.structureValueLakh = digits === '' ? '' : parseInt(digits, 10);
   }
 }
 
 function validateHomeStep(step) {
   if (step !== 0) return true;
   const h = quoteForm.home || defaultHomeQuoteForm();
-  if (!/^\d{6}$/.test(h.pincode)) {
+  if (!isValidHomePincode(h.pincode)) {
     wizardState.formError = 'Enter a valid 6-digit pincode';
+    homePincodeShouldFocus = true;
     return false;
   }
-  const area = Number(h.areaSqFt);
-  if (!h.areaSqFt || area < 100 || area > 50000) {
+  if (!isValidHomeAreaSqFt(h.areaSqFt)) {
     wizardState.formError = 'Enter built-up area between 100 and 50,000 sq ft';
+    homeAreaShouldFocus = true;
     return false;
   }
-  if (h.coverType !== 'contents') {
-    const struct = Number(h.structureValueLakh);
-    if (!h.structureValueLakh || struct < 5 || struct > 500) {
-      wizardState.formError = 'Enter structure value between ₹5L and ₹500L (in lakhs)';
-      return false;
-    }
+  if (h.coverType !== 'contents' && !isValidHomeStructureValueLakh(h.structureValueLakh)) {
+    wizardState.formError = 'Enter structure value between ₹5L and ₹500L (in lakhs)';
+    homeStructureShouldFocus = true;
+    return false;
   }
   wizardState.formError = '';
   return true;
@@ -1832,6 +1959,28 @@ function renderCoverageClarity(plan, product) {
     ? `<div class="coverage-clarity__trust">${renderPlanTrustStats(plan, prod)}</div>`
     : '';
 
+  let notList = notCovered;
+  let waitingCollapsibleHtml = '';
+  if (plan.id) {
+    const meta = getPlanTrust(plan.id, prod);
+    notList = meta.notCovered?.length ? meta.notCovered : notCovered;
+    const waitItems = meta.waiting;
+    if (waitItems?.length) {
+      waitingCollapsibleHtml = `<div class="coverage-clarity__collapsibles">
+        <details class="plan-collapsible">
+          <summary>${t('plan.waiting')}</summary>
+          <ul class="plan-collapsible__list">${waitItems.map((c) => `<li>${c}</li>`).join('')}</ul>
+        </details>
+      </div>`;
+    }
+  }
+
+  const notColHtml = `
+      <div class="coverage-clarity__col coverage-clarity__col--no">
+        <div class="coverage-clarity__head">✗ Not covered</div>
+        <ul>${notList.map((c) => `<li>${c}</li>`).join('')}</ul>
+      </div>`;
+
   return `<div class="coverage-clarity">
     <div class="coverage-clarity__title">Understand — what you're buying</div>
     ${trustHeader}
@@ -1839,14 +1988,11 @@ function renderCoverageClarity(plan, product) {
     <div class="coverage-clarity__cols">
       <div class="coverage-clarity__col coverage-clarity__col--yes">
         <div class="coverage-clarity__head">✓ Covered</div>
-        <ul>${covered.map(c => `<li>${c}</li>`).join('')}</ul>
+        <ul>${covered.map((c) => `<li>${c}</li>`).join('')}</ul>
       </div>
+      ${notColHtml}
     </div>
-    ${plan.id ? `<div class="coverage-clarity__collapsibles">${renderPlanCollapsibleSections(plan.id, prod)}</div>` : `
-      <div class="coverage-clarity__col coverage-clarity__col--no" style="margin-top:0.5rem">
-        <div class="coverage-clarity__head">✗ Not covered</div>
-        <ul>${notCovered.map(c => `<li>${c}</li>`).join('')}</ul>
-      </div>`}
+    ${waitingCollapsibleHtml}
     <p class="coverage-clarity__note">Full terms in policy document. Questions? Ask Hollow AI.</p>
   </div>`;
 }
@@ -3656,35 +3802,161 @@ function renderProductResults(product) {
     ${renderResultsPlanSection(product, plans, (p) => renderProductPlanCard(p, product))}`;
 }
 
+function termAgeInputValue(age) {
+  if (age === '' || age == null) return '';
+  if (typeof age === 'string') {
+    return age.replace(/\D/g, '').slice(0, 2);
+  }
+  const n = Number(age);
+  if (!Number.isFinite(n)) return '';
+  return String(Math.trunc(n)).slice(0, 2);
+}
+
+function termAgeInvalidMessage(ageNum, rawDigits = '') {
+  if (!Number.isFinite(ageNum)) return 'Enter an age from 18 to 65.';
+  if (ageNum > 65) return 'This age is above 65 — term quotes use ages 18–65.';
+  if (ageNum < 18) {
+    if (rawDigits.length < 2) return 'Keep typing — full ages are 18 to 65.';
+    return 'This age is below 18 — minimum for term quotes is 18.';
+  }
+  return 'Enter an age from 18 to 65.';
+}
+
+function syncTermAgeInvalidMessage(wrap, input, { empty, ok, age, digits }) {
+  let invalidEl = document.getElementById('termAgeInvalid');
+  if (ok || empty) {
+    invalidEl?.remove();
+    return;
+  }
+  const msg = termAgeInvalidMessage(age, digits);
+  if (!invalidEl) {
+    invalidEl = document.createElement('p');
+    invalidEl.id = 'termAgeInvalid';
+    invalidEl.className = 'term-age-field__invalid';
+    invalidEl.setAttribute('role', 'alert');
+    wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
+  }
+  invalidEl.textContent = msg;
+  const described = ['termAgeHint', 'termAgeInvalid'];
+  if (document.getElementById('termAgeError')) described.push('termAgeError');
+  input.setAttribute('aria-describedby', described.join(' '));
+}
+
+function captureTermFormFromDOM() {
+  if (!quoteForm.term) quoteForm.term = defaultTermQuoteForm();
+  const ageEl = document.getElementById('termAge');
+  if (!ageEl) return;
+  const digits = ageEl.value.replace(/\D/g, '').slice(0, 2);
+  quoteForm.term.age = digits;
+}
+
 function renderTermQuoteStep0() {
   const tq = quoteForm.term || defaultTermQuoteForm();
+  const formErr = wizardState?.formError
+    ? `<p class="quote-form-error" role="alert">${wizardState.formError}</p>`
+    : '';
+  const ageNum = tq.age === '' || tq.age == null ? NaN : Number(tq.age);
+  const ageEmpty = tq.age === '' || tq.age == null;
+  const ageOk = Number.isFinite(ageNum) && ageNum >= 18 && ageNum <= 65;
+  const ageFilledInvalid = !ageEmpty && !ageOk;
+  const ageShowError = !ageOk && !!(wizardState?.formError && /age/i.test(wizardState.formError));
+  let ageStateClass = 'term-age-field--idle';
+  if (ageOk) ageStateClass = 'term-age-field--ok';
+  else if (ageShowError) ageStateClass = 'term-age-field--error';
+  else if (ageFilledInvalid) ageStateClass = 'term-age-field--invalid';
+  else if (ageEmpty) ageStateClass = 'term-age-field--needs';
+  const ageDigits = termAgeInputValue(tq.age);
+  const ageHintText = ageOk
+    ? t('term.ageHintOk')
+    : ageEmpty
+      ? t('term.ageHintEmpty')
+      : t('term.ageHintPartial');
+  const ageDescribedBy = [
+    ageEmpty ? 'termAgeGuide' : '',
+    'termAgeHint',
+    ageFilledInvalid ? 'termAgeInvalid' : '',
+    ageShowError ? 'termAgeError' : '',
+  ].filter(Boolean).join(' ');
+  const ageFilledInvalidMsg = ageFilledInvalid && !ageShowError
+    ? `<p class="term-age-field__invalid" id="termAgeInvalid" role="alert">${termAgeInvalidMessage(ageNum, ageDigits)}</p>`
+    : '';
+  const ageInlineError = ageShowError
+    ? '<p class="term-age-field__error" id="termAgeError" role="alert">Enter your age between 18 and 65</p>'
+    : '';
+  const smokeMissing = !tq.smoking;
+  const smokeShowError = smokeMissing && !!(wizardState?.formError && /smoke/i.test(wizardState.formError));
+  const ageGuide = ageEmpty
+    ? `<p class="term-age-field__guide" id="termAgeGuide">${t('term.ageGuide')}</p>`
+    : '';
   const coverOpts = [50, 100, 150, 200];
   const tenureOpts = [
-    { v: 20, label: '20 years'},
-    { v: 30, label: '30 years'},
-    { v: 65, label: 'Till 65'},
+    { v: 20, label: '20 years' },
+    { v: 30, label: '30 years' },
+    { v: 65, label: 'Till 65' },
   ];
   return `
-    <h2>Your details</h2>
-    <div class="form-group"><label>Your age</label>
-      <input type="number" min="18" max="65" value="${tq.age === '' ? '' : esc(tq.age)}" placeholder="Your age" data-term-input="age"></div>
-    <div class="form-group"><label>Do you smoke?</label>
-      ${quoteChoiceGroup(`
-        <button type="button" class="chip ${tq.smoking === 'no' ? 'selected' : ''}" data-term-smoking="no">${chipBtnContent('No', 'Non-smoker')}</button>
-        <button type="button" class="chip ${tq.smoking === 'yes' ? 'selected' : ''}" data-term-smoking="yes">${chipBtnContent('Yes', 'Smoker')}</button>
-      `)}
-    </div>
-    <div class="form-group"><label>Cover amount</label>
-      ${quoteChoiceGroup(coverOpts.map((c) => {
+    <div class="term-step-fit">
+      ${formErr}
+      <div class="term-step-scroll">
+        <p class="quote-form__lead quote-form__lead--term">A few details to match term plans — change anytime before you pay.</p>
+        <div class="term-step-stack">
+          <div class="form-group form-group--term-q term-age-field ${ageStateClass}">
+            <label class="term-age-field__label" id="termAgeLabel" for="termAge">
+              Your age<span class="term-age-field__required" aria-hidden="true">*</span>
+            </label>
+            ${ageGuide}
+            <div class="term-age-field__control">
+              <input
+                id="termAge"
+                class="term-age-input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="2"
+                value="${esc(termAgeInputValue(tq.age))}"
+                placeholder="${t('term.agePlaceholder')}"
+                autocomplete="off"
+                enterkeyhint="done"
+                required
+                aria-labelledby="termAgeLabel termAgeSuffix"
+                aria-describedby="${ageDescribedBy}"
+                aria-required="true"
+                aria-invalid="${ageOk ? 'false' : 'true'}"
+                data-term-input="age"
+              >
+              <span class="term-age-field__suffix" id="termAgeSuffix" lang="en">${t('term.ageYears')}</span>
+            </div>
+            ${ageFilledInvalidMsg}
+            ${ageInlineError}
+            <span class="term-age-field__hint" id="termAgeHint">${ageHintText}</span>
+          </div>
+          <div class="form-group form-group--term-q term-smoking-field${smokeShowError ? ' term-smoking-field--error' : ''}">
+            <label id="termSmokingLabel">Do you smoke?<span class="term-field__required" aria-hidden="true">*</span></label>
+            ${smokeShowError ? '<p class="term-field__error" id="termSmokingError" role="alert">Select an option to continue.</p>' : ''}
+            ${quoteChoiceGroup(`
+              <button type="button" class="chip ${tq.smoking === 'no' ? 'selected' : ''}" data-term-smoking="no">${chipBtnContent('No', 'Non-smoker')}</button>
+              <button type="button" class="chip ${tq.smoking === 'yes' ? 'selected' : ''}" data-term-smoking="yes">${chipBtnContent('Yes', 'Smoker')}</button>
+            `)}
+          </div>
+          <div class="form-group form-group--term-q">
+            <label>Cover amount</label>
+            ${quoteChoiceGroup(coverOpts.map((c) => {
     const line = c >= 100 ? `₹${c / 100} Cr` : `₹${c}L`;
     return `<button type="button" class="chip ${tq.cover === c ? 'selected' : ''}" data-term-cover="${c}">${chipBtnContent(line, 'Life cover')}</button>`;
   }).join(''), 'multi')}
-    </div>
-    <div class="form-group"><label>Policy term</label>
-      ${quoteChoiceGroup(tenureOpts.map((o) => `
-        <button type="button" class="chip ${tq.tenure === o.v ? 'selected' : ''}" data-term-tenure="${o.v}">${chipBtnContent(o.label, 'Term')}</button>`).join(''), 'multi')}
-    </div>
-    ${quoteContinueBtn('Compare plans', 'See term life quotes')}`;
+          </div>
+          <div class="form-group form-group--term-q">
+            <label>Policy term</label>
+            ${quoteChoiceGroup(tenureOpts.map((o) => `
+              <button type="button" class="chip ${tq.tenure === o.v ? 'selected' : ''}" data-term-tenure="${o.v}">${chipBtnContent(o.label, 'Term')}</button>`).join(''), 'multi')}
+          </div>
+        </div>
+      </div>
+      <div class="wizard-step-footer term-step-footer">
+        <p class="term-step-footer__trust">Indicative quotes from leading life insurers</p>
+        ${quoteContinueBtn('Compare plans', 'See term life quotes')}
+      </div>
+    </div>`;
 }
 
 function renderHomeQuoteStep0() {
@@ -3692,31 +3964,210 @@ function renderHomeQuoteStep0() {
   const formErr = wizardState?.formError
     ? `<p class="quote-form-error" role="alert">${wizardState.formError}</p>`
     : '';
+  const pinDigits = homePincodeInputValue(h.pincode);
+  const pinEmpty = pinDigits === '';
+  const pinOk = isValidHomePincode(pinDigits);
+  const pinShowError = !pinOk && !!(wizardState?.formError && /pincode/i.test(wizardState.formError));
+  const pinFilledInvalid = !pinEmpty && !pinOk;
+  let pinStateClass = 'term-age-field--idle';
+  if (pinOk) pinStateClass = 'term-age-field--ok';
+  else if (pinShowError) pinStateClass = 'term-age-field--error';
+  else if (pinFilledInvalid) pinStateClass = 'term-age-field--invalid';
+  else if (pinEmpty) pinStateClass = 'term-age-field--needs';
+  const pinHintText = pinOk
+    ? t('home.pincodeHintOk')
+    : pinEmpty
+      ? t('home.pincodeHintEmpty')
+      : t('home.pincodeHintPartial');
+  const pinDescribedBy = [
+    pinEmpty ? 'homePincodeGuide' : '',
+    'homePincodeHint',
+    pinFilledInvalid && !pinShowError ? 'homePincodeInvalid' : '',
+    pinShowError ? 'homePincodeError' : '',
+  ].filter(Boolean).join(' ');
+  const pinGuide = pinEmpty
+    ? `<p class="term-age-field__guide" id="homePincodeGuide">${t('home.pincodeGuide')}</p>`
+    : '';
+  const pinInvalidMsg = pinFilledInvalid && !pinShowError
+    ? `<p class="term-age-field__invalid" id="homePincodeInvalid" role="alert">${homePincodeInvalidMessage(pinDigits)}</p>`
+    : '';
+  const pinInlineError = pinShowError
+    ? '<p class="term-age-field__error" id="homePincodeError" role="alert">Enter a valid 6-digit pincode</p>'
+    : '';
+  const areaDigits = homeAreaInputValue(h.areaSqFt);
+  const areaEmpty = areaDigits === '';
+  const areaOk = isValidHomeAreaSqFt(areaDigits);
+  const areaShowError = !areaOk && !!(wizardState?.formError && /built-up area/i.test(wizardState.formError));
+  const areaFilledInvalid = !areaEmpty && !areaOk;
+  let areaStateClass = 'term-age-field--idle';
+  if (areaOk) areaStateClass = 'term-age-field--ok';
+  else if (areaShowError) areaStateClass = 'term-age-field--error';
+  else if (areaFilledInvalid) areaStateClass = 'term-age-field--invalid';
+  else if (areaEmpty) areaStateClass = 'term-age-field--needs';
+  const areaHintText = areaOk
+    ? t('home.areaHintOk')
+    : areaEmpty
+      ? t('home.areaHintEmpty')
+      : t('home.areaHintPartial');
+  const areaDescribedBy = [
+    areaEmpty ? 'homeAreaGuide' : '',
+    'homeAreaHint',
+    areaFilledInvalid && !areaShowError ? 'homeAreaInvalid' : '',
+    areaShowError ? 'homeAreaError' : '',
+  ].filter(Boolean).join(' ');
+  const areaGuide = areaEmpty
+    ? `<p class="term-age-field__guide" id="homeAreaGuide">${t('home.areaGuide')}</p>`
+    : '';
+  const areaInvalidMsg = areaFilledInvalid && !areaShowError
+    ? `<p class="term-age-field__invalid" id="homeAreaInvalid" role="alert">${homeAreaInvalidMessage(areaDigits)}</p>`
+    : '';
+  const areaInlineError = areaShowError
+    ? '<p class="term-age-field__error" id="homeAreaError" role="alert">Enter built-up area between 100 and 50,000 sq ft</p>'
+    : '';
   const showStructureValue = h.coverType !== 'contents';
+  const structDigits = homeStructureInputValue(h.structureValueLakh);
+  const structEmpty = structDigits === '';
+  const structOk = isValidHomeStructureValueLakh(structDigits);
+  const structShowError = showStructureValue && !structOk && !!(wizardState?.formError && /structure value/i.test(wizardState.formError));
+  const structFilledInvalid = !structEmpty && !structOk;
+  let structStateClass = 'term-age-field--idle';
+  if (structOk) structStateClass = 'term-age-field--ok';
+  else if (structShowError) structStateClass = 'term-age-field--error';
+  else if (structFilledInvalid) structStateClass = 'term-age-field--invalid';
+  else if (structEmpty) structStateClass = 'term-age-field--needs';
+  const structHintText = structOk
+    ? t('home.structureHintOk')
+    : structEmpty
+      ? t('home.structureHintEmpty')
+      : t('home.structureHintPartial');
+  const structDescribedBy = [
+    structEmpty ? 'homeStructureGuide' : '',
+    'homeStructureHint',
+    structFilledInvalid && !structShowError ? 'homeStructureInvalid' : '',
+    structShowError ? 'homeStructureError' : '',
+  ].filter(Boolean).join(' ');
+  const structGuide = structEmpty
+    ? `<p class="term-age-field__guide" id="homeStructureGuide">${t('home.structureGuide')}</p>`
+    : '';
+  const structInvalidMsg = structFilledInvalid && !structShowError
+    ? `<p class="term-age-field__invalid" id="homeStructureInvalid" role="alert">${homeStructureInvalidMessage(structDigits)}</p>`
+    : '';
+  const structInlineError = structShowError
+    ? '<p class="term-age-field__error" id="homeStructureError" role="alert">Enter structure value between ₹5L and ₹500L (in lakhs)</p>'
+    : '';
   return `
-    <h2>Property details</h2>
-    ${formErr}
-    <div class="form-group"><label for="homePincode">Pincode</label>
-      <input id="homePincode" type="text" inputmode="numeric" maxlength="6" value="${esc(h.pincode)}" placeholder="6-digit pincode" autocomplete="postal-code"></div>
-    <div class="form-group"><label>Property type</label>
-      ${quoteChoiceGroup(`
-        <button type="button" class="chip ${h.propertyType === 'owned_apartment' ? 'selected' : ''}" data-home-property="owned_apartment">${chipBtnContent('Apartment', 'Owned flat')}</button>
-        <button type="button" class="chip ${h.propertyType === 'independent_house' ? 'selected' : ''}" data-home-property="independent_house">${chipBtnContent('House', 'Independent')}</button>
-        <button type="button" class="chip ${h.propertyType === 'rented' ? 'selected' : ''}" data-home-property="rented">${chipBtnContent('Rented', 'Tenant cover')}</button>
-      `)}
-    </div>
-    <div class="form-group"><label for="homeAreaSqFt">Built-up area (sq ft)</label>
-      <input id="homeAreaSqFt" type="number" min="100" max="50000" value="${h.areaSqFt === '' ? '' : esc(h.areaSqFt)}" placeholder="e.g. 1200"></div>
-    <div class="form-group"><label>Cover for</label>
-      ${quoteChoiceGroup(`
-        <button type="button" class="chip ${h.coverType === 'both' ? 'selected' : ''}" data-home-cover="both">${chipBtnContent('Both', 'Structure + contents')}</button>
-        <button type="button" class="chip ${h.coverType === 'structure' ? 'selected' : ''}" data-home-cover="structure">${chipBtnContent('Building', 'Structure only')}</button>
-        <button type="button" class="chip ${h.coverType === 'contents' ? 'selected' : ''}" data-home-cover="contents">${chipBtnContent('Contents', 'Belongings only')}</button>
-      `)}
-    </div>
-    ${showStructureValue ? `<div class="form-group"><label for="homeStructureValueLakh">Structure value (₹ lakh)</label>
-      <input id="homeStructureValueLakh" type="number" min="5" max="500" value="${h.structureValueLakh === '' ? '' : esc(h.structureValueLakh)}" placeholder="e.g. 50"></div>` : ''}
-    ${quoteContinueBtn('Compare plans', 'See home insurance quotes')}`;
+    <div class="home-step-fit">
+      ${formErr}
+      <div class="home-step-scroll">
+        <p class="quote-form__lead quote-form__lead--home">Property basics for home cover — edit anytime before you pay.</p>
+        <div class="home-step-stack">
+          <div class="form-group form-group--home-q term-age-field home-pincode-field ${pinStateClass}">
+            <label class="term-age-field__label" id="homePincodeLabel" for="homePincode">
+              Pincode<span class="term-age-field__required" aria-hidden="true">*</span>
+            </label>
+            ${pinGuide}
+            <div class="term-age-field__control">
+              <input
+                id="homePincode"
+                class="term-age-input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="6"
+                value="${esc(pinDigits)}"
+                placeholder="${t('home.pincodePlaceholder')}"
+                autocomplete="postal-code"
+                enterkeyhint="done"
+                required
+                aria-labelledby="homePincodeLabel homePincodeSuffix"
+                aria-describedby="${pinDescribedBy}"
+                aria-required="true"
+                aria-invalid="${pinOk ? 'false' : 'true'}"
+              >
+              <span class="term-age-field__suffix" id="homePincodeSuffix" lang="en">${t('home.pincodeSuffix')}</span>
+            </div>
+            ${pinInvalidMsg}
+            ${pinInlineError}
+            <span class="term-age-field__hint" id="homePincodeHint">${pinHintText}</span>
+          </div>
+          <div class="form-group form-group--home-q"><label>Property type</label>
+            ${quoteChoiceGroup(`
+              <button type="button" class="chip ${h.propertyType === 'owned_apartment' ? 'selected' : ''}" data-home-property="owned_apartment">${chipBtnContent('Apartment', 'Owned flat')}</button>
+              <button type="button" class="chip ${h.propertyType === 'independent_house' ? 'selected' : ''}" data-home-property="independent_house">${chipBtnContent('House', 'Independent')}</button>
+              <button type="button" class="chip ${h.propertyType === 'rented' ? 'selected' : ''}" data-home-property="rented">${chipBtnContent('Rented', 'Tenant cover')}</button>
+            `, 'multi')}
+          </div>
+          <div class="form-group form-group--home-q term-age-field home-area-field ${areaStateClass}">
+            <label class="term-age-field__label" id="homeAreaLabel" for="homeAreaSqFt">
+              Built-up area<span class="term-age-field__required" aria-hidden="true">*</span>
+            </label>
+            ${areaGuide}
+            <div class="term-age-field__control">
+              <input
+                id="homeAreaSqFt"
+                class="term-age-input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="5"
+                value="${esc(areaDigits)}"
+                placeholder="${t('home.areaPlaceholder')}"
+                enterkeyhint="done"
+                required
+                aria-labelledby="homeAreaLabel homeAreaSuffix"
+                aria-describedby="${areaDescribedBy}"
+                aria-required="true"
+                aria-invalid="${areaOk ? 'false' : 'true'}"
+              >
+              <span class="term-age-field__suffix" id="homeAreaSuffix" lang="en">${t('home.areaSuffix')}</span>
+            </div>
+            ${areaInvalidMsg}
+            ${areaInlineError}
+            <span class="term-age-field__hint" id="homeAreaHint">${areaHintText}</span>
+          </div>
+          <div class="form-group form-group--home-q"><label>Cover for</label>
+            ${quoteChoiceGroup(`
+              <button type="button" class="chip ${h.coverType === 'both' ? 'selected' : ''}" data-home-cover="both">${chipBtnContent('Both', 'Structure + contents')}</button>
+              <button type="button" class="chip ${h.coverType === 'structure' ? 'selected' : ''}" data-home-cover="structure">${chipBtnContent('Building', 'Structure only')}</button>
+              <button type="button" class="chip ${h.coverType === 'contents' ? 'selected' : ''}" data-home-cover="contents">${chipBtnContent('Contents', 'Belongings only')}</button>
+            `, 'multi')}
+          </div>
+          ${showStructureValue ? `
+          <div class="form-group form-group--home-q term-age-field home-structure-field ${structStateClass}">
+            <label class="term-age-field__label" id="homeStructureLabel" for="homeStructureValueLakh">
+              Structure value<span class="term-age-field__required" aria-hidden="true">*</span>
+            </label>
+            ${structGuide}
+            <div class="term-age-field__control">
+              <input
+                id="homeStructureValueLakh"
+                class="term-age-input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="3"
+                value="${esc(structDigits)}"
+                placeholder="${t('home.structurePlaceholder')}"
+                enterkeyhint="done"
+                required
+                aria-labelledby="homeStructureLabel homeStructureSuffix"
+                aria-describedby="${structDescribedBy}"
+                aria-required="true"
+                aria-invalid="${structOk ? 'false' : 'true'}"
+              >
+              <span class="term-age-field__suffix" id="homeStructureSuffix" lang="en">${t('home.structureSuffix')}</span>
+            </div>
+            ${structInvalidMsg}
+            ${structInlineError}
+            <span class="term-age-field__hint" id="homeStructureHint">${structHintText}</span>
+          </div>` : ''}
+        </div>
+      </div>
+      <div class="wizard-step-footer home-step-footer">
+        <p class="home-step-footer__trust">Indicative quotes from leading general insurers</p>
+        ${quoteContinueBtn('Compare plans', 'See home insurance quotes')}
+      </div>
+    </div>`;
 }
 
 function renderProductWizard(product, step) {
@@ -3732,16 +4183,16 @@ function renderProductWizard(product, step) {
   }).join('');
 
   if (step === 0) {
-    const forms = {
-      term: renderTermQuoteStep0(),
-      home: renderHomeQuoteStep0(),
-    };
-
+    const compactClass = product === 'term' ? 'quote-form--term-compact'
+      : product === 'home' ? 'quote-form--home-compact' : '';
+    const formHtml = product === 'term' ? renderTermQuoteStep0()
+      : product === 'home' ? renderHomeQuoteStep0()
+        : '';
     return `
       <div class="page-header"><button class="back-btn" data-action="back">${iconBack()}</button>
         <h1>${cfg.label}</h1></div>
       <div class="wizard-progress">${progress}</div>
-      <div class="wizard-body quote-form">${forms[product] || ''}</div>`;
+      <div class="wizard-body quote-form${compactClass ? ` ${compactClass}` : ''}">${formHtml}</div>`;
   }
 
   if (step === 1) {
@@ -4948,13 +5399,16 @@ function renderPolicies() {
       </div>
     </div>`;
   }).join('') : (policies.length ? `<p class="subtitle">No matching policies</p>` : renderPoliciesEmpty())) :
-    policyTab === 'quotes' ? savedQuotes.map(q => `
-    <div class="card policy-card card--interactive" data-action="quote" data-product="${q.product.toLowerCase()}">
+    policyTab === 'quotes' ? (savedQuotes.length ? savedQuotes.map((q) => `
+    <div class="card policy-card saved-quote-card">
       <span class="policy-card__type">${q.product}</span>
       <div class="policy-card__amount">${q.premium}</div>
       <div class="policy-card__meta">${q.plan} · Saved ${q.saved}</div>
-      <button class="btn btn--primary btn--sm btn--block" style="margin-top:0.5rem">Continue purchase</button>
-    </div>`).join('') :
+      <div class="policy-card__actions saved-quote-card__actions">
+        <button type="button" class="btn btn--primary btn--sm" data-action="quote" data-product="${q.product.toLowerCase()}">Continue purchase</button>
+        <button type="button" class="btn btn--ghost btn--sm saved-quote-card__delete" data-action="delete-saved-quote" data-quote-id="${q.id}" aria-label="Delete saved ${esc(q.product)} quote">Delete</button>
+      </div>
+    </div>`).join('') : `<div class="card"><p class="subtitle">No saved quotes yet — compare plans and save a quote to see it here.</p></div>`) :
     `<div class="card"><p class="subtitle">No expired policies</p></div>`;
 
   return `<div class="section main--padded" style="padding-top:1rem">
@@ -5288,19 +5742,26 @@ function renderMedicalMemberSwitcher(activeId) {
       </div>`;
   }
   const idx = selected.findIndex((m) => m.id === activeId);
+  const many = selected.length > 3;
+  const ageBit = active.age ? ` (${active.age})` : '';
   return `
-    <p class="medical-member-progress">${`Medical details · Member ${idx + 1} of ${selected.length}`}</p>
-    <div class="medical-member-tabs" role="tablist" aria-label="Select member">
-      ${selected.map((m) => {
+    <section class="medical-member-switcher medical-member-switcher--simple${many ? ' medical-member-switcher--many' : ''}" aria-labelledby="medicalMemberSwitcherLabel">
+      <p class="medical-member-switcher__meta" id="medicalMemberSwitcherLabel">
+        Member <strong>${idx + 1}</strong> of ${selected.length} · <span class="medical-member-switcher__current">${esc(active.label)}${ageBit}</span>
+      </p>
+      <div class="medical-member-tabs medical-member-tabs--simple medical-member-tabs--seg${many ? ' medical-member-tabs--wrap' : ' medical-member-tabs--seg-fill'}" role="tablist" aria-label="Select member">
+        ${selected.map((m) => {
         const med = ensureMemberMedical(m);
         const on = m.id === activeId;
         const done = med.confirmed;
-        return `<button type="button" class="medical-member-tab ${on ? 'active' : ''} ${done ? 'done' : ''}" role="tab" aria-selected="${on}" data-action="switch-medical-member" data-member="${m.id}">
-          ${done ? '<span class="medical-member-tab__tick">✓</span>' : ''}${m.label}
+        const tick = done ? '<span class="medical-member-tab__tick" aria-hidden="true">✓</span>' : '';
+        const stateHint = on ? ', current' : done ? ', done' : '';
+        return `<button type="button" class="medical-member-tab ${on ? 'active' : ''} ${done ? 'done' : ''} ${!on && !done ? 'pending' : ''}" role="tab" aria-selected="${on}" aria-controls="medicalMemberPanel" aria-label="${esc(m.label)}${stateHint}" data-action="switch-medical-member" data-member="${m.id}">
+          ${tick}<span class="medical-member-tab__line">${esc(m.label)}</span>
         </button>`;
       }).join('')}
-    </div>
-    <h2 class="quote-form__h2 medical-member-title">Whose medical history? <strong>${active.label}</strong> <span class="medical-member-title__meta">(Age ${active.age})</span></h2>`;
+      </div>
+    </section>`;
 }
 
 function renderHealthPlanTypeChooser(planType) {
@@ -5329,7 +5790,7 @@ function captureHealthFormFromDOM() {
   const planChip = document.querySelector('[data-health-plan-type].chip.selected');
   h.planType = planSeg?.dataset.healthPlanType || planChip?.dataset.healthPlanType || h.planType;
   h.pincode = document.getElementById('healthPincode')?.value.replace(/\D/g, '').slice(0, 6) || h.pincode;
-  h.existingPolicy = document.querySelector('[data-health-existing].chip.selected')?.dataset.healthExisting || h.existingPolicy;
+  h.existingPolicy = document.querySelector('[data-health-existing].selected')?.dataset.healthExisting || h.existingPolicy;
   const si = document.querySelector('[data-health-si].chip.selected')?.dataset.healthSi;
   if (si) h.sumInsured = parseInt(si, 10);
   h.maternity = document.querySelector('[data-health-maternity].chip.selected')?.dataset.healthMaternity || h.maternity;
@@ -5401,6 +5862,10 @@ function toggleHealthMember(id) {
       wizardState.formError = 'Keep at least one member selected while you edit';
     }
     renderPreserveScroll();
+    return;
+  }
+  if (m.selected && id.startsWith('child-')) {
+    removeHealthChildMember(id);
     return;
   }
   m.selected = !m.selected;
@@ -5498,11 +5963,9 @@ function renderHealthWizard(step) {
     : '';
   const progress = renderWizardProgress(steps, step);
   const individual = h.planType === 'individual';
+  const pinOk = isHealthPincodeValid(h.pincode);
+  const pinStateClass = pinOk ? 'pincode-footer-row--ok' : 'pincode-footer-row--needs';
   const memberRows = h.members.map((m) => {
-    const extraChild = m.id.startsWith('child-');
-    const removeChildBtn = extraChild
-      ? `<button type="button" class="member-row__remove" data-action="remove-child-member" data-member="${m.id}">Remove</button>`
-      : '';
     const cta = !m.selected && !individual
       ? '<span class="member-row__cta" aria-hidden="true">Add</span>'
       : '';
@@ -5567,7 +6030,6 @@ function renderHealthWizard(step) {
             <span class="member-row__check-icon" aria-hidden="true"></span>
           </button>
           <span class="member-row__title">${m.label}</span>
-          ${removeChildBtn}
           ${cta}
         </div>
         ${detailBlock}
@@ -5579,34 +6041,67 @@ function renderHealthWizard(step) {
     <div class="page-header"><button class="back-btn" data-action="back">${iconBack()}</button>
       <h1>Health insurance</h1></div>
     <div class="wizard-progress">${progress}</div>
-    <div class="wizard-body quote-form">
+    <div class="wizard-body quote-form quote-form--members-compact">
       ${renderRenewalBanner()}
-      <div class="quote-step-tip">${icon('family', ICON_SIZE.md, 'hollow-icon hollow-icon--inline')} Age & pincode help us show accurate premiums</div>
-      ${formErr}
-      ${renderHealthPlanTypeChooser(h.planType)}
-      <h2 class="quote-form__h2">${individual
+      <div class="members-step-fit">
+        <div class="quote-step-tip quote-step-tip--compact">${icon('family', ICON_SIZE.md, 'hollow-icon hollow-icon--inline')} Age & pincode help us show accurate premiums</div>
+        ${formErr}
+        <div class="members-step-scroll">
+          ${renderHealthPlanTypeChooser(h.planType)}
+          <h2 class="quote-form__h2 quote-form__h2--members">${individual
     ? ('Who needs the policy?')
     : ('Who do you want to cover?')}</h2>
-      <p class="quote-form__hint">${individual
+          <p class="quote-form__hint quote-form__hint--members">${individual
+    ? ('One person only — tap a row to switch member')
+    : ('Family floater — select 2 or more members')}</p>
+          <p class="sr-only">${individual
     ? ('Individual cover is for one person only. Tap another member to switch.')
     : ('Family floater covers 2 or more people on one sum insured. Add spouse, children, or parents.')}</p>
-      <div class="member-list-panel">
-        <div class="member-list ${individual ? 'member-list--single' : ''}">${memberRows}</div>
-        ${!individual && countHealthChildSlots(h) < MAX_HEALTH_CHILDREN
+          <div class="member-list-panel member-list-panel--compact">
+            <div class="member-list ${individual ? 'member-list--single' : 'member-list--grid'}">${memberRows}</div>
+            ${!individual && countHealthChildSlots(h) < MAX_HEALTH_CHILDREN
     ? `<button type="button" class="btn btn--ghost btn--sm btn--block member-add-child" data-action="add-child-member">+ Add another child</button>`
     : ''}
-      </div>
-      <div class="form-group"><label for="healthPincode">Pincode (city)</label>
-        <input id="healthPincode" type="text" inputmode="numeric" maxlength="6" value="${esc(h.pincode)}" placeholder="6-digit pincode" autocomplete="postal-code"></div>
-      <div class="quote-choice-card">
-        <p class="quote-choice-card__title" id="healthExistingLabel">Existing health policy?</p>
-        <p class="quote-choice-card__hint">Select porting if you already have a policy you want to move to a new plan.</p>
-        <div class="chip-group chip-group--segmented chip-group--prominent" role="group" aria-labelledby="healthExistingLabel">
-          <button type="button" class="chip ${h.existingPolicy === 'no' ? 'selected' : ''}" data-health-existing="no"><span class="chip__line">No</span><span class="chip__sub">New cover</span></button>
-          <button type="button" class="chip ${h.existingPolicy === 'port' ? 'selected' : ''}" data-health-existing="port"><span class="chip__line">Yes</span><span class="chip__sub">Port policy</span></button>
+          </div>
+        </div>
+        <div class="wizard-step-footer members-step-footer">
+          <div class="members-step-footer-fields">
+            <div class="pincode-footer-row ${pinStateClass}" id="healthPincodeGroup">
+              <label class="pincode-footer-row__label" id="healthPincodeLabel" for="healthPincode">
+                Pincode<span class="pincode-footer-row__required" aria-hidden="true">*</span>
+              </label>
+              <div class="pincode-footer-row__field">
+                <input
+                  id="healthPincode"
+                  class="pincode-footer-row__input"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="6"
+                  required
+                  value="${esc(h.pincode)}"
+                  placeholder="6-digit pincode"
+                  autocomplete="postal-code"
+                  aria-labelledby="healthPincodeLabel"
+                  aria-describedby="healthPincodeHint"
+                  aria-required="true"
+                  aria-invalid="${pinOk ? 'false' : 'true'}"
+                >
+              </div>
+              <span class="sr-only" id="healthPincodeHint">Enter a 6-digit pincode for city-wise premium</span>
+            </div>
+            <div class="health-existing-row">
+              <span class="health-existing-row__label" id="healthExistingLabel">Existing policy?</span>
+              <span class="sr-only">Select porting if you already have a policy you want to move to a new plan.</span>
+              <div class="member-gender-field health-existing-row__toggle" role="radiogroup" aria-labelledby="healthExistingLabel">
+                <button type="button" class="member-gender-btn ${h.existingPolicy === 'no' ? 'selected' : ''}" data-health-existing="no" role="radio" aria-checked="${h.existingPolicy === 'no'}" aria-label="No, new cover">No</button>
+                <button type="button" class="member-gender-btn ${h.existingPolicy === 'port' ? 'selected' : ''}" data-health-existing="port" role="radio" aria-checked="${h.existingPolicy === 'port'}" aria-label="Yes, port policy">Yes</button>
+              </div>
+            </div>
+          </div>
+          ${quoteContinueBtn('Continue', 'Medical history')}
         </div>
       </div>
-      ${quoteContinueBtn('Continue', 'Next: medical history')}
     </div>`;
 
   if (step === 1) {
@@ -5621,52 +6116,64 @@ function renderHealthWizard(step) {
       const sub = o.id === 'other' ? 'Not listed above' : '';
       return `<button type="button" class="chip ${med.pedList.includes(o.id) ? 'selected' : ''}" data-ped-opt="${o.id}">${chipBtnContent(o.en, sub)}</button>`;
     }).join('');
-    const pedLabel = active
-      ? (`Does ${active.label} have any pre-existing disease (PED)?`)
-      : ('Any pre-existing disease (PED)?');
+    const multiMember = sel.length > 1;
+    const pedLabel = multiMember
+      ? ('Pre-existing disease (PED)?')
+      : (active
+        ? (`Does ${active.label} have pre-existing disease (PED)?`)
+        : ('Pre-existing disease (PED)?'));
     return `
     <div class="page-header"><button class="back-btn" data-action="wizard-back">${iconBack()}</button>
       <h1>Medical history</h1></div>
     <div class="wizard-progress">${progress}</div>
-    <div class="wizard-body quote-form">
-      <p class="quote-form__lead">Answer separately for each insured member. Honest answers help at claim time.</p>
+    <div class="wizard-body quote-form quote-form--medical-compact${med.ped === 'yes' ? ' quote-form--medical-expanded' : ''}">
+      <div class="medical-step-fit">
+        ${formErr}
+        <div class="medical-step-scroll">
+      <p class="quote-form__lead quote-form__lead--medical">${multiMember
+    ? ('Answer per member — honest answers help at claim time.')
+    : ('A few health questions for your quote. Honest answers help at claim time.')}</p>
       ${renderMedicalMemberSwitcher(activeId)}
-      ${formErr}
-      <div class="form-group"><label>${pedLabel}</label>
-        ${quoteChoiceGroup(`
-          <button type="button" class="chip ${med.ped === 'no' ? 'selected' : ''}" data-health-ped="no">${chipBtnContent('No', 'No PED')}</button>
-          <button type="button" class="chip ${med.ped === 'yes' ? 'selected' : ''}" data-health-ped="yes">${chipBtnContent('Yes', 'Has PED')}</button>
-        `)}
+      <div class="medical-step-stack" id="medicalMemberPanel" role="tabpanel" aria-labelledby="medicalMemberSwitcherLabel">
+        <div class="form-group form-group--medical-q"><label>${pedLabel}</label>
+          ${quoteChoiceGroup(`
+            <button type="button" class="chip ${med.ped === 'no' ? 'selected' : ''}" data-health-ped="no">${chipBtnContent('No', 'No PED')}</button>
+            <button type="button" class="chip ${med.ped === 'yes' ? 'selected' : ''}" data-health-ped="yes">${chipBtnContent('Yes', 'Has PED')}</button>
+          `)}
+        </div>
+        ${med.ped === 'yes' ? `<div class="form-group form-group--medical-q"><label>Which condition(s)?</label>
+          ${quoteChoiceGroup(pedChips, 'wrap')}
+          ${med.pedList.includes('other') ? `<div class="ped-other-field">
+            <label for="healthPedOther">Other condition(s)</label>
+            <input id="healthPedOther" type="text" value="${esc(med.pedOtherText || '')}" placeholder="e.g. Arthritis" maxlength="120" autocomplete="off">
+          </div>` : ''}</div>` : ''}
+        <div class="form-group form-group--medical-q"><label>Smoking</label>
+          ${quoteChoiceGroup(`
+            <button type="button" class="chip ${med.smoking === 'no' ? 'selected' : ''}" data-health-smoking="no">${chipBtnContent('No', 'Non-smoker')}</button>
+            <button type="button" class="chip ${med.smoking === 'yes' ? 'selected' : ''}" data-health-smoking="yes">${chipBtnContent('Yes', 'Smoker')}</button>
+          `)}
+        </div>
+        <div class="form-group form-group--medical-q"><label>Alcohol</label>
+          ${quoteChoiceGroup(`
+            <button type="button" class="chip ${med.alcohol === 'no' ? 'selected' : ''}" data-health-alcohol="no">${chipBtnContent('No', 'None')}</button>
+            <button type="button" class="chip ${med.alcohol === 'occasional' ? 'selected' : ''}" data-health-alcohol="occasional">${chipBtnContent('Sometimes', 'Occasional')}</button>
+            <button type="button" class="chip ${med.alcohol === 'yes' ? 'selected' : ''}" data-health-alcohol="yes">${chipBtnContent('Yes', 'Regular')}</button>
+          `, 'multi')}
+        </div>
+        <div class="form-group form-group--medical-q"><label>Hospital / surgery (last 12 months)?</label>
+          ${quoteChoiceGroup(`
+            <button type="button" class="chip ${med.surgery12m === 'no' ? 'selected' : ''}" data-health-surgery="no">${chipBtnContent('No', 'None')}</button>
+            <button type="button" class="chip ${med.surgery12m === 'yes' ? 'selected' : ''}" data-health-surgery="yes">${chipBtnContent('Yes', 'Had surgery')}</button>
+          `)}
+        </div>
       </div>
-      ${med.ped === 'yes' ? `<div class="form-group"><label>Which condition(s)? (select all that apply)</label>
-        ${quoteChoiceGroup(pedChips, 'wrap')}
-        ${med.pedList.includes('other') ? `<div class="ped-other-field">
-          <label for="healthPedOther">Other condition(s) — please specify</label>
-          <input id="healthPedOther" type="text" value="${esc(med.pedOtherText || '')}" placeholder="e.g. Arthritis, kidney disease" maxlength="120" autocomplete="off">
-          <p class="quote-form__hint">Helps insurers assess cover accurately at proposal stage.</p>
-        </div>` : ''}</div>` : ''}
-      <div class="form-group"><label>Do they smoke?</label>
-        ${quoteChoiceGroup(`
-          <button type="button" class="chip ${med.smoking === 'no' ? 'selected' : ''}" data-health-smoking="no">${chipBtnContent('No', 'Non-smoker')}</button>
-          <button type="button" class="chip ${med.smoking === 'yes' ? 'selected' : ''}" data-health-smoking="yes">${chipBtnContent('Yes', 'Smoker')}</button>
-        `)}
+        </div>
+        <div class="wizard-step-footer medical-step-footer">
+          ${hasMoreMembers
+    ? quoteContinueBtn('Save & continue', 'Next member')
+    : quoteContinueBtn('Continue', 'Choose cover')}
+        </div>
       </div>
-      <div class="form-group"><label>Alcohol consumption</label>
-        ${quoteChoiceGroup(`
-          <button type="button" class="chip ${med.alcohol === 'no' ? 'selected' : ''}" data-health-alcohol="no">${chipBtnContent('No', 'None')}</button>
-          <button type="button" class="chip ${med.alcohol === 'occasional' ? 'selected' : ''}" data-health-alcohol="occasional">${chipBtnContent('Sometimes', 'Occasional')}</button>
-          <button type="button" class="chip ${med.alcohol === 'yes' ? 'selected' : ''}" data-health-alcohol="yes">${chipBtnContent('Yes', 'Regular')}</button>
-        `)}
-      </div>
-      <div class="form-group"><label>Hospitalisation or surgery in last 12 months?</label>
-        ${quoteChoiceGroup(`
-          <button type="button" class="chip ${med.surgery12m === 'no' ? 'selected' : ''}" data-health-surgery="no">${chipBtnContent('No', 'None')}</button>
-          <button type="button" class="chip ${med.surgery12m === 'yes' ? 'selected' : ''}" data-health-surgery="yes">${chipBtnContent('Yes', 'Had surgery')}</button>
-        `)}
-      </div>
-      ${hasMoreMembers
-    ? quoteContinueBtn('Save & continue', 'Next member — medical history')
-    : quoteContinueBtn('Continue', 'Next: choose cover')}
     </div>`;
   }
 
@@ -5674,26 +6181,35 @@ function renderHealthWizard(step) {
     <div class="page-header"><button class="back-btn" data-action="wizard-back">${iconBack()}</button>
       <h1>Coverage</h1></div>
     <div class="wizard-progress">${progress}</div>
-    <div class="wizard-body quote-form">
-      ${formErr}
-      <div class="form-group"><label>Sum insured</label>
-        ${quoteChoiceGroup([5, 10, 15, 25, 50].map((n) => `
-          <button type="button" class="chip ${h.sumInsured === n ? 'selected' : ''}" data-health-si="${n}">${chipBtnContent(`₹${n}L`, 'Sum insured')}</button>`).join(''), 'multi')}
+    <div class="wizard-body quote-form quote-form--cover-compact">
+      <div class="cover-step-fit">
+        ${formErr}
+        <div class="cover-step-scroll">
+          <p class="quote-form__lead quote-form__lead--cover">Choose sum insured and room rules — you can change this before you pay.</p>
+          <div class="cover-step-stack">
+            <div class="form-group form-group--cover-q"><label>Sum insured</label>
+              ${quoteChoiceGroup([5, 10, 15, 25, 50].map((n) => `
+                <button type="button" class="chip ${h.sumInsured === n ? 'selected' : ''}" data-health-si="${n}">${chipBtnContent(`₹${n}L`, 'Sum insured')}</button>`).join(''), 'multi')}
+            </div>
+            <div class="form-group form-group--cover-q"><label>Room rent preference</label>
+              ${quoteChoiceGroup(`
+                <button type="button" class="chip ${h.roomRent === 'no_cap' ? 'selected' : ''}" data-health-room="no_cap">${chipBtnContent('No cap', 'Any room')}</button>
+                <button type="button" class="chip ${h.roomRent === 'single_ac' ? 'selected' : ''}" data-health-room="single_ac">${chipBtnContent('Single AC', 'Capped room')}</button>
+              `)}
+            </div>
+            <div class="form-group form-group--cover-q"><label>Need maternity cover?</label>
+              ${quoteChoiceGroup(`
+                <button type="button" class="chip ${h.maternity === 'not_needed' ? 'selected' : ''}" data-health-maternity="not_needed">${chipBtnContent('No', 'Not needed')}</button>
+                <button type="button" class="chip ${h.maternity === 'needed' ? 'selected' : ''}" data-health-maternity="needed">${chipBtnContent('Yes', 'Include')}</button>
+              `)}
+            </div>
+          </div>
+        </div>
+        <div class="wizard-step-footer cover-step-footer">
+          <p class="cover-step-footer__trust">Indicative quotes from leading insurers</p>
+          ${quoteContinueBtn('View plans', 'Compare matching quotes')}
+        </div>
       </div>
-      <div class="form-group"><label>Room rent preference</label>
-        ${quoteChoiceGroup(`
-          <button type="button" class="chip ${h.roomRent === 'no_cap' ? 'selected' : ''}" data-health-room="no_cap">${chipBtnContent('No cap', 'Any room')}</button>
-          <button type="button" class="chip ${h.roomRent === 'single_ac' ? 'selected' : ''}" data-health-room="single_ac">${chipBtnContent('Single AC', 'Capped room')}</button>
-        `)}
-      </div>
-      <div class="form-group"><label>Need maternity cover?</label>
-        ${quoteChoiceGroup(`
-          <button type="button" class="chip ${h.maternity === 'not_needed' ? 'selected' : ''}" data-health-maternity="not_needed">${chipBtnContent('No', 'Not needed')}</button>
-          <button type="button" class="chip ${h.maternity === 'needed' ? 'selected' : ''}" data-health-maternity="needed">${chipBtnContent('Yes', 'Include')}</button>
-        `)}
-      </div>
-      ${quoteContinueBtn('View plans', 'Compare matching quotes')}
-      <p class="trust-block">Indicative quotes from leading insurers</p>
     </div>`;
 
   if (step === 3) {
@@ -5781,17 +6297,10 @@ function bindQuoteFormEvents() {
     e.preventDefault();
     addHealthChildMember();
   });
-  document.querySelectorAll('[data-action="remove-child-member"]').forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      removeHealthChildMember(btn.dataset.member);
-    });
-  });
   document.querySelectorAll('[data-action="pick-member"]').forEach((row) => {
     const head = row.querySelector('.member-row__head');
     if (head) {
       head.addEventListener('click', (e) => {
-        if (e.target.closest('[data-action="remove-child-member"]')) return;
         toggleHealthMember(row.dataset.member);
       });
     }
@@ -5824,6 +6333,16 @@ function bindQuoteFormEvents() {
     input.addEventListener('input', refreshAgeValidity);
     input.addEventListener('blur', refreshAgeValidity);
   });
+  const healthPincodeInput = document.getElementById('healthPincode');
+  if (healthPincodeInput) {
+    const refreshPincode = () => {
+      healthPincodeInput.value = healthPincodeInput.value.replace(/\D/g, '').slice(0, 6);
+      syncHealthPincodeFieldUi();
+    };
+    syncHealthPincodeFieldUi();
+    healthPincodeInput.addEventListener('input', refreshPincode);
+    healthPincodeInput.addEventListener('blur', refreshPincode);
+  }
   document.querySelectorAll('[data-action="switch-medical-member"]').forEach((btn) => {
     btn.addEventListener('click', () => {
       captureHealthFormFromDOM();
@@ -5907,6 +6426,22 @@ function bindQuoteFormEvents() {
         renderPreserveScroll();
         return;
       }
+      if (btn.dataset.healthExisting) {
+        captureHealthFormFromDOM();
+        const group = btn.closest('[role="radiogroup"]');
+        if (group) {
+          group.querySelectorAll('[data-health-existing]').forEach((c) => {
+            c.classList.remove('selected');
+            c.setAttribute('aria-checked', 'false');
+          });
+          btn.classList.add('selected');
+          btn.setAttribute('aria-checked', 'true');
+        }
+        quoteForm.health.existingPolicy = btn.dataset.healthExisting;
+        if (wizardState) wizardState.formError = '';
+        renderPreserveScroll();
+        return;
+      }
       const group = btn.closest('.chip-group');
       if (group) {
         group.querySelectorAll('.chip').forEach((c) => c.classList.remove('selected'));
@@ -5920,6 +6455,58 @@ function bindQuoteFormEvents() {
   });
 }
 
+function renderMotorQuoteStep0() {
+  const m = quoteForm.motor || defaultMotorQuoteForm();
+  const formErr = wizardState?.formError
+    ? `<p class="quote-form-error" role="alert">${wizardState.formError}</p>`
+    : '';
+  return `
+    <div class="motor-step-fit">
+      ${formErr}
+      <div class="motor-step-scroll">
+        ${renderRenewalBanner()}
+        <p class="quote-form__lead quote-form__lead--motor">Vehicle details to match motor quotes — change anytime before you pay.</p>
+        <div class="motor-step-stack">
+          <div class="form-group form-group--motor-q">
+            <label for="motorRegNo">Vehicle registration number</label>
+            <input
+              id="motorRegNo"
+              class="motor-reg-input"
+              type="text"
+              value="${esc(m.regNo)}"
+              placeholder="DL 01 AB 1234"
+              autocomplete="off"
+              style="text-transform:uppercase"
+            >
+          </div>
+          <div class="quote-vahan-card quote-vahan-card--compact" role="status">
+            <div class="quote-vahan-card__badge">From Vahan</div>
+            <strong>Maruti Swift VXI</strong>
+            <span class="quote-vahan-card__meta">2021 · Petrol · Private · Delhi</span>
+          </div>
+          <div class="form-group form-group--motor-q">
+            <label>Policy type</label>
+            ${quoteChoiceGroup(`
+              <button type="button" class="chip ${m.policyType === 'tp' ? 'selected' : ''}" data-motor-policy="tp">${chipBtnContent('Third party', 'Legal minimum')}</button>
+              <button type="button" class="chip ${m.policyType === 'comprehensive' ? 'selected' : ''}" data-motor-policy="comprehensive">${chipBtnContent('Comprehensive', 'Own damage + TP')}</button>
+            `)}
+          </div>
+          <div class="form-group form-group--motor-q">
+            <label>Claims &amp; NCB last year</label>
+            <p class="quote-form__hint quote-form__hint--motor">Pick one — a claim in the last policy year resets NCB to 0%.</p>
+            ${quoteChoiceGroup([50, 35, 25, 0].map((n) => `
+              <button type="button" class="chip ${m.ncbProfile === String(n) ? 'selected' : ''}" data-motor-ncb-profile="${n}">${chipBtnContent(`${n}% NCB`, 'No claim')}</button>`).join('')
+              + `<button type="button" class="chip ${m.ncbProfile === 'claim' ? 'selected' : ''}" data-motor-ncb-profile="claim">${chipBtnContent('0% NCB', 'Had a claim')}</button>`, 'multi')}
+          </div>
+        </div>
+      </div>
+      <div class="wizard-step-footer motor-step-footer">
+        <p class="motor-step-footer__trust">Indicative quotes from leading motor insurers</p>
+        ${quoteContinueBtn('Get quotes', 'Compare motor premiums')}
+      </div>
+    </div>`;
+}
+
 function renderMotorWizard(step) {
   const m = quoteForm.motor;
   const steps = ['Vehicle', 'Quotes', 'Add-ons', 'Pay'];
@@ -5930,29 +6517,8 @@ function renderMotorWizard(step) {
     <div class="page-header"><button class="back-btn" data-action="back">${iconBack()}</button>
       <h1>Motor insurance</h1></div>
     <div class="wizard-progress">${progress}</div>
-    <div class="wizard-body quote-form">
-      ${renderRenewalBanner()}
-      ${formErr}
-      <div class="form-group"><label for="motorRegNo">Vehicle registration number</label>
-        <input id="motorRegNo" type="text" value="${esc(m.regNo)}" placeholder="DL 01 AB 1234" style="text-transform:uppercase"></div>
-      <div class="quote-vahan-card">
-        <div class="quote-vahan-card__badge">From Vahan</div>
-        <strong>Maruti Swift VXI</strong><br>
-        <span>2021 · Petrol · Private · Delhi</span>
-      </div>
-      <div class="form-group"><label>Policy type</label>
-        ${quoteChoiceGroup(`
-          <button type="button" class="chip ${m.policyType === 'tp' ? 'selected' : ''}" data-motor-policy="tp">${chipBtnContent('Third party', 'Legal minimum')}</button>
-          <button type="button" class="chip ${m.policyType === 'comprehensive' ? 'selected' : ''}" data-motor-policy="comprehensive">${chipBtnContent('Comprehensive', 'Own damage + TP')}</button>
-        `)}
-      </div>
-      <div class="form-group"><label>Claims &amp; NCB last year</label>
-        <p class="quote-form__hint">Pick one — claim in the last policy year resets NCB to 0%.</p>
-        ${quoteChoiceGroup([50, 35, 25, 0].map((n) => `
-          <button type="button" class="chip ${m.ncbProfile === String(n) ? 'selected' : ''}" data-motor-ncb-profile="${n}">${chipBtnContent(`${n}% NCB`, 'No claim')}</button>`).join('')
-          + `<button type="button" class="chip ${m.ncbProfile === 'claim' ? 'selected' : ''}" data-motor-ncb-profile="claim">${chipBtnContent('0% NCB', 'Had a claim')}</button>`, 'wrap')}
-      </div>
-      ${quoteContinueBtn('Get quotes', 'Compare motor premiums')}
+    <div class="wizard-body quote-form quote-form--motor-compact">
+      ${renderMotorQuoteStep0()}
     </div>`;
 
   if (step === 2) {
@@ -6149,7 +6715,139 @@ function isValidUpiId(id) {
 }
 
 function isValidPan(pan) {
-  return /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(pan);
+  return /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(String(pan || '').trim().toUpperCase());
+}
+
+function isValidNomineeName(name) {
+  const t = String(name || '').trim();
+  if (t.length < 3) return false;
+  return /^[a-zA-Z\s.'-]+$/.test(t);
+}
+
+function nomineeFieldIssue(name) {
+  const t = String(name || '').trim();
+  if (!t) return { code: 'empty', message: 'Enter nominee full name' };
+  if (!isValidNomineeName(t)) {
+    return { code: 'invalid', message: 'Use full legal name — at least 3 letters, no numbers' };
+  }
+  return null;
+}
+
+function panFieldIssue(pan) {
+  const t = String(pan || '').trim().toUpperCase();
+  if (!t) return { code: 'empty', message: 'PAN is required for term life policies' };
+  if (!isValidPan(t)) {
+    return { code: 'invalid', message: 'Enter a valid PAN — format ABCDE1234F' };
+  }
+  return null;
+}
+
+function shouldShowCheckoutFieldIssue(issue, rawValue, highlightEmpty) {
+  if (!issue) return false;
+  const hasValue = String(rawValue || '').trim().length > 0;
+  if (issue.code === 'invalid') return hasValue;
+  return highlightEmpty;
+}
+
+function checkoutFieldGroupClass(issue, rawValue, highlightEmpty) {
+  if (!shouldShowCheckoutFieldIssue(issue, rawValue, highlightEmpty)) return 'form-group form-group--checkout-field';
+  const hasValue = String(rawValue || '').trim().length > 0;
+  const mod = hasValue || issue.code === 'invalid' ? 'form-group--invalid' : 'form-group--needs';
+  return `form-group form-group--checkout-field ${mod}`;
+}
+
+function renderCheckoutValidatedInput({
+  inputId,
+  labelHtml,
+  value,
+  inputAttrs = '',
+  issue,
+  highlightEmpty,
+}) {
+  const show = shouldShowCheckoutFieldIssue(issue, value, highlightEmpty);
+  const groupClass = checkoutFieldGroupClass(issue, value, highlightEmpty);
+  const errHtml = show
+    ? `<p class="form-group__field-error" id="${inputId}Error" role="alert">${issue.message}</p>`
+    : '';
+  const ariaInvalid = show ? 'true' : 'false';
+  const ariaDesc = show ? ` aria-describedby="${inputId}Error"` : '';
+  return `<div class="${groupClass}" data-checkout-field="${inputId}">
+    ${labelHtml}
+    <input id="${inputId}" value="${esc(value)}" aria-invalid="${ariaInvalid}"${ariaDesc} ${inputAttrs}>
+    ${errHtml}
+  </div>`;
+}
+
+function syncCheckoutFieldUi() {
+  const highlight = !!wizardState?.checkoutHighlightErrors;
+  const product = wizardState?.type || activeProduct || 'health';
+  captureCheckoutFormFromDOM();
+  if (product === 'term') {
+    syncCheckoutOneField('checkoutNominee', nomineeFieldIssue(checkoutForm.nominee), checkoutForm.nominee, highlight);
+    syncCheckoutOneField('checkoutPan', panFieldIssue(checkoutForm.pan), checkoutForm.pan, highlight);
+  } else if (product === 'health') {
+    syncCheckoutOneField('checkoutProposerName', checkoutProposerIssue(checkoutForm.proposerName), checkoutForm.proposerName, highlight);
+    syncCheckoutOneField('checkoutNominee', nomineeFieldIssue(checkoutForm.nominee), checkoutForm.nominee, highlight);
+    quoteForm.health?.members.filter((m) => m.selected).forEach((m) => {
+      ensureMemberIdentityFields(m);
+      const nameId = `insuredName-${m.id}`;
+      const dobId = `insuredDob-${m.id}`;
+      syncCheckoutOneField(nameId, insuredNameIssue(m.fullName, m.label), m.fullName, highlight);
+      syncCheckoutOneField(dobId, insuredDobIssue(m.dob, m.label, m.age), m.dob, highlight);
+    });
+  }
+  syncCheckoutReviewCta();
+}
+
+function syncCheckoutOneField(inputId, issue, rawValue, highlightEmpty) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const group = input.closest('[data-checkout-field]') || input.closest('.form-group');
+  if (!group) return;
+  const show = issue && shouldShowCheckoutFieldIssue(issue, rawValue, highlightEmpty);
+  const hasValue = String(rawValue ?? input.value ?? '').trim().length > 0;
+  group.classList.remove('form-group--invalid', 'form-group--needs');
+  if (show) group.classList.add(hasValue || issue.code === 'invalid' ? 'form-group--invalid' : 'form-group--needs');
+  input.setAttribute('aria-invalid', show ? 'true' : 'false');
+  let errEl = document.getElementById(`${inputId}Error`);
+  if (show) {
+    if (!errEl) {
+      errEl = document.createElement('p');
+      errEl.id = `${inputId}Error`;
+      errEl.className = 'form-group__field-error';
+      errEl.setAttribute('role', 'alert');
+      input.insertAdjacentElement('afterend', errEl);
+    }
+    errEl.textContent = issue.message;
+    input.setAttribute('aria-describedby', `${inputId}Error`);
+  } else {
+    errEl?.remove();
+    input.removeAttribute('aria-describedby');
+  }
+}
+
+function checkoutProposerIssue(name) {
+  const t = String(name || '').trim();
+  if (t.length < 2) return { code: 'empty', message: 'Enter proposer full name' };
+  return null;
+}
+
+function insuredNameIssue(name, label) {
+  const t = String(name || '').trim();
+  if (t.length < 2) return { code: 'empty', message: `Enter full legal name for ${label}` };
+  if (!isValidNomineeName(t)) return { code: 'invalid', message: `Check spelling for ${label} — use full legal name` };
+  return null;
+}
+
+function insuredDobIssue(dob, label, quotedAge) {
+  if (!dob) return { code: 'empty', message: `Enter date of birth for ${label}` };
+  if (parseCheckoutDate(dob) == null) return { code: 'invalid', message: `Enter a valid date of birth for ${label}` };
+  const fromDob = ageFromCheckoutDob(dob);
+  const qa = Number(quotedAge);
+  if (Number.isFinite(qa) && fromDob != null && Math.abs(fromDob - qa) > 1) {
+    return { code: 'invalid', message: `DOB doesn’t match age ${qa} from your quote for ${label}` };
+  }
+  return null;
 }
 
 function validatePaymentDetails() {
@@ -6159,6 +6857,10 @@ function validatePaymentDetails() {
 
 function validateCheckoutReview(product) {
   captureCheckoutFormFromDOM();
+  return validateCheckoutReviewState(product);
+}
+
+function validateCheckoutReviewState(product) {
   if (!checkoutForm.declaration) return 'Please confirm the declaration to continue';
   if (product === 'health') {
     if (!checkoutForm.proposerName.trim()) return 'Enter proposer full name (person buying the policy)';
@@ -6174,21 +6876,20 @@ function validateCheckoutReview(product) {
         return `Date of birth for ${m.label} doesn't match age ${quotedAge} from your quote`;
       }
     }
-    if (!checkoutForm.nominee.trim()) return 'Enter nominee full name';
+    const nom = nomineeFieldIssue(checkoutForm.nominee);
+    if (nom) return nom.message;
     if (checkoutForm.nomineeDob && parseCheckoutDate(checkoutForm.nomineeDob) == null) {
       return 'Enter a valid nominee date of birth';
     }
     return '';
   }
-  if (product === 'term' && !checkoutForm.nominee.trim()) {
-    return 'Enter nominee name';
-  }
   if (product === 'term') {
-    if (!checkoutForm.pan.trim()) return 'PAN is required for term life policies';
-    if (!isValidPan(checkoutForm.pan)) return 'Enter a valid PAN (e.g. ABCDE1234F)';
+    const nom = nomineeFieldIssue(checkoutForm.nominee);
+    if (nom) return nom.message;
+    const panI = panFieldIssue(checkoutForm.pan);
+    if (panI) return panI.message;
   }
   if (product === 'motor' || product === 'home') {
-    checkoutForm.proposerName = document.getElementById('checkoutProposerName')?.value.trim() || checkoutForm.proposerName;
     if (!checkoutForm.proposerName.trim()) {
       return product === 'motor' ? 'Enter vehicle owner full name' : 'Enter property owner full name';
     }
@@ -6211,8 +6912,8 @@ function renderCheckoutDeclaration() {
   return `<div class="checkout-declaration">
     ${renderCheckoutDeclarationError()}
     <label class="checkout-declaration__label">
-      <input type="checkbox" id="checkoutDeclaration" ${checked}>
-      <span>I confirm the details are correct and agree to the insurer terms and Hollow privacy policy.</span>
+      <input type="checkbox" id="checkoutDeclaration" ${checked} aria-describedby="checkoutDeclarationText">
+      <span class="checkout-declaration__text" id="checkoutDeclarationText">I confirm the details are correct and agree to the insurer terms and Hollow privacy policy.</span>
     </label>
   </div>`;
 }
@@ -6285,10 +6986,25 @@ function renderCheckoutFields(product) {
       <input id="checkoutPropertyAddress" type="text" value="" placeholder="Building, street, city" autocomplete="street-address"></div>`);
   }
   if (product === 'term') {
-    fields.push(`<div class="form-group"><label for="checkoutNominee">Nominee</label>
-      <input id="checkoutNominee" type="text" value="${esc(checkoutForm.nominee)}" placeholder="Full name" autocomplete="name"></div>`);
-    fields.push(`<div class="form-group"><label for="checkoutPan">Proposer PAN</label>
-      <input id="checkoutPan" type="text" value="${esc(checkoutForm.pan)}" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase" autocomplete="off"></div>`);
+    const highlight = !!wizardState?.checkoutHighlightErrors;
+    const nomIssue = nomineeFieldIssue(checkoutForm.nominee);
+    const panIssue = panFieldIssue(checkoutForm.pan);
+    fields.push(renderCheckoutValidatedInput({
+      inputId: 'checkoutNominee',
+      labelHtml: '<label for="checkoutNominee">Nominee</label>',
+      value: checkoutForm.nominee,
+      inputAttrs: 'type="text" placeholder="Full name" autocomplete="name"',
+      issue: nomIssue,
+      highlightEmpty: highlight,
+    }));
+    fields.push(renderCheckoutValidatedInput({
+      inputId: 'checkoutPan',
+      labelHtml: '<label for="checkoutPan">Proposer PAN</label>',
+      value: checkoutForm.pan,
+      inputAttrs: 'type="text" placeholder="ABCDE1234F" maxlength="10" style="text-transform:uppercase" autocomplete="off"',
+      issue: panIssue,
+      highlightEmpty: highlight,
+    }));
   }
   return fields.join('');
 }
@@ -6365,17 +7081,15 @@ function renderCheckoutPage(product, { progressHtml = '', headerTitle = 'Review 
     ? `${renderPaymentMethods()}${checkoutPhase === 'failed' ? renderCheckoutFailed(product, total) : ''}`
     : '';
 
+  const reviewReady = checkoutPhase === 'review' && !validateCheckoutReviewState(product);
+  const reviewDisabledAttr = reviewReady ? '' : ' disabled aria-disabled="true"';
   const primaryBtn = checkoutPhase === 'review'
-    ? quoteContinueBtn('Continue to payment', 'Review details first', 'checkout-to-payment', `data-product="${product}"`)
+    ? quoteContinueBtn('Continue to payment', 'Review details first', 'checkout-to-payment', `data-product="${product}"${reviewDisabledAttr}`)
     : checkoutPhase === 'payment'
       ? quoteContinueBtn(`${t('btn.pay')} ${formatPremium(due)}`, 'Secure checkout', 'pay-success', `data-product="${product}"`)
       : '';
 
-  return `
-    <div class="page-header"><button class="back-btn" data-action="wizard-back">${iconBack()}</button>
-      <h1>${headerTitle}</h1></div>
-    ${progressHtml}
-    <div class="wizard-body checkout-body" style="padding-bottom:8rem">
+  const scrollBody = `
       ${renderCheckoutDemoBanner()}
       ${renderJTBDSteps('buy')}
       ${wizardState?.formError ? `<p class="quote-form-error" role="alert">${wizardState.formError}</p>` : ''}
@@ -6388,10 +7102,32 @@ function renderCheckoutPage(product, { progressHtml = '', headerTitle = 'Review 
       ${renderCoverageClarity(plan, product)}
       ${checkoutPhase === 'review' ? renderCheckoutFields(product) : ''}
       ${checkoutPhase === 'review' ? renderOffersSection(total) : ''}
-      ${checkoutPhase === 'review' ? renderCheckoutDeclaration() : ''}
-      ${paymentBlock}
-      ${checkoutPhase !== 'processing' ? primaryBtn : ''}
-      <p class="trust-block">Free-look and refund rules depend on the insurer and product you choose.</p>
+      ${paymentBlock}`;
+
+  const dockedFooter = checkoutPhase === 'review'
+    ? `<div class="wizard-step-footer checkout-step-footer">
+      ${renderCheckoutDeclaration()}
+      ${primaryBtn}
+      <p class="checkout-step-footer__trust">Free-look and refund rules depend on the insurer and product you choose.</p>
+    </div>`
+    : checkoutPhase === 'payment'
+      ? `<div class="wizard-step-footer checkout-step-footer">
+        ${primaryBtn}
+        <p class="checkout-step-footer__trust">Free-look and refund rules depend on the insurer and product you choose.</p>
+      </div>`
+      : '';
+
+  const useCheckoutDock = checkoutPhase !== 'processing';
+
+  return `
+    <div class="page-header"><button class="back-btn" data-action="wizard-back">${iconBack()}</button>
+      <h1>${headerTitle}</h1></div>
+    ${progressHtml}
+    <div class="wizard-body checkout-body${useCheckoutDock ? ' checkout-body--dock' : ''}">
+      ${useCheckoutDock ? `<div class="checkout-step-fit">
+        <div class="checkout-step-scroll">${scrollBody}</div>
+        ${dockedFooter || ''}
+      </div>` : `<div class="checkout-step-scroll">${scrollBody}</div>`}
     </div>`;
 }
 
@@ -6451,13 +7187,24 @@ function renderOffersSection(total) {
 
 function renderCheckoutMobileField() {
   const phone = authUser?.phone || signupDraft.phone || '';
-  return `<div class="checkout-mobile form-group">
-    <label for="checkoutPhone">${t('checkout.mobileLabel')}</label>
-    <div class="signup-phone">
-      <span class="signup-phone__code">+91</span>
-      <input id="checkoutPhone" type="tel" inputmode="numeric" autocomplete="tel-national" value="${esc(phone)}" placeholder="10-digit mobile" aria-describedby="checkoutPhoneHint">
+  return `<div class="checkout-mobile form-group form-group--checkout-field" data-checkout-field="checkoutPhone">
+    <label id="checkoutPhoneLabel" for="checkoutPhone">${t('checkout.mobileLabel')}</label>
+    <div class="checkout-phone-field__control">
+      <span class="checkout-phone-field__prefix" id="checkoutPhonePrefix" aria-hidden="true">+91</span>
+      <input
+        id="checkoutPhone"
+        class="checkout-phone-field__input"
+        type="tel"
+        inputmode="numeric"
+        autocomplete="tel-national"
+        value="${esc(phone)}"
+        placeholder="10-digit mobile"
+        maxlength="10"
+        aria-labelledby="checkoutPhonePrefix checkoutPhoneLabel"
+        aria-describedby="checkoutPhoneHint"
+      >
     </div>
-    <p class="payment-note" id="checkoutPhoneHint">${t('checkout.mobileHint')}</p>
+    <p class="checkout-mobile__hint" id="checkoutPhoneHint">${t('checkout.mobileHint')}</p>
   </div>`;
 }
 
@@ -6498,12 +7245,14 @@ function proceedToCheckoutPayment(product) {
       wizardState.declarationError = err;
     } else {
       wizardState.formError = err;
+      if (wizardState) wizardState.checkoutHighlightErrors = true;
     }
     render();
     return;
   }
   wizardState.declarationError = '';
   wizardState.formError = '';
+  if (wizardState) wizardState.checkoutHighlightErrors = false;
   checkoutPhase = 'payment';
   checkoutShouldFocusPayment = true;
   if (!paymentForm.bank) paymentForm.bank = NET_BANKS[0];
@@ -6611,17 +7360,32 @@ function resetMainScroll() {
 
 function captureMainScroll() {
   const main = document.getElementById('mainContent');
-  return { main: main?.scrollTop || 0, windowY: window.scrollY || 0 };
+  const appView = document.querySelector('#mainContent > .app-view');
+  const innerScroll = document.querySelector(
+    '.checkout-step-scroll, .term-step-scroll, .members-step-scroll, .medical-step-scroll, .cover-step-scroll, .home-step-scroll',
+  );
+  return {
+    main: main?.scrollTop || 0,
+    appView: appView?.scrollTop || 0,
+    inner: innerScroll?.scrollTop || 0,
+    windowY: window.scrollY || 0,
+  };
 }
 
 function restoreMainScroll(snapshot) {
   if (!snapshot) return;
   const apply = () => {
     const main = document.getElementById('mainContent');
+    const appView = document.querySelector('#mainContent > .app-view');
+    const innerScroll = document.querySelector(
+      '.checkout-step-scroll, .term-step-scroll, .members-step-scroll, .medical-step-scroll, .cover-step-scroll, .home-step-scroll',
+    );
     if (main) main.scrollTop = snapshot.main;
+    if (appView) appView.scrollTop = snapshot.appView;
+    if (innerScroll) innerScroll.scrollTop = snapshot.inner;
     window.scrollTo(0, snapshot.windowY);
   };
-  requestAnimationFrame(() => requestAnimationFrame(apply));
+  requestAnimationFrame(() => requestAnimationFrame(() => requestAnimationFrame(apply)));
 }
 
 /** Re-render checkout UI without jumping scroll (coupons, bank offers, payment method). */
@@ -6874,6 +7638,37 @@ function render(options = {}) {
   }
 
   main.innerHTML = normalizePageLayout(html);
+  document.body.classList.toggle(
+    'wizard-mode',
+    !!(wizardState && (wizardState.type || wizardState.helpSection)),
+  );
+  document.body.classList.toggle('signup-mode', wizardState?.type === 'signup');
+  document.body.classList.toggle(
+    'wizard-members-fit',
+    wizardState?.type === 'health' && wizardState.step === 0,
+  );
+  document.body.classList.toggle(
+    'wizard-medical-fit',
+    wizardState?.type === 'health' && wizardState.step === 1,
+  );
+  document.body.classList.toggle(
+    'wizard-cover-fit',
+    wizardState?.type === 'health' && wizardState.step === 2,
+  );
+  document.body.classList.toggle(
+    'wizard-term-fit',
+    wizardState?.type === 'term' && wizardState.step === 0,
+  );
+  document.body.classList.toggle(
+    'wizard-home-fit',
+    wizardState?.type === 'home' && wizardState.step === 0,
+  );
+  document.body.classList.toggle(
+    'wizard-motor-fit',
+    wizardState?.type === 'motor' && wizardState.step === 0,
+  );
+  document.body.classList.toggle('wizard-docked-step', usesWizardDockedStepLayout());
+  document.body.classList.toggle('wizard-checkout-fit', usesWizardCheckoutDock());
   applyI18n();
   initPageHollowSelects();
   bindEvents();
@@ -6885,6 +7680,38 @@ function render(options = {}) {
     checkoutShouldFocusPayment = false;
     requestAnimationFrame(() => {
       document.querySelector('[data-payment]')?.focus?.();
+    });
+  }
+  if (termAgeShouldFocus) {
+    termAgeShouldFocus = false;
+    requestAnimationFrame(() => {
+      const el = document.getElementById('termAge');
+      el?.focus();
+      el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    });
+  }
+  if (homePincodeShouldFocus) {
+    homePincodeShouldFocus = false;
+    requestAnimationFrame(() => {
+      const el = document.getElementById('homePincode');
+      el?.focus();
+      el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    });
+  }
+  if (homeAreaShouldFocus) {
+    homeAreaShouldFocus = false;
+    requestAnimationFrame(() => {
+      const el = document.getElementById('homeAreaSqFt');
+      el?.focus();
+      el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    });
+  }
+  if (homeStructureShouldFocus) {
+    homeStructureShouldFocus = false;
+    requestAnimationFrame(() => {
+      const el = document.getElementById('homeStructureValueLakh');
+      el?.focus();
+      el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
     });
   }
   syncCheckoutFocusTrap();
@@ -6970,10 +7797,12 @@ function tryAdvanceWizard() {
     if (!validateMotorStep(step)) { render(); return; }
   }
   if (type === 'term' && step === 0) {
+    captureTermFormFromDOM();
     const tq = quoteForm.term;
     const age = Number(tq.age);
     if (!tq.age || age < 18 || age > 65) {
       wizardState.formError = 'Enter your age (18–65)';
+      termAgeShouldFocus = true;
       render();
       return;
     }
@@ -7096,13 +7925,282 @@ function bindEvents() {
   document.querySelectorAll('[data-term-smoking]').forEach((btn) => {
     btn.addEventListener('click', () => {
       quoteForm.term.smoking = btn.dataset.termSmoking;
+      if (wizardState?.formError && /smoke/i.test(wizardState.formError)) {
+        wizardState.formError = '';
+      }
       renderPreserveScroll();
     });
   });
-  document.querySelectorAll('[data-term-input]').forEach((input) => {
-    input.addEventListener('change', () => {
-      quoteForm.term.age = Number(input.value);
-    });
+  const termAgeInput = document.getElementById('termAge');
+  const syncTermAgeFieldVisual = (wrap, { empty, ok }) => {
+    if (!wrap) return;
+    wrap.classList.remove(
+      'term-age-field--ok',
+      'term-age-field--needs',
+      'term-age-field--idle',
+      'term-age-field--invalid',
+      'term-age-field--error',
+    );
+    if (ok) wrap.classList.add('term-age-field--ok');
+    else if (empty) wrap.classList.add('term-age-field--needs');
+    else wrap.classList.add('term-age-field--invalid');
+  };
+  termAgeInput?.addEventListener('input', () => {
+    const digits = termAgeInput.value.replace(/\D/g, '').slice(0, 2);
+    if (digits !== termAgeInput.value) termAgeInput.value = digits;
+    quoteForm.term.age = digits;
+    const age = digits === '' ? NaN : Number(digits);
+    const ok = Number.isFinite(age) && age >= 18 && age <= 65;
+    const empty = digits === '';
+    termAgeInput.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    const wrap = termAgeInput.closest('.term-age-field');
+    if (wrap?.classList.contains('term-age-field--error') && (ok || empty)) {
+      wrap.classList.remove('term-age-field--error');
+    }
+    syncTermAgeFieldVisual(wrap, { empty, ok });
+    syncTermAgeInvalidMessage(wrap, termAgeInput, { empty, ok, age, digits });
+    const hintEl = document.getElementById('termAgeHint');
+    if (hintEl) {
+      hintEl.textContent = ok
+        ? t('term.ageHintOk')
+        : empty
+          ? t('term.ageHintEmpty')
+          : t('term.ageHintPartial');
+    }
+    const guideEl = document.getElementById('termAgeGuide');
+    if (!empty && guideEl) {
+      guideEl.remove();
+      termAgeInput.setAttribute('aria-describedby', 'termAgeHint');
+    }
+    if (ok && wizardState?.formError && /age/i.test(wizardState.formError)) {
+      wizardState.formError = '';
+      document.getElementById('termAgeError')?.remove();
+    }
+    if (!ok && !empty && wrap?.classList.contains('term-age-field--error')) {
+      wrap.classList.remove('term-age-field--error');
+      wrap.classList.add('term-age-field--invalid');
+      document.getElementById('termAgeError')?.remove();
+    }
+  });
+  termAgeInput?.closest('.term-age-field__control')?.addEventListener('click', (e) => {
+    if (e.target === termAgeInput) return;
+    termAgeInput?.focus();
+  });
+  termAgeInput?.addEventListener('change', () => {
+    captureTermFormFromDOM();
+  });
+
+  const homePincodeInput = document.getElementById('homePincode');
+  const syncHomePincodeFieldVisual = (wrap, { empty, ok }) => {
+    if (!wrap) return;
+    wrap.classList.remove(
+      'term-age-field--ok',
+      'term-age-field--needs',
+      'term-age-field--idle',
+      'term-age-field--invalid',
+      'term-age-field--error',
+    );
+    if (ok) wrap.classList.add('term-age-field--ok');
+    else if (empty) wrap.classList.add('term-age-field--needs');
+    else wrap.classList.add('term-age-field--invalid');
+  };
+  const syncHomePincodeInvalidMessage = (wrap, input, { empty, ok, digits }) => {
+    let invalidEl = document.getElementById('homePincodeInvalid');
+    if (ok || empty) {
+      invalidEl?.remove();
+      return;
+    }
+    const msg = homePincodeInvalidMessage(digits);
+    if (!invalidEl) {
+      invalidEl = document.createElement('p');
+      invalidEl.id = 'homePincodeInvalid';
+      invalidEl.className = 'term-age-field__invalid';
+      invalidEl.setAttribute('role', 'alert');
+      wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
+    }
+    invalidEl.textContent = msg;
+    input.setAttribute('aria-describedby', ['homePincodeHint', 'homePincodeInvalid'].join(' '));
+  };
+  homePincodeInput?.addEventListener('input', () => {
+    const digits = homePincodeInput.value.replace(/\D/g, '').slice(0, 6);
+    if (digits !== homePincodeInput.value) homePincodeInput.value = digits;
+    quoteForm.home.pincode = digits;
+    const ok = isValidHomePincode(digits);
+    const empty = digits === '';
+    homePincodeInput.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    const wrap = homePincodeInput.closest('.home-pincode-field');
+    if (wrap?.classList.contains('term-age-field--error') && (ok || empty)) {
+      wrap.classList.remove('term-age-field--error');
+      document.getElementById('homePincodeError')?.remove();
+    }
+    syncHomePincodeFieldVisual(wrap, { empty, ok });
+    syncHomePincodeInvalidMessage(wrap, homePincodeInput, { empty, ok, digits });
+    const hintEl = document.getElementById('homePincodeHint');
+    if (hintEl) {
+      hintEl.textContent = ok
+        ? t('home.pincodeHintOk')
+        : empty
+          ? t('home.pincodeHintEmpty')
+          : t('home.pincodeHintPartial');
+    }
+    const guideEl = document.getElementById('homePincodeGuide');
+    if (!empty && guideEl) {
+      guideEl.remove();
+      homePincodeInput.setAttribute('aria-describedby', homePincodeInput.getAttribute('aria-describedby')?.replace('homePincodeGuide', '').trim() || 'homePincodeHint');
+    }
+    if (ok && wizardState?.formError && /pincode/i.test(wizardState.formError)) {
+      wizardState.formError = '';
+    }
+  });
+  homePincodeInput?.closest('.term-age-field__control')?.addEventListener('click', (e) => {
+    if (e.target === homePincodeInput) return;
+    homePincodeInput?.focus();
+  });
+
+  const homeAreaInput = document.getElementById('homeAreaSqFt');
+  const syncHomeAreaFieldVisual = (wrap, { empty, ok }) => {
+    if (!wrap) return;
+    wrap.classList.remove(
+      'term-age-field--ok',
+      'term-age-field--needs',
+      'term-age-field--idle',
+      'term-age-field--invalid',
+      'term-age-field--error',
+    );
+    if (ok) wrap.classList.add('term-age-field--ok');
+    else if (empty) wrap.classList.add('term-age-field--needs');
+    else wrap.classList.add('term-age-field--invalid');
+  };
+  const syncHomeAreaInvalidMessage = (wrap, input, { empty, ok, digits }) => {
+    let invalidEl = document.getElementById('homeAreaInvalid');
+    if (ok || empty) {
+      invalidEl?.remove();
+      return;
+    }
+    const msg = homeAreaInvalidMessage(digits);
+    if (!invalidEl) {
+      invalidEl = document.createElement('p');
+      invalidEl.id = 'homeAreaInvalid';
+      invalidEl.className = 'term-age-field__invalid';
+      invalidEl.setAttribute('role', 'alert');
+      wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
+    }
+    invalidEl.textContent = msg;
+    input.setAttribute('aria-describedby', ['homeAreaHint', 'homeAreaInvalid'].join(' '));
+  };
+  homeAreaInput?.addEventListener('input', () => {
+    const digits = homeAreaInputValue(homeAreaInput.value);
+    if (digits !== homeAreaInput.value) homeAreaInput.value = digits;
+    quoteForm.home.areaSqFt = digits === '' ? '' : parseInt(digits, 10);
+    const ok = isValidHomeAreaSqFt(digits);
+    const empty = digits === '';
+    homeAreaInput.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    const wrap = homeAreaInput.closest('.home-area-field');
+    if (wrap?.classList.contains('term-age-field--error') && (ok || empty)) {
+      wrap.classList.remove('term-age-field--error');
+      document.getElementById('homeAreaError')?.remove();
+    }
+    syncHomeAreaFieldVisual(wrap, { empty, ok });
+    syncHomeAreaInvalidMessage(wrap, homeAreaInput, { empty, ok, digits });
+    const hintEl = document.getElementById('homeAreaHint');
+    if (hintEl) {
+      hintEl.textContent = ok
+        ? t('home.areaHintOk')
+        : empty
+          ? t('home.areaHintEmpty')
+          : t('home.areaHintPartial');
+    }
+    const guideEl = document.getElementById('homeAreaGuide');
+    if (!empty && guideEl) {
+      guideEl.remove();
+      homeAreaInput.setAttribute(
+        'aria-describedby',
+        homeAreaInput.getAttribute('aria-describedby')?.replace('homeAreaGuide', '').trim() || 'homeAreaHint',
+      );
+    }
+    if (ok && wizardState?.formError && /built-up area/i.test(wizardState.formError)) {
+      wizardState.formError = '';
+    }
+  });
+  homeAreaInput?.addEventListener('change', () => {
+    captureHomeFormFromDOM();
+  });
+  homeAreaInput?.closest('.term-age-field__control')?.addEventListener('click', (e) => {
+    if (e.target === homeAreaInput) return;
+    homeAreaInput?.focus();
+  });
+
+  const homeStructureInput = document.getElementById('homeStructureValueLakh');
+  const syncHomeStructureFieldVisual = (wrap, { empty, ok }) => {
+    if (!wrap) return;
+    wrap.classList.remove(
+      'term-age-field--ok',
+      'term-age-field--needs',
+      'term-age-field--idle',
+      'term-age-field--invalid',
+      'term-age-field--error',
+    );
+    if (ok) wrap.classList.add('term-age-field--ok');
+    else if (empty) wrap.classList.add('term-age-field--needs');
+    else wrap.classList.add('term-age-field--invalid');
+  };
+  const syncHomeStructureInvalidMessage = (wrap, input, { empty, ok, digits }) => {
+    let invalidEl = document.getElementById('homeStructureInvalid');
+    if (ok || empty) {
+      invalidEl?.remove();
+      return;
+    }
+    const msg = homeStructureInvalidMessage(digits);
+    if (!invalidEl) {
+      invalidEl = document.createElement('p');
+      invalidEl.id = 'homeStructureInvalid';
+      invalidEl.className = 'term-age-field__invalid';
+      invalidEl.setAttribute('role', 'alert');
+      wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
+    }
+    invalidEl.textContent = msg;
+    input.setAttribute('aria-describedby', ['homeStructureHint', 'homeStructureInvalid'].join(' '));
+  };
+  homeStructureInput?.addEventListener('input', () => {
+    const digits = homeStructureInputValue(homeStructureInput.value);
+    if (digits !== homeStructureInput.value) homeStructureInput.value = digits;
+    quoteForm.home.structureValueLakh = digits === '' ? '' : parseInt(digits, 10);
+    const ok = isValidHomeStructureValueLakh(digits);
+    const empty = digits === '';
+    homeStructureInput.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    const wrap = homeStructureInput.closest('.home-structure-field');
+    if (wrap?.classList.contains('term-age-field--error') && (ok || empty)) {
+      wrap.classList.remove('term-age-field--error');
+      document.getElementById('homeStructureError')?.remove();
+    }
+    syncHomeStructureFieldVisual(wrap, { empty, ok });
+    syncHomeStructureInvalidMessage(wrap, homeStructureInput, { empty, ok, digits });
+    const hintEl = document.getElementById('homeStructureHint');
+    if (hintEl) {
+      hintEl.textContent = ok
+        ? t('home.structureHintOk')
+        : empty
+          ? t('home.structureHintEmpty')
+          : t('home.structureHintPartial');
+    }
+    const guideEl = document.getElementById('homeStructureGuide');
+    if (!empty && guideEl) {
+      guideEl.remove();
+      homeStructureInput.setAttribute(
+        'aria-describedby',
+        homeStructureInput.getAttribute('aria-describedby')?.replace('homeStructureGuide', '').trim() || 'homeStructureHint',
+      );
+    }
+    if (ok && wizardState?.formError && /structure value/i.test(wizardState.formError)) {
+      wizardState.formError = '';
+    }
+  });
+  homeStructureInput?.addEventListener('change', () => {
+    captureHomeFormFromDOM();
+  });
+  homeStructureInput?.closest('.term-age-field__control')?.addEventListener('click', (e) => {
+    if (e.target === homeStructureInput) return;
+    homeStructureInput?.focus();
   });
 
   document.querySelectorAll('[data-action="set-view"]').forEach(el => {
@@ -7277,6 +8375,7 @@ function bindEvents() {
 
   document.querySelectorAll('[data-action="checkout-to-payment"]').forEach((el) => {
     el.addEventListener('click', () => {
+      if (el.disabled || el.getAttribute('aria-disabled') === 'true') return;
       proceedToCheckoutPayment(el.dataset.product || wizardState?.type || activeProduct);
     });
   });
@@ -7328,6 +8427,10 @@ function bindEvents() {
     });
   });
 
+  const applyCouponChange = () => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    renderPreserveScroll();
+  };
   document.querySelector('[data-action="apply-coupon"]')?.addEventListener('click', () => {
     captureCheckoutFormFromDOM();
     const input = document.getElementById('couponInput');
@@ -7336,10 +8439,10 @@ function bindEvents() {
       appliedCoupon = code;
       couponInput = code;
       couponFieldError = '';
-      renderPreserveScroll();
+      applyCouponChange();
     } else {
       couponFieldError = 'This coupon code isn\'t valid.';
-      renderPreserveScroll();
+      applyCouponChange();
     }
   });
 
@@ -7349,7 +8452,7 @@ function bindEvents() {
       appliedCoupon = el.dataset.code;
       couponInput = el.dataset.code;
       couponFieldError = '';
-      renderPreserveScroll();
+      applyCouponChange();
     });
   });
 
@@ -7358,7 +8461,7 @@ function bindEvents() {
     appliedCoupon = null;
     couponInput = '';
     couponFieldError = '';
-    renderPreserveScroll();
+    applyCouponChange();
   });
 
   document.getElementById('healthPedOther')?.addEventListener('input', (e) => {
@@ -7366,20 +8469,25 @@ function bindEvents() {
     if (active) ensureMemberMedical(active).pedOtherText = e.target.value;
   });
 
+  const bumpCheckoutCta = () => syncCheckoutFieldUi();
   document.getElementById('checkoutProposerName')?.addEventListener('input', (e) => {
     checkoutForm.proposerName = e.target.value;
+    bumpCheckoutCta();
   });
   document.getElementById('checkoutNominee')?.addEventListener('input', (e) => {
     checkoutForm.nominee = e.target.value;
+    bumpCheckoutCta();
   });
   document.getElementById('checkoutNomineeDob')?.addEventListener('change', (e) => {
     checkoutForm.nomineeDob = e.target.value;
+    bumpCheckoutCta();
   });
   document.querySelectorAll('[id^="insuredName-"]').forEach((el) => {
     el.addEventListener('input', () => {
       const id = el.id.replace('insuredName-', '');
       const m = quoteForm.health.members.find((x) => x.id === id);
       if (m) m.fullName = el.value;
+      bumpCheckoutCta();
     });
   });
   document.querySelectorAll('[id^="insuredDob-"]').forEach((el) => {
@@ -7387,14 +8495,20 @@ function bindEvents() {
       const id = el.id.replace('insuredDob-', '');
       const m = quoteForm.health.members.find((x) => x.id === id);
       if (m) m.dob = el.value;
+      bumpCheckoutCta();
     });
   });
   document.getElementById('checkoutPan')?.addEventListener('input', (e) => {
+    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
     checkoutForm.pan = e.target.value;
+    bumpCheckoutCta();
   });
   document.getElementById('checkoutDeclaration')?.addEventListener('change', (e) => {
     checkoutForm.declaration = e.target.checked;
+    if (wizardState?.declarationError) wizardState.declarationError = '';
+    bumpCheckoutCta();
   });
+  syncCheckoutFieldUi();
 
   document.getElementById('couponInput')?.addEventListener('input', (e) => {
     couponInput = e.target.value;
@@ -7444,6 +8558,17 @@ function bindEvents() {
 
   document.querySelectorAll('.tab').forEach(el => {
     el.addEventListener('click', () => { policyTab = el.dataset.tab; render(); });
+  });
+
+  document.querySelectorAll('[data-action="delete-saved-quote"]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = el.dataset.quoteId;
+      const idx = savedQuotes.findIndex((q) => q.id === id);
+      if (idx === -1) return;
+      savedQuotes.splice(idx, 1);
+      render({ preserveScroll: true });
+    });
   });
 
   document.querySelectorAll('[data-trending]').forEach(el => {
@@ -7774,6 +8899,11 @@ function renderAIMessageHTML(m) {
   }
   if (m.card) html += `<div class="ai-result-card"><strong>${m.card.type}</strong> · ${m.card.name}<br><small>${m.card.sumInsured || ''}</small></div>`;
   if (m.actions) html += renderAIActions(m.actions);
+  if (m.productPicks?.length) {
+    html += `<div class="ai-product-picks" role="group" aria-label="${t('ai.pickProduct')}">${m.productPicks.map((p) =>
+      `<button type="button" class="ai-product-pick" data-ai-action="finder-protect" data-value="${esc(p.value)}">${esc(p.label)}</button>`
+    ).join('')}</div>`;
+  }
   if (m.chips) {
     html += `<div class="ai-chips">${m.chips.map(c =>
       `<button type="button" class="ai-chip" data-ai-action="explain-term" data-term="${c.term}">${c.label}</button>`
@@ -7799,16 +8929,27 @@ function renderAIMessageHTML(m) {
   return html;
 }
 
+function syncAIPanelChrome() {
+  const panel = document.getElementById('aiPanel');
+  const subtitle = panel?.querySelector('.ai-panel__subtitle');
+  if (subtitle) {
+    subtitle.textContent = aiMode === 'finder' ? t('ai.subtitleFinder') : t('ai.subtitle');
+  }
+  panel?.classList.toggle('ai-panel--finder', aiMode === 'finder' && aiFinderStep === 'protect');
+}
+
 function renderAIMessages() {
   const c = document.getElementById('aiMessages');
   if (!c) return;
   renderAIModeBadge();
   renderAIFinderProgress();
+  syncAIPanelChrome();
   if (!aiMessages.length) {
-    c.innerHTML = `<div class="quote-choice-card ai-welcome" role="status">
-      <p class="quote-choice-card__title">${t('ai.welcomeTitle')}</p>
-      <p class="quote-choice-card__hint">${t('ai.welcomeHint')}</p>
-      <p class="ai-welcome__verified">${icon('shield', ICON_SIZE.sm, 'hollow-icon hollow-icon--inline ai-welcome__verified-icon')} Policy facts come from your documents in the app — general answers are not a guarantee.</p>
+    c.innerHTML = `<div class="ai-welcome" role="status">
+      <p class="ai-welcome__title">${t('ai.welcomeTitle')}</p>
+      <p class="ai-welcome__hint">${t('ai.welcomeHint')}</p>
+      <p class="ai-welcome__topics-label" id="aiSuggestionsLabelWelcome">${t('ai.quickTopics')}</p>
+      <div class="ai-welcome__suggestions" id="aiSuggestionsWelcome" role="group" aria-labelledby="aiSuggestionsLabelWelcome"></div>
     </div>`;
   } else {
     c.innerHTML = aiMessages.map(m => `<div class="ai-msg ai-msg--${m.role}">${renderAIMessageHTML(m)}</div>`).join('');
@@ -7825,7 +8966,7 @@ function lastBotMessage() {
 }
 
 function shouldShowAISuggestions() {
-  if (aiMode === 'finder' && aiFinderStep === 'protect') return true;
+  if (aiMode === 'finder' && aiFinderStep === 'protect') return false;
   if (aiMode === 'explainer') return false;
   const last = lastBotMessage();
   if (last?.actions?.length || last?.chips?.length) return false;
@@ -7835,26 +8976,28 @@ function shouldShowAISuggestions() {
 }
 
 function renderAISuggestions() {
-  const c = document.getElementById('aiSuggestions');
+  const show = shouldShowAISuggestions();
+  const inWelcome = !aiMessages.length;
   const wrap = document.getElementById('aiSuggestionsWrap');
-  const labelEl = document.getElementById('aiSuggestionsLabel');
+  const c = inWelcome
+    ? document.getElementById('aiSuggestionsWelcome')
+    : document.getElementById('aiSuggestionsFooter');
+  const labelEl = inWelcome
+    ? document.getElementById('aiSuggestionsLabelWelcome')
+    : document.getElementById('aiSuggestionsLabelFooter');
+  if (wrap) wrap.hidden = inWelcome || !show;
   if (!c) return;
 
-  const show = shouldShowAISuggestions();
-  if (wrap) wrap.hidden = !show;
-  if (labelEl) {
-    labelEl.hidden = !show;
-    const isFinderPick = aiMode === 'finder' && aiFinderStep === 'protect';
-    labelEl.textContent = isFinderPick ? t('ai.pickProduct') : t('ai.quickTopics');
-  }
-  if (!show) {
+  const showChips = inWelcome || show;
+  if (labelEl && showChips) labelEl.textContent = t('ai.quickTopics');
+
+  if (!showChips) {
     c.innerHTML = '';
-    c.className = 'chip-group chip-group--choice chip-group--wrap ai-panel__chips';
+    c.className = inWelcome ? 'ai-welcome__suggestions' : 'ai-panel__suggestion-grid';
     return;
   }
 
-  const isFinderPick = aiMode === 'finder' && aiFinderStep === 'protect';
-  const suggestionKeys = isFinderPick ? AI_STANDARD_SUGGESTIONS : AI_CHAT_SUGGESTIONS;
+  const suggestionKeys = AI_CHAT_SUGGESTIONS.slice(0, 4);
   const chatLabels = {
     'ai.suggest.health': 'Health plans',
     'ai.suggest.motor': 'Motor cover',
@@ -7865,13 +9008,11 @@ function renderAISuggestions() {
     'ai.suggest.term': 'Term life',
     'ai.suggest.home': 'Home cover',
   };
-  c.className = 'chip-group chip-group--choice chip-group--wrap ai-panel__chips';
+  c.className = inWelcome ? 'ai-welcome__suggestions' : 'ai-panel__suggestion-grid';
 
   c.innerHTML = suggestionKeys.map((key) => {
-    const label = isFinderPick
-      ? (AI_SUGGEST_SHORT_LABEL.en[key] || t(key))
-      : (chatLabels[key] || t(key));
-    return `<button type="button" class="chip" data-suggestion-key="${key}"><span class="chip__line">${esc(label)}</span></button>`;
+    const label = chatLabels[key] || t(key);
+    return `<button type="button" class="ai-suggest-chip" data-suggestion-key="${key}">${esc(label)}</button>`;
   }).join('');
 }
 
@@ -8155,8 +9296,14 @@ function pushFinderQuestion() {
 
   if (aiFinderStep === 'protect') {
     pushBotMessage({
-      text: '**Policy finder** — What type of insurance do you need? Choose a product below.',
+      text: '**Policy finder** — What type of insurance do you need?',
       skipCoverageGuard: true,
+      productPicks: [
+        { label: 'Health', value: 'family' },
+        { label: 'Motor', value: 'vehicle' },
+        { label: 'Term life', value: 'term' },
+        { label: 'Home', value: 'home' },
+      ],
     });
   }
 }
@@ -8454,6 +9601,70 @@ function routeAIQuery(query) {
   };
 }
 
+let aiKeyboardViewportBound = false;
+
+function resetAIPanelViewport() {
+  document.body.classList.remove('ai-keyboard-open', 'ai-input-focused');
+  document.documentElement.style.setProperty('--ai-keyboard-inset', '0px');
+  document.documentElement.style.removeProperty('--ai-vv-height');
+  const panel = document.getElementById('aiPanel');
+  if (panel) panel.style.maxHeight = '';
+}
+
+function syncAIPanelViewport() {
+  const panel = document.getElementById('aiPanel');
+  if (!panel?.classList.contains('open')) {
+    resetAIPanelViewport();
+    return;
+  }
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const layoutHeight = window.innerHeight;
+  const keyboardGap = Math.max(0, layoutHeight - vv.height - vv.offsetTop);
+  const inputFocused = document.body.classList.contains('ai-input-focused');
+  const keyboardOpen = keyboardGap > 48 || (inputFocused && keyboardGap > 20);
+  const inset = keyboardOpen ? keyboardGap : 0;
+  document.documentElement.style.setProperty('--ai-keyboard-inset', `${inset}px`);
+  document.documentElement.style.setProperty('--ai-vv-height', `${vv.height}px`);
+  document.body.classList.toggle('ai-keyboard-open', keyboardOpen);
+  if (keyboardOpen) {
+    const cap = Math.max(220, Math.floor(vv.height - 8));
+    panel.style.maxHeight = `${cap}px`;
+  } else {
+    panel.style.maxHeight = '';
+  }
+}
+
+function bindAIKeyboardViewport() {
+  if (aiKeyboardViewportBound) return;
+  aiKeyboardViewportBound = true;
+  const input = document.getElementById('aiInput');
+  const onVV = () => syncAIPanelViewport();
+  window.visualViewport?.addEventListener('resize', onVV);
+  window.visualViewport?.addEventListener('scroll', onVV);
+  window.addEventListener('resize', onVV);
+  input?.addEventListener('focus', () => {
+    document.body.classList.add('ai-input-focused');
+    onVV();
+    requestAnimationFrame(onVV);
+    setTimeout(onVV, 100);
+    setTimeout(onVV, 280);
+    setTimeout(() => {
+      document.getElementById('aiMessages')?.lastElementChild?.scrollIntoView?.({ block: 'end' });
+    }, 320);
+  });
+  input?.addEventListener('blur', () => {
+    document.body.classList.remove('ai-input-focused');
+    setTimeout(onVV, 160);
+  });
+}
+
+function shouldDeferAIFocusOnOpen(mode, finderProtect, prefill) {
+  if (finderProtect || mode === 'finder') return true;
+  if (!mode && !prefill) return true;
+  return false;
+}
+
 function getAIFocusables() {
   const panel = document.getElementById('aiPanel');
   if (!panel?.classList.contains('open')) return [];
@@ -8514,8 +9725,19 @@ function openAIPanel(prefill = '', mode = null, finderProtect = null, fromHistor
     renderAISuggestions();
   }
   if (prefill && !finderProtect) submitAIQuery(prefill);
-  const focusTarget = document.getElementById('aiInput') || document.getElementById('aiClose');
-  requestAnimationFrame(() => focusTarget?.focus?.());
+  bindAIKeyboardViewport();
+  syncAIPanelViewport();
+  syncAIPanelChrome();
+  const deferFocus = shouldDeferAIFocusOnOpen(mode, finderProtect, prefill);
+  requestAnimationFrame(() => {
+    if (deferFocus) {
+      const chip = panel.querySelector('.ai-product-pick, .ai-suggest-chip');
+      (chip || document.getElementById('aiClose'))?.focus?.();
+    } else {
+      document.getElementById('aiInput')?.focus?.();
+    }
+    syncAIPanelViewport();
+  });
 }
 
 function closeAIPanel(fromHistory = false) {
@@ -8524,6 +9746,7 @@ function closeAIPanel(fromHistory = false) {
   panel.classList.remove('open');
   panel.setAttribute('aria-hidden', 'true');
   document.getElementById('aiOverlay')?.classList.remove('visible');
+  resetAIPanelViewport();
   disableAIFocusTrap();
   const restore = aiLastTrigger || document.getElementById('aiFab');
   requestAnimationFrame(() => restore?.focus?.());
@@ -8951,25 +10174,26 @@ document.getElementById('bottomNav').addEventListener('click', e => {
   const btn = e.target.closest('.bottom-nav__item');
   if (btn?.dataset.view) { wizardState = null; setView(btn.dataset.view); }
 });
+bindAIKeyboardViewport();
 document.getElementById('aiFab').addEventListener('click', (e) => openAIPanel('', null, null, false, e.currentTarget));
 document.getElementById('aiClose').addEventListener('click', goBack);
 document.getElementById('aiOverlay').addEventListener('click', goBack);
 document.getElementById('aiForm').addEventListener('submit', e => { e.preventDefault(); const q = document.getElementById('aiInput').value.trim(); if (q) { submitAIQuery(q); document.getElementById('aiInput').value = ''; } });
-document.getElementById('aiSuggestions').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-suggestion-key]');
-  if (!b) return;
-  const key = b.dataset.suggestionKey;
-  if (aiMode === 'finder' && aiFinderStep === 'protect' && AI_SUGGEST_TO_FINDER[key]) {
-    handleAIAction('finder-protect', { value: AI_SUGGEST_TO_FINDER[key] });
-    return;
-  }
-  const q = AI_PRODUCT_PROMPT_QUERIES.en[key] || t(key);
-  submitAIQuery(q);
-});
 document.getElementById('aiExpertHandoff')?.addEventListener('click', (e) => {
   openExpertModal(false, e.currentTarget);
 });
 document.getElementById('aiPanel').addEventListener('click', (e) => {
+  const suggest = e.target.closest('[data-suggestion-key]');
+  if (suggest) {
+    const key = suggest.dataset.suggestionKey;
+    if (aiMode === 'finder' && aiFinderStep === 'protect' && AI_SUGGEST_TO_FINDER[key]) {
+      handleAIAction('finder-protect', { value: AI_SUGGEST_TO_FINDER[key] });
+      return;
+    }
+    const q = AI_PRODUCT_PROMPT_QUERIES.en[key] || t(key);
+    submitAIQuery(q);
+    return;
+  }
   const handoff = e.target.closest('[data-action="open-expert-from-ai"]');
   if (handoff) {
     openExpertModal(false, handoff);
