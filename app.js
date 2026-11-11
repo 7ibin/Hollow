@@ -204,6 +204,9 @@ const i18n = {
     'home.why2.desc': 'AI and cover guides explain terms before you commit.',
     'home.why3.title': 'Support after you buy',
     'home.why3.desc': 'Keep policies, renewals and claims in one app.',
+    'home.keyFeaturesTitle': 'Key features',
+    'home.keyFeaturesIntro': 'Cover guide and hospitals first, then motor help and support.',
+    'home.keyFeaturesIntroOpen': 'Open support cases first — then cover guide, hospitals, and motor.',
     'guide.title': 'How much cover do you need?',
     'guide.subtitle': '4 quick questions — no jargon',
     'guide.heroCta': 'Find the right cover amount',
@@ -560,21 +563,21 @@ function renderHomeWhyHollow() {
     <h2 id="homeWhyTitle" class="home-why-hollow__title">${t('home.whyTitle')}</h2>
     <div class="why-hollow-panel">
       <div class="why-hollow-item why-hollow-item--divider">
-        <div class="why-hollow-item__icon why-hollow-item__icon--compare" aria-hidden="true">${icon('compare', ICON_SIZE.lg)}</div>
+        <div class="why-hollow-item__icon why-hollow-item__icon--compare" aria-hidden="true">${icon('compare', ICON_SIZE.md)}</div>
         <div class="why-hollow-item__text">
           <p class="why-hollow-item__title">${t('home.why1.title')}</p>
           <p class="why-hollow-item__desc">${t('home.why1.desc')}</p>
         </div>
       </div>
       <div class="why-hollow-item why-hollow-item--divider">
-        <div class="why-hollow-item__icon why-hollow-item__icon--guide" aria-hidden="true">${icon('sparkles', ICON_SIZE.lg)}</div>
+        <div class="why-hollow-item__icon why-hollow-item__icon--guide" aria-hidden="true">${icon('sparkles', ICON_SIZE.md)}</div>
         <div class="why-hollow-item__text">
           <p class="why-hollow-item__title">${t('home.why2.title')}</p>
           <p class="why-hollow-item__desc">${t('home.why2.desc')}</p>
         </div>
       </div>
       <div class="why-hollow-item">
-        <div class="why-hollow-item__icon why-hollow-item__icon--support" aria-hidden="true">${icon('advisor', ICON_SIZE.lg)}</div>
+        <div class="why-hollow-item__icon why-hollow-item__icon--support" aria-hidden="true">${icon('advisor', ICON_SIZE.md)}</div>
         <div class="why-hollow-item__text">
           <p class="why-hollow-item__title">${t('home.why3.title')}</p>
           <p class="why-hollow-item__desc">${t('home.why3.desc')}</p>
@@ -4576,6 +4579,32 @@ function renderPrototypeBanner(_text) {
   return '';
 }
 
+/** Post-purchase shortcuts — left-to-right = priority (Support jumps to #2 when cases are open). */
+function renderHomeCustomerToolsStrip() {
+  const openN = openCasesCount();
+  const doctor = `<button type="button" class="help-tile customer-tool-tile customer-tool-tile--lead" role="listitem" data-action="open-policy-doctor" aria-label="Policy Doctor — understand your cover">
+              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--doctor">${icon('doctor', ICON_SIZE.lg)}</div>
+              <div class="help-tile__label">Policy Doctor</div>
+            </button>`;
+  const support = `<button type="button" class="help-tile customer-tool-tile customer-tool-tile--badge${openN ? ' customer-tool-tile--urgent' : ''}" role="listitem" data-action="open-cases" aria-label="Support cases${openN ? ` — ${openN} open` : ''}">
+              ${openN ? `<span class="customer-tool-tile__count" aria-hidden="true">${openN}</span>` : ''}
+              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--cases">${icon('support', ICON_SIZE.lg)}</div>
+              <div class="help-tile__label">Support</div>
+            </button>`;
+  const motor = `<button type="button" class="help-tile customer-tool-tile" role="listitem" data-action="set-view" data-view="help" data-help="motor" aria-label="Cashless garages and roadside help">
+              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--motor">${icon('motor', ICON_SIZE.lg)}</div>
+              <div class="help-tile__label">Motor</div>
+            </button>`;
+  const hospital = `<button type="button" class="help-tile customer-tool-tile" role="listitem" data-action="set-view" data-view="help" data-help="network" aria-label="Find cashless hospital">
+              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--hospital">${icon('mapPin', ICON_SIZE.lg)}</div>
+              <div class="help-tile__label">Hospitals</div>
+            </button>`;
+  const ordered = openN
+    ? [doctor, support, hospital, motor]
+    : [doctor, hospital, motor, support];
+  return ordered.join('');
+}
+
 function renderServiceAlertRow(it) {
   const attrs = [
     `data-action="${it.action}"`,
@@ -4587,7 +4616,7 @@ function renderServiceAlertRow(it) {
     ? `<span class="status-chip ${it.badgeClass || 'status--open'}">${esc(it.badge)}</span>`
     : '';
   return `<button type="button" class="service-alert service-alert--${it.type}" ${attrs}>
-    <span class="service-alert__icon service-alert__icon--${it.type}" aria-hidden="true">${icon(it.icon, ICON_SIZE.md)}</span>
+    <span class="service-alert__icon service-alert__icon--${it.type}" aria-hidden="true">${icon(it.icon, ICON_SIZE.sm)}</span>
     <span class="service-alert__body">
       <span class="service-alert__top">
         <span class="service-alert__title">${esc(it.title)}</span>
@@ -4595,7 +4624,7 @@ function renderServiceAlertRow(it) {
       </span>
       <span class="service-alert__meta">${esc(it.meta)}</span>
     </span>
-    ${icon('chevronRight', ICON_SIZE.md, 'hollow-icon service-alert__chev')}
+    ${icon('chevronRight', ICON_SIZE.sm, 'hollow-icon service-alert__chev')}
   </button>`;
 }
 
@@ -5171,29 +5200,13 @@ function renderHome() {
           </button>
         </div>
 
-        <div class="customer-tools">
+        <div class="customer-tools customer-tools--key-features">
           <div class="section__head section__head--stack">
-            <h2>After you buy</h2>
-            <p class="customer-tools__intro">Understand your policy, motor help, and cashless hospitals</p>
+            <h2>${t('home.keyFeaturesTitle')}</h2>
+            <p class="customer-tools__intro">${openCasesCount() ? t('home.keyFeaturesIntroOpen') : t('home.keyFeaturesIntro')}</p>
           </div>
-          <div class="help-grid customer-tools__grid">
-            <button type="button" class="help-tile customer-tool-tile" data-action="open-policy-doctor">
-              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--doctor">${icon('doctor', ICON_SIZE.lg)}</div>
-              <div class="help-tile__label">Policy Doctor</div>
-            </button>
-            <button type="button" class="help-tile customer-tool-tile customer-tool-tile--badge" data-action="open-cases">
-              ${openCasesCount() ? `<span class="customer-tool-tile__count" aria-label="${openCasesCount()} open cases">${openCasesCount()}</span>` : ''}
-              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--cases">${icon('support', ICON_SIZE.lg)}</div>
-              <div class="help-tile__label">Support cases</div>
-            </button>
-            <button type="button" class="help-tile customer-tool-tile" data-action="set-view" data-view="help" data-help="motor" aria-label="Cashless garages and roadside help">
-              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--motor">${icon('motor', ICON_SIZE.lg)}</div>
-              <div class="help-tile__label">Garages &amp; roadside</div>
-            </button>
-            <button type="button" class="help-tile customer-tool-tile" data-action="set-view" data-view="help" data-help="network" aria-label="Find cashless hospital">
-              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--hospital">${icon('mapPin', ICON_SIZE.lg)}</div>
-              <div class="help-tile__label">Find hospital</div>
-            </button>
+          <div class="help-grid customer-tools__grid customer-tools__grid--strip" role="list" aria-label="Key features after you buy">
+            ${renderHomeCustomerToolsStrip()}
           </div>
         </div>
 
@@ -5388,15 +5401,15 @@ function renderPolicies() {
         </header>
         <p class="policy-card__amount">${p.sumInsured}</p>
         <p class="policy-card__subtitle">${esc(p.name)} · ${esc(p.insurer)}</p>
-        <div class="policy-renewal-row">
-          <span class="policy-renewal-row__date">${renewal.dateLead} <strong>${esc(p.renewal)}</strong></span>
-          ${daysPillHtml}
+        <div class="policy-card__meta-stack">
+          <p class="policy-card__meta-line">
+            <span class="policy-card__renewal">${renewal.dateLead} <strong>${esc(p.renewal)}</strong></span>
+            ${daysPillHtml}
+            <span class="policy-card__meta-sep" aria-hidden="true">·</span>
+            <span class="policy-card__premium">${esc(p.premium)}</span>
+          </p>
+          <p class="policy-card__policy-no" title="${esc(p.policyNo)}">${esc(p.policyNo)}</p>
         </div>
-        <p class="policy-card__foot">
-          <span class="policy-card__premium">${esc(p.premium)}</span>
-          <span class="policy-card__foot-sep" aria-hidden="true">·</span>
-          <span class="policy-card__policy-no" title="${esc(p.policyNo)}">${esc(p.policyNo)}</span>
-        </p>
       </button>
       <div class="policy-card__actions">
         <div class="policy-card__actions-row policy-card__actions-row--primary">
@@ -5509,7 +5522,13 @@ function renderClaims() {
     </div>
     <div class="network-list network-list--compact">${hospitals.length ? hospitals.map((h) => `
       <div class="network-item">
-        <div><div class="network-item__name">${h.name}</div><div class="network-item__dist">${h.city} · ${h.pincode} · ${h.distanceKm} km</div></div>
+        <div class="network-item__body">
+          <div class="network-item__name">${esc(h.name)}</div>
+          <p class="network-item__meta">
+            <span class="network-item__meta-loc">${esc(h.city)} · ${esc(h.pincode)}</span>
+            <span class="network-item__distance">${esc(String(h.distanceKm))} km</span>
+          </p>
+        </div>
         <span class="network-item__tag">Cashless</span>
       </div>`).join('') : `<p class="subtitle">No matches</p>`}</div>
     <button type="button" class="ai-claim-banner" data-action="open-ai" data-ai-mode="claim">
