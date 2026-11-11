@@ -3956,20 +3956,24 @@ body.wizard-mode.wizard-motor-fit .motor-step-scroll {
   }
 }
 
-/* Health members step — pincode card stays fully visible above the docked CTA */
+/* Health members step — pincode card flows below member list / add child */
 .members-step-footer-fields {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  margin-bottom: 0.7rem;
+  margin-top: 0.85rem;
+  margin-bottom: 0.35rem;
   padding: 0.6rem 0.7rem 0.65rem;
   border-radius: 12px;
   border: 1px solid #d4e0eb;
   background: #f6f9fc;
   overflow: visible;
   position: relative;
-  z-index: 2;
+  z-index: 1;
   flex-shrink: 0;
+}
+.quote-form--members-compact .member-list-panel--compact .member-add-child + .members-step-footer-fields {
+  margin-top: 0.55rem;
 }
 body.wizard-mode.wizard-members-fit .members-step-footer {
   overflow: visible;

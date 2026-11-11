@@ -6065,43 +6065,43 @@ function renderHealthWizard(step) {
             ${!individual && countHealthChildSlots(h) < MAX_HEALTH_CHILDREN
     ? `<button type="button" class="btn btn--ghost btn--sm btn--block member-add-child" data-action="add-child-member">+ Add another child</button>`
     : ''}
+            <div class="members-step-footer-fields">
+              <div class="pincode-footer-row ${pinStateClass}" id="healthPincodeGroup">
+                <label class="pincode-footer-row__label" id="healthPincodeLabel" for="healthPincode">
+                  Pincode<span class="pincode-footer-row__required" aria-hidden="true">*</span>
+                </label>
+                <div class="pincode-footer-row__field">
+                  <input
+                    id="healthPincode"
+                    class="pincode-footer-row__input"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="6"
+                    required
+                    value="${esc(h.pincode)}"
+                    placeholder="6-digit pincode"
+                    autocomplete="postal-code"
+                    aria-labelledby="healthPincodeLabel"
+                    aria-describedby="healthPincodeHint"
+                    aria-required="true"
+                    aria-invalid="${pinOk ? 'false' : 'true'}"
+                  >
+                </div>
+                <span class="sr-only" id="healthPincodeHint">Enter a 6-digit pincode for city-wise premium</span>
+              </div>
+              <div class="health-existing-row">
+                <span class="health-existing-row__label" id="healthExistingLabel">Existing policy?</span>
+                <span class="sr-only">Select porting if you already have a policy you want to move to a new plan.</span>
+                <div class="member-gender-field health-existing-row__toggle" role="radiogroup" aria-labelledby="healthExistingLabel">
+                  <button type="button" class="member-gender-btn ${h.existingPolicy === 'no' ? 'selected' : ''}" data-health-existing="no" role="radio" aria-checked="${h.existingPolicy === 'no'}" aria-label="No, new cover">No</button>
+                  <button type="button" class="member-gender-btn ${h.existingPolicy === 'port' ? 'selected' : ''}" data-health-existing="port" role="radio" aria-checked="${h.existingPolicy === 'port'}" aria-label="Yes, port policy">Yes</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="wizard-step-footer members-step-footer">
-          <div class="members-step-footer-fields">
-            <div class="pincode-footer-row ${pinStateClass}" id="healthPincodeGroup">
-              <label class="pincode-footer-row__label" id="healthPincodeLabel" for="healthPincode">
-                Pincode<span class="pincode-footer-row__required" aria-hidden="true">*</span>
-              </label>
-              <div class="pincode-footer-row__field">
-                <input
-                  id="healthPincode"
-                  class="pincode-footer-row__input"
-                  type="text"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
-                  maxlength="6"
-                  required
-                  value="${esc(h.pincode)}"
-                  placeholder="6-digit pincode"
-                  autocomplete="postal-code"
-                  aria-labelledby="healthPincodeLabel"
-                  aria-describedby="healthPincodeHint"
-                  aria-required="true"
-                  aria-invalid="${pinOk ? 'false' : 'true'}"
-                >
-              </div>
-              <span class="sr-only" id="healthPincodeHint">Enter a 6-digit pincode for city-wise premium</span>
-            </div>
-            <div class="health-existing-row">
-              <span class="health-existing-row__label" id="healthExistingLabel">Existing policy?</span>
-              <span class="sr-only">Select porting if you already have a policy you want to move to a new plan.</span>
-              <div class="member-gender-field health-existing-row__toggle" role="radiogroup" aria-labelledby="healthExistingLabel">
-                <button type="button" class="member-gender-btn ${h.existingPolicy === 'no' ? 'selected' : ''}" data-health-existing="no" role="radio" aria-checked="${h.existingPolicy === 'no'}" aria-label="No, new cover">No</button>
-                <button type="button" class="member-gender-btn ${h.existingPolicy === 'port' ? 'selected' : ''}" data-health-existing="port" role="radio" aria-checked="${h.existingPolicy === 'port'}" aria-label="Yes, port policy">Yes</button>
-              </div>
-            </div>
-          </div>
           ${quoteContinueBtn('Continue', 'Medical history')}
         </div>
       </div>
