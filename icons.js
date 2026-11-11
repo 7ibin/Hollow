@@ -142,6 +142,33 @@ function navIcon(name) {
   return NAV_GLYPH_SVGS[name] || '';
 }
 
+function iconHeroRenewChip() {
+  return `<svg class="home-hero__chip-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" width="18" height="18">
+    <path d="M9.5 5.5 7.25 7.75M9.5 5.5H13M9.5 5.5V9" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14.5 18.5l2.25-2.25M14.5 18.5H11M14.5 18.5v-3.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M7.5 10.5a5 5 0 0 1 7.8-1.2M16.5 13.5a5 5 0 0 1-7.8 1.2" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function iconHeroPolicyChip() {
+  return `<svg class="home-hero__chip-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" width="18" height="18">
+    <path d="M12 3.25 5.75 5.75v5.85c0 3.55 2.7 6.85 6.25 7.9 3.55-1.05 6.25-4.35 6.25-7.9V5.75L12 3.25Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+  </svg>`;
+}
+
+function iconHeroQuoteGo() {
+  return `<svg class="quote-card__btn-go-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path
+      class="quote-card__btn-go-chevron"
+      d="M10 8.25 14.75 12 10 15.75"
+      stroke="currentColor"
+      stroke-width="2.75"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>`;
+}
+
 function hydrateShellIcons() {
   const map = {
     callExpert: 'phone',

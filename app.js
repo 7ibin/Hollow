@@ -5085,12 +5085,14 @@ function renderHome() {
     const soonest = [...policies].sort((a, b) => daysUntilRenewal(a.renewalISO) - daysUntilRenewal(b.renewalISO))[0];
     const renewDays = soonest ? daysUntilRenewal(soonest.renewalISO) : 999;
     if (soonest && renewDays <= 45) {
-      const renewLabel = renewDays <= 0
-        ? ('Renew today')
-        : (`Renew · ${renewDays}d`);
-      heroTopAction = `<button type="button" class="home-hero__login home-hero__login--with-icon" data-action="renew-policy" data-policy="${soonest.id}">${icon('renew', ICON_SIZE.sm, 'hollow-icon hollow-icon--inline')} ${renewLabel}</button>`;
+      const renewLabel = formatHeroRenewChip(renewDays);
+      const renewAria = renewDays <= 0
+        ? `Renew ${soonest.type} policy due today`
+        : `Renew ${soonest.type} policy, ${renewDays} day${renewDays === 1 ? '' : 's'} left`;
+      const urgent = renewDays <= 7;
+      heroTopAction = `<button type="button" class="home-hero__login home-hero__login--renew${urgent ? ' home-hero__login--urgent' : ''}" data-action="renew-policy" data-policy="${soonest.id}" aria-label="${esc(renewAria)}">${renewLabel}</button>`;
     } else {
-      heroTopAction = `<button type="button" class="home-hero__login home-hero__login--with-icon" data-action="set-view" data-view="policies">${icon('policy', ICON_SIZE.sm, 'hollow-icon hollow-icon--inline')} My policies</button>`;
+      heroTopAction = `<button type="button" class="home-hero__login home-hero__login--with-icon" data-action="set-view" data-view="policies">${iconHeroPolicyChip()}<span class="home-hero__login-text">My policies</span></button>`;
     }
   }
 
@@ -5115,8 +5117,8 @@ function renderHome() {
               ${products.map(p => `<option value="${p.id}">${p.name}</option>`).join('')}
             </select>
             <button type="button" class="quote-card__btn quote-card__btn--primary quote-card__btn--hero" data-action="hero-quote" aria-label="${t('home.heroCta')}">
-              <span class="quote-card__btn-title">${t('home.heroCtaVisible')}</span>
-              <span class="quote-card__btn-go" aria-hidden="true">${icon('forward', ICON_SIZE.sm, 'hollow-icon')}</span>
+              <span class="quote-card__btn-title quote-card__btn-title--hero">${t('home.heroCtaVisible')}</span>
+              <span class="quote-card__btn-go" aria-hidden="true">${iconHeroQuoteGo()}</span>
             </button>
           </div>
           <div class="quote-card__popular">
@@ -8809,6 +8811,14 @@ function daysUntilRenewal(iso) {
   const today = new Date();
   const renew = new Date(iso);
   return Math.ceil((renew - today) / (1000 * 60 * 60 * 24));
+}
+
+function formatHeroRenewChip(days) {
+  if (days <= 0) return 'Renew now';
+  if (days === 1) return 'Due tomorrow';
+  if (days <= 7) return `${days} days left`;
+  if (days <= 30) return `Due in ${days} days`;
+  return `Renew in ${days}d`;
 }
 
 function formatAIText(text) {
