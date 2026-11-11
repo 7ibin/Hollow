@@ -1485,15 +1485,16 @@ h2 { font-size: 1.125rem; font-weight: 700; color: var(--color-ink); margin: 0 0
 }
 .quote-card--v2 .quote-card__row {
   --quote-row-control-h: 3.125rem;
+  --hero-product-col-min: 6.75rem;
   display: grid;
-  grid-template-columns: minmax(6.25rem, 30%) minmax(0, 1fr);
+  grid-template-columns: minmax(var(--hero-product-col-min), 34%) minmax(0, 1fr);
   align-items: stretch;
   gap: 0.55rem;
 }
 .quote-card--v2 .quote-card__row .hollow-select,
 .quote-card--v2 .quote-card__row .quote-card__select {
   width: 100%;
-  min-width: 0;
+  min-width: var(--hero-product-col-min);
   max-width: 100%;
   align-self: stretch;
   box-sizing: border-box;
@@ -1504,10 +1505,12 @@ h2 { font-size: 1.125rem; font-weight: 700; color: var(--color-ink); margin: 0 0
   height: var(--quote-row-control-h);
   min-height: var(--quote-row-control-h);
   max-height: var(--quote-row-control-h);
+  flex-shrink: 0;
 }
-.quote-card--v2 .quote-card__row .hollow-select__trigger {
+.quote-card--v2 .quote-card__row .hollow-select__trigger,
+#heroProductTrigger {
   flex: 1 1 auto;
-  min-height: 0;
+  min-height: var(--quote-row-control-h);
   height: 100%;
   padding: 0 1.1rem 0 0.65rem;
   font-size: 0.875rem;
@@ -8840,9 +8843,10 @@ body.wizard-mode .ai-fab { bottom: calc(1rem + var(--safe-bottom)); }
     font-size: 0.5rem;
   }
   .quote-card--v2 .quote-card__row {
-    --quote-row-control-h: 2.875rem;
-    grid-template-columns: minmax(5.75rem, 29%) minmax(0, 1fr);
-    gap: 0.4rem;
+    --quote-row-control-h: 3.125rem;
+    --hero-product-col-min: 6.75rem;
+    grid-template-columns: minmax(var(--hero-product-col-min), 34%) minmax(0, 1fr);
+    gap: 0.45rem;
   }
   .quote-card--v2 .quote-card__row .quote-card__select {
     font-size: 0.8125rem;
