@@ -1655,12 +1655,15 @@ function bottomNavTabForView(view) {
 
 function syncBottomNav(view) {
   const tab = bottomNavTabForView(view);
+  const nav = document.getElementById('bottomNav');
   document.querySelectorAll('.bottom-nav__item').forEach((btn) => {
     const match = tab && btn.dataset.view === tab;
     btn.classList.toggle('active', !!match);
     if (match) btn.setAttribute('aria-current', 'page');
     else btn.removeAttribute('aria-current');
   });
+  if (nav && tab) nav.dataset.activeTab = tab;
+  else if (nav) delete nav.dataset.activeTab;
 }
 
 function syncShellChrome() {
@@ -6261,11 +6264,10 @@ function renderHealthWizard(step) {
           <div class="addon-item"><div class="addon-item__info"><div class="addon-item__name">Critical illness</div><div class="addon-item__desc">Lump sum on 36 illnesses</div></div>
             <div class="addon-item__aside"><div class="addon-item__price">+₹1,200</div><button type="button" class="addon-toggle ${healthAddons.critical ? 'on' : ''}" data-addon="critical" role="switch" aria-checked="${healthAddons.critical}" aria-label="Critical illness"></button></div></div>
         </div>
-        ${quoteContinueBtn('Continue', 'Next: review & pay')}
       </div>
       <div class="sticky-bar"><div><div class="sticky-bar__price">${formatPremium(plan.premium + getHealthAddonsExtraPremium())}/yr</div>
         <div class="sticky-bar__note">GST included</div></div>
-        <button type="button" class="btn btn--primary btn--sm sticky-bar__cta" data-action="wizard-next">Review</button></div>`;
+        <button type="button" class="btn btn--primary sticky-bar__cta" data-action="wizard-next" aria-label="Continue to review and pay">Review &amp; pay</button></div>`;
   }
 
   if (step === 5) {
@@ -6537,11 +6539,10 @@ function renderMotorWizard(step) {
         <div class="addon-item"><div class="addon-item__info"><div class="addon-item__name">Personal accident</div><div class="addon-item__desc">₹15 lakh PA cover for owner-driver</div></div>
           <div class="addon-item__aside"><div class="addon-item__price">+₹650</div><button type="button" class="addon-toggle ${motorAddons.personalAccident ? 'on' : ''}" data-motor-addon="personalAccident" role="switch" aria-checked="${motorAddons.personalAccident}" aria-label="Personal accident"></button></div></div>
       </div>
-      ${quoteContinueBtn('Continue', 'Next: review & pay')}
     </div>
     <div class="sticky-bar"><div><div class="sticky-bar__price">${formatPremium(motorPremiumForPlan(plan) + extra)}/yr</div>
       <div class="sticky-bar__note">Indicative · GST included</div></div>
-      <button type="button" class="btn btn--primary btn--sm sticky-bar__cta" data-action="wizard-next">Review</button></div>`;
+      <button type="button" class="btn btn--primary sticky-bar__cta" data-action="wizard-next" aria-label="Continue to review and pay">Review &amp; pay</button></div>`;
   }
 
   if (step === 3) {

@@ -44,11 +44,11 @@ const MATERIAL_ICONS = {
   forward: 'arrow_forward',
   phone: 'call',
   send: 'send',
-  navHome: 'home',
-  navExplore: 'explore',
-  navPolicies: 'description',
-  navClaims: 'assignment',
-  navHelp: 'help',
+  navHome: 'cottage',
+  navExplore: 'travel_explore',
+  navPolicies: 'policy',
+  navClaims: 'receipt_long',
+  navHelp: 'contact_support',
   check: 'check',
   logout: 'logout',
   notifications: 'notifications',
@@ -117,6 +117,31 @@ function successBadge() {
   </div>`;
 }
 
+const NAV_GLYPH_SVGS = {
+  navHome: `<svg class="bottom-nav__glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path class="bottom-nav__path bottom-nav__path--solid" d="M5 11.2 12 5.5l7 5.7V19a1 1 0 0 1-1 1h-4.5v-5.5H10.5V20H6a1 1 0 0 1-1-1v-7.8Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+  </svg>`,
+  navExplore: `<svg class="bottom-nav__glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle class="bottom-nav__path bottom-nav__path--solid" cx="10.5" cy="10.5" r="6.25" stroke="currentColor" stroke-width="1.75"/>
+    <path class="bottom-nav__path bottom-nav__path--line" d="M15.4 15.4 20 20" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+  </svg>`,
+  navPolicies: `<svg class="bottom-nav__glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path class="bottom-nav__path bottom-nav__path--solid" d="M12 3 5 6v6c0 4.1 3 7.9 7 9 4-1.1 7-4.9 7-9V6l-7-3Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+  </svg>`,
+  navClaims: `<svg class="bottom-nav__glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path class="bottom-nav__path bottom-nav__path--solid" d="M9 4h6v3H9V4ZM8 7h8a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>
+    <path class="bottom-nav__path bottom-nav__path--line" d="M10 11h4M10 14h4" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+  </svg>`,
+  navHelp: `<svg class="bottom-nav__glyph" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <circle class="bottom-nav__path bottom-nav__path--solid" cx="12" cy="12" r="8.25" stroke="currentColor" stroke-width="1.75"/>
+    <path class="bottom-nav__path bottom-nav__path--line" d="M9.6 9.25A2.4 2.4 0 0 1 14.2 10c0 1.5-2.2 2-2.2 3.6v.15M12 16.75h.01" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+  </svg>`,
+};
+
+function navIcon(name) {
+  return NAV_GLYPH_SVGS[name] || '';
+}
+
 function hydrateShellIcons() {
   const map = {
     callExpert: 'phone',
@@ -144,7 +169,7 @@ function hydrateShellIcons() {
     const target = slot || btn.querySelector('.bottom-nav__icon-wrap') || btn;
     const existing = target.querySelector('.hollow-icon, svg');
     if (existing) existing.remove();
-    const html = icon(key, ICON_SIZE.lg, 'hollow-icon hollow-icon--nav');
+    const html = navIcon(key);
     if (slot) slot.innerHTML = html;
     else target.insertAdjacentHTML('afterbegin', html);
   });
