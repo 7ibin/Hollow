@@ -6,6 +6,8 @@
     "playwright": "^1.49.1"
   },
   "scripts": {
+    "deploy:prod": "vercel deploy --prod --yes --scope libin5 --project hollow",
+    "deploy:insurance-app": "vercel deploy --prod --yes --scope libin5 --project insurance-app",
     "behance:export": "node scripts/export-behance-screenshots.mjs",
     "behance:cover": "node portfolio/behance/generate-cover.mjs",
     "behance:slides": "node portfolio/behance/generate-behance-slides.mjs"
