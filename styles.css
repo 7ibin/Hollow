@@ -2820,6 +2820,62 @@ body.wizard-mode.compare-open .ai-fab {
 }
 .tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
 
+.tabs--policy {
+  gap: 0.28rem;
+  margin-bottom: 0.85rem;
+  padding: 0.22rem;
+  background: #f0f4f9;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+.tabs--policy .tab {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  margin-bottom: 0;
+  padding: 0.42rem 0.35rem;
+  border-bottom: none;
+  border-radius: 9px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-ink-muted);
+  transition: background 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
+}
+.tabs--policy .tab__count {
+  font-weight: 600;
+  font-size: 0.6875rem;
+  color: inherit;
+  opacity: 0.85;
+}
+.tabs--policy .tab.active {
+  background: linear-gradient(180deg, #e8f2fc 0%, #dceaf8 100%);
+  color: var(--color-primary);
+  box-shadow:
+    inset 0 0 0 1px rgba(13, 79, 139, 0.28),
+    0 1px 3px rgba(13, 79, 139, 0.12);
+  border-bottom: none;
+}
+.tabs--policy .tab.active .tab__count {
+  color: var(--color-primary-light);
+  font-weight: 700;
+  opacity: 0.9;
+}
+.tabs--policy .tab:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+@container hollow-app (max-width: 360px) {
+  .tabs--policy .tab {
+    padding: 0.36rem 0.22rem;
+    font-size: 0.71875rem;
+  }
+  .tabs--policy .tab__count {
+    font-size: 0.625rem;
+  }
+}
+
 /* Renewal card */
 .renewal-card { display: flex; gap: 0.75rem; align-items: center; }
 .renewal-card__icon { font-size: 1.75rem; }
@@ -5290,7 +5346,7 @@ html[data-theme="dark"] .signup-trust-item__icon {
 .home-hero__login-text {
   white-space: nowrap;
 }
-.home-hero__login--renew {
+.home-hero__login--compact {
   min-height: 0;
   padding: 0.32rem 0.72rem;
   font-size: 0.8125rem;
@@ -5300,6 +5356,14 @@ html[data-theme="dark"] .signup-trust-item__icon {
   white-space: nowrap;
   -webkit-font-smoothing: antialiased;
   text-shadow: 0 1px 2px rgba(0, 48, 96, 0.3);
+}
+.home-hero__login--compact.home-hero__login--with-icon {
+  gap: 0.28rem;
+  padding: 0.28rem 0.62rem 0.28rem 0.5rem;
+}
+.home-hero__login--compact .home-hero__chip-icon {
+  width: 15px;
+  height: 15px;
 }
 .home-hero__login--renew.home-hero__login--urgent {
   font-weight: 800;
@@ -5606,11 +5670,80 @@ body.wizard-mode .app-view {
 .sticky-bar__note { font-size: 0.75rem; color: var(--color-ink-muted); }
 
 /* Policy card */
+.card.policy-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0.85rem 0.9rem;
+}
 .policy-card__type { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-primary); }
-.policy-card__amount { font-size: 1.125rem; font-weight: 800; color: var(--color-ink); margin: 0.25rem 0; }
+.policy-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+}
+.policy-card__amount {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--color-ink);
+  line-height: 1.25;
+}
+.policy-card__subtitle {
+  margin: 0.2rem 0 0;
+  font-size: var(--text-caption);
+  font-weight: 600;
+  color: var(--color-ink-secondary);
+  line-height: 1.35;
+}
 .policy-card__meta { font-size: var(--text-caption); color: var(--color-ink-muted); line-height: 1.45; }
-.policy-card__actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
-.policy-card__actions .btn { flex: 1; }
+.policy-card__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-ink-muted);
+  line-height: 1.35;
+}
+.policy-card__premium { color: var(--color-ink-secondary); }
+.policy-card__foot-sep { opacity: 0.45; }
+.policy-card__policy-no {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+.policy-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--color-border);
+}
+.policy-card__actions-row { display: flex; gap: 0.45rem; width: 100%; }
+.policy-card__actions-row--primary .btn { flex: 1; min-width: 0; }
+.policy-card__actions-row--secondary {
+  justify-content: stretch;
+  gap: 0.35rem;
+}
+.policy-card__actions-row--secondary .policy-card__link-btn {
+  flex: 1;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.45rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
 .saved-quote-card__actions .saved-quote-card__delete {
   flex: 0 0 auto;
   color: #b45309;
@@ -5631,7 +5764,16 @@ body.wizard-mode .app-view {
 .status--escalated { background: #fdecea; color: var(--color-error); }
 
 .policy-card__main {
-  display: block; width: 100%; text-align: left; background: none; border: none; padding: 0; cursor: pointer; font-family: var(--font);
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: var(--font);
+  color: inherit;
 }
 .policy-card__main:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: 6px; }
 
@@ -6654,10 +6796,47 @@ body.wizard-mode .app-view {
 .renewal-urgency-banner strong { display: block; color: #9a6700; margin-bottom: 0.25rem; }
 .renewal-urgency-banner p { margin: 0; color: var(--color-ink); line-height: 1.4; }
 
-.policy-renewal-row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin: 0.5rem 0 0.25rem; font-size: 0.8125rem; }
+.policy-renewal-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.45rem 0 0;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.8125rem;
+  background: var(--color-cream);
+  border: 1px solid #e8edf3;
+  border-radius: var(--radius);
+}
+.policy-renewal-row__date {
+  line-height: 1.35;
+  color: var(--color-ink-secondary);
+}
+.policy-renewal-row__date strong { font-weight: 800; color: var(--color-ink); }
+.policy-renewal-row__pill {
+  flex-shrink: 0;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  padding: 0.18rem 0.45rem;
+  border-radius: 999px;
+  background: #eef2f6;
+  color: var(--color-ink-muted);
+  line-height: 1.2;
+}
+.policy-renewal-row__pill--urgent {
+  background: #fff3e0;
+  color: var(--color-accent-text);
+}
+.policy-renewal-row__pill--overdue {
+  background: #fdecea;
+  color: var(--color-error);
+}
 .policy-renewal-row__days { font-weight: 600; color: var(--color-ink-muted); }
 .policy-renewal-row__days--urgent { color: var(--color-accent-text); }
-.policy-card--renew-soon { border-left: 3px solid var(--color-accent-text); }
+.policy-card--renew-soon {
+  border-color: #f0d4a8;
+  box-shadow: 0 2px 12px rgba(194, 78, 0, 0.07);
+}
 
 .claims-section-title {
   font-size: 1.125rem; font-weight: 800; line-height: 1.35;
@@ -7755,7 +7934,16 @@ body.wizard-mode .ai-fab { bottom: calc(1rem + var(--safe-bottom)); }
 .digital-card { background: linear-gradient(135deg, var(--color-primary) 0%, #1a6bb5 100%); color: white; border-radius: var(--radius-lg); padding: 1.25rem; margin: 1rem 0; }
 .digital-card__label { font-size: 0.75rem; opacity: 0.85; }
 .digital-card__value { font-size: 1rem; font-weight: 700; margin-top: 0.15rem; }
-.policy-search-input { width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid var(--color-border); border-radius: var(--radius); font-family: var(--font); font-size: 0.9375rem; margin-bottom: 0.5rem; background: var(--color-white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%230d4f8b' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 0.75rem center; }
+.policy-search-input {
+  width: 100%;
+  padding: 0.6rem 0.85rem 0.6rem 2.35rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font-family: var(--font);
+  font-size: 0.875rem;
+  margin-bottom: 0.65rem;
+  background: var(--color-white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%230d4f8b' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 0.7rem center;
+}
 .results-count { font-size: 0.8125rem; color: var(--color-ink-muted); padding: 0 1rem 0.5rem; }
 .addon-grid {
   display: flex; flex-direction: column; gap: 0.45rem;
@@ -8057,8 +8245,6 @@ body.wizard-mode .ai-fab { bottom: calc(1rem + var(--safe-bottom)); }
 .account-contact__input {
   width: 100%; max-width: 100%; box-sizing: border-box;
 }
-.policy-card__actions { flex-wrap: wrap; }
-.policy-card__actions .btn { flex: 1 1 calc(50% - 0.25rem); min-width: 0; }
 .plan-item__footer { flex-wrap: wrap; gap: 0.5rem; }
 .plan-item__actions { width: 100%; justify-content: flex-end; }
 .sort-row { padding: 0.5rem var(--mobile-gutter); font-size: 0.75rem; }
@@ -8075,11 +8261,18 @@ body.wizard-mode .ai-fab { bottom: calc(1rem + var(--safe-bottom)); }
     white-space: nowrap;
     text-align: left;
   }
-  .home-hero__login--renew {
-    max-width: none;
+  .home-hero__login--compact {
     padding: 0.3rem 0.65rem;
     font-size: 0.75rem;
     line-height: 1.3;
+  }
+  .home-hero__login--compact.home-hero__login--with-icon {
+    padding: 0.26rem 0.55rem 0.26rem 0.45rem;
+    gap: 0.22rem;
+  }
+  .home-hero__login--compact .home-hero__chip-icon {
+    width: 14px;
+    height: 14px;
   }
   .header-chip--account:not(.header-chip--logged-in) { max-width: 5.5rem; }
   .header-chip--account.header-chip--logged-in { max-width: 8.25rem; }

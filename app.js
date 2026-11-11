@@ -1324,9 +1324,9 @@ const PRODUCT_CONFIG = {
 };
 
 const policies = [
-  { id: 'h1', type: 'Health', name: 'Family Floater', sumInsured: '₹10,00,000', premium: '₹18,420/yr', renewal: '1 Nov 2026', renewalISO: '2026-11-01', insurer: 'Star Health', status: 'active', policyNo: 'STAR/HL/2026/884521', product: 'health', renewalSave: 2400,
+  { id: 'h1', type: 'Health', name: 'Family Floater', sumInsured: '₹10,00,000', premium: '₹18,420/yr', renewal: '1 Nov 2027', renewalISO: '2027-11-01', insurer: 'Star Health', status: 'active', policyNo: 'STAR/HL/2026/884521', product: 'health', renewalSave: 2400,
     coverage: ['Hospital admission (in-patient)', 'Day-care procedures', '12,000+ cashless hospitals', 'Sum insured restoration', 'Pre & post hospitalisation'] },
-  { id: 'm1', type: 'Motor', name: 'DL 01 AB 1234', sumInsured: 'IDV ₹4.2L', premium: '₹12,890/yr', renewal: '28 Oct 2026', renewalISO: '2026-10-28', insurer: 'HDFC ERGO', status: 'active', policyNo: 'HDFC/M/2025/992341', product: 'motor', renewalSave: 1500,
+  { id: 'm1', type: 'Motor', name: 'DL 01 AB 1234', sumInsured: 'IDV ₹4.2L', premium: '₹12,890/yr', renewal: '28 Oct 2027', renewalISO: '2027-10-28', insurer: 'HDFC ERGO', status: 'active', policyNo: 'HDFC/M/2025/992341', product: 'motor', renewalSave: 1500,
     coverage: ['Own damage (accident, fire, theft)', 'Third-party liability', 'Personal accident cover', '24×7 roadside assistance', 'Cashless garage network'] },
 ];
 
@@ -5090,9 +5090,9 @@ function renderHome() {
         ? `Renew ${soonest.type} policy due today`
         : `Renew ${soonest.type} policy, ${renewDays} day${renewDays === 1 ? '' : 's'} left`;
       const urgent = renewDays <= 7;
-      heroTopAction = `<button type="button" class="home-hero__login home-hero__login--renew${urgent ? ' home-hero__login--urgent' : ''}" data-action="renew-policy" data-policy="${soonest.id}" aria-label="${esc(renewAria)}">${renewLabel}</button>`;
+      heroTopAction = `<button type="button" class="home-hero__login home-hero__login--compact home-hero__login--renew${urgent ? ' home-hero__login--urgent' : ''}" data-action="renew-policy" data-policy="${soonest.id}" aria-label="${esc(renewAria)}">${renewLabel}</button>`;
     } else {
-      heroTopAction = `<button type="button" class="home-hero__login home-hero__login--with-icon" data-action="set-view" data-view="policies">${iconHeroPolicyChip()}<span class="home-hero__login-text">My policies</span></button>`;
+      heroTopAction = `<button type="button" class="home-hero__login home-hero__login--compact home-hero__login--with-icon" data-action="set-view" data-view="policies">${iconHeroPolicyChip()}<span class="home-hero__login-text">My policies</span></button>`;
     }
   }
 
@@ -5375,32 +5375,38 @@ function renderPolicies() {
 
   const tabContent = policyTab === 'active' ? (filteredPolicies.length ? filteredPolicies.map((p) => {
     const daysLeft = daysUntilRenewal(p.renewalISO);
-    const renewUrgent = daysLeft >= 0 && daysLeft < 30;
-    const daysLabel = daysLeft < 0
-      ? ('Expired')
-      : daysLeft === 0
-        ? ('Renews today')
-        : (`${daysLeft} days left`);
+    const renewal = policyCardRenewalMeta(daysLeft);
+    const daysPillHtml = renewal.daysPill
+      ? `<span class="policy-renewal-row__pill ${renewal.daysModifier}">${renewal.daysPill}</span>`
+      : '';
     return `
-    <div class="card policy-card ${renewUrgent ? 'policy-card--renew-soon' : ''}">
+    <div class="card policy-card${renewal.renewSoon ? ' policy-card--renew-soon' : ''}">
       <button type="button" class="policy-card__main" data-action="open-policy-detail" data-policy="${p.id}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem">
+        <header class="policy-card__head">
           <span class="policy-card__type">${p.type}</span>
-          <span class="status-chip status--active">Active</span>
-        </div>
-        <div class="policy-card__amount">${p.sumInsured}</div>
-        <div class="policy-card__meta">${p.name} · ${p.insurer}</div>
+          <span class="status-chip ${renewal.chipClass}">${renewal.chipLabel}</span>
+        </header>
+        <p class="policy-card__amount">${p.sumInsured}</p>
+        <p class="policy-card__subtitle">${esc(p.name)} · ${esc(p.insurer)}</p>
         <div class="policy-renewal-row">
-          <span class="policy-renewal-row__date">Renews <strong>${p.renewal}</strong></span>
-          <span class="policy-renewal-row__days ${renewUrgent ? 'policy-renewal-row__days--urgent' : ''}">${daysLabel}</span>
+          <span class="policy-renewal-row__date">${renewal.dateLead} <strong>${esc(p.renewal)}</strong></span>
+          ${daysPillHtml}
         </div>
-        <div class="policy-card__meta">${p.premium} · Policy: ${p.policyNo}</div>
+        <p class="policy-card__foot">
+          <span class="policy-card__premium">${esc(p.premium)}</span>
+          <span class="policy-card__foot-sep" aria-hidden="true">·</span>
+          <span class="policy-card__policy-no" title="${esc(p.policyNo)}">${esc(p.policyNo)}</span>
+        </p>
       </button>
       <div class="policy-card__actions">
-        <button type="button" class="btn btn--primary btn--sm" data-action="renew-policy" data-policy="${p.id}">Renew</button>
-        <button type="button" class="btn btn--secondary btn--sm" data-action="open-policy-doctor" data-policy="${p.id}">Policy Doctor</button>
-        <button type="button" class="btn btn--ghost btn--sm" data-action="open-ai" data-prefill="What does my ${p.type.toLowerCase()} policy cover?">Ask AI</button>
-        <button type="button" class="btn btn--ghost btn--sm" data-action="open-case-create" data-policy="${p.id}">Support</button>
+        <div class="policy-card__actions-row policy-card__actions-row--primary">
+          <button type="button" class="btn btn--primary btn--sm" data-action="renew-policy" data-policy="${p.id}">Renew</button>
+          <button type="button" class="btn btn--secondary btn--sm" data-action="open-policy-doctor" data-policy="${p.id}">Policy Doctor</button>
+        </div>
+        <div class="policy-card__actions-row policy-card__actions-row--secondary">
+          <button type="button" class="btn btn--ghost btn--sm policy-card__link-btn" data-action="open-ai" data-prefill="What does my ${p.type.toLowerCase()} policy cover?">Ask AI</button>
+          <button type="button" class="btn btn--ghost btn--sm policy-card__link-btn" data-action="open-case-create" data-policy="${p.id}">Support</button>
+        </div>
       </div>
     </div>`;
   }).join('') : (policies.length ? `<p class="subtitle">No matching policies</p>` : renderPoliciesEmpty())) :
@@ -5420,10 +5426,10 @@ function renderPolicies() {
     <h1>My policies</h1>
     ${policyTab === 'active' ? renderPolicyRenewalBanner() : ''}
     <input type="search" class="policy-search-input" id="policySearch" placeholder="Search policies..." value="${esc(policySearchQuery)}">
-    <div class="tabs">
-      <button class="tab ${policyTab === 'active' ? 'active' : ''}" data-tab="active">Active (${policies.length})</button>
-      <button class="tab ${policyTab === 'quotes' ? 'active' : ''}" data-tab="quotes">Saved quotes (${savedQuotes.length})</button>
-      <button class="tab ${policyTab === 'expired' ? 'active' : ''}" data-tab="expired">Expired</button>
+    <div class="tabs tabs--policy" role="tablist" aria-label="Policy lists">
+      <button type="button" role="tab" aria-selected="${policyTab === 'active'}" class="tab ${policyTab === 'active' ? 'active' : ''}" data-tab="active">Active <span class="tab__count">(${policies.length})</span></button>
+      <button type="button" role="tab" aria-selected="${policyTab === 'quotes'}" class="tab ${policyTab === 'quotes' ? 'active' : ''}" data-tab="quotes">Saved <span class="tab__count">(${savedQuotes.length})</span></button>
+      <button type="button" role="tab" aria-selected="${policyTab === 'expired'}" class="tab ${policyTab === 'expired' ? 'active' : ''}" data-tab="expired">Expired</button>
     </div>
     ${tabContent}
     <button class="btn btn--primary btn--block" data-action="quote" data-product="health">Buy new policy</button>
@@ -8819,6 +8825,48 @@ function formatHeroRenewChip(days) {
   if (days <= 7) return `${days} days left`;
   if (days <= 30) return `Due in ${days} days`;
   return `Renew in ${days}d`;
+}
+
+function policyCardRenewalMeta(daysLeft) {
+  if (daysLeft < 0) {
+    const overdue = Math.abs(daysLeft);
+    return {
+      chipClass: 'status--renew',
+      chipLabel: 'Renew overdue',
+      dateLead: 'Renewal was',
+      daysPill: `${overdue}d overdue`,
+      daysModifier: 'policy-renewal-row__pill--overdue',
+      renewSoon: true,
+    };
+  }
+  if (daysLeft === 0) {
+    return {
+      chipClass: 'status--renew',
+      chipLabel: 'Due today',
+      dateLead: 'Renews',
+      daysPill: 'Due today',
+      daysModifier: 'policy-renewal-row__pill--urgent',
+      renewSoon: true,
+    };
+  }
+  if (daysLeft <= 30) {
+    return {
+      chipClass: 'status--renew',
+      chipLabel: daysLeft <= 7 ? 'Renew soon' : 'Renews soon',
+      dateLead: 'Renews',
+      daysPill: `${daysLeft}d left`,
+      daysModifier: 'policy-renewal-row__pill--urgent',
+      renewSoon: true,
+    };
+  }
+  return {
+    chipClass: 'status--active',
+    chipLabel: 'Active',
+    dateLead: 'Renews',
+    daysPill: daysLeft <= 90 ? `${daysLeft}d left` : '',
+    daysModifier: '',
+    renewSoon: false,
+  };
 }
 
 function formatAIText(text) {
