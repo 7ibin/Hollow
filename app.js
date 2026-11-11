@@ -5062,7 +5062,7 @@ function renderHome() {
     if (!p) return '';
     return `<button type="button" class="home-cat" data-action="quote" data-product="${p.id}" aria-label="${p.name}">
       <span class="home-cat__head">
-        <span class="home-cat__icon" aria-hidden="true">${iconProduct(p.icon, p.color, ICON_SIZE.lg)}</span>
+        <span class="home-cat__icon" aria-hidden="true">${iconProduct(p.icon, p.color, ICON_SIZE.md)}</span>
         <span class="home-cat__name">${p.name}</span>
       </span>
       <span class="home-cat__tag">${p.tag}</span>
