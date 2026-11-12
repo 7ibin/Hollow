@@ -142,7 +142,7 @@ const i18n = {
     'ai.suggest.finderMotor': 'Motor insurance',
     'ai.suggest.finderTerm': 'Term Life',
     'ai.suggest.finderHome': 'Home insurance',
-    'ai.disclaimer': 'General guidance only — not a quote or guarantee. Confirm coverage in your policy document or with an expert.',
+    'ai.disclaimer': 'General guidance only — confirm in your policy or with an expert.',
     'ai.welcomeTitle': 'How can Hollow help?',
     'ai.welcomeHint': 'Plain-language answers on plans, coverage, claims, and renewals.',
     'ai.expertHandoff': 'Talk to an expert',
@@ -204,9 +204,9 @@ const i18n = {
     'home.why2.desc': 'AI and cover guides explain terms before you commit.',
     'home.why3.title': 'Support after you buy',
     'home.why3.desc': 'Keep policies, renewals and claims in one app.',
-    'home.keyFeaturesTitle': 'Key features',
-    'home.keyFeaturesIntro': 'Cover guide and hospitals first, then motor help and support.',
-    'home.keyFeaturesIntroOpen': 'Open support cases first — then cover guide, hospitals, and motor.',
+    'home.keyFeaturesTitle': 'After you buy',
+    'home.keyFeaturesIntro': 'Understand your policy, motor help, and cashless hospitals',
+    'home.keyFeaturesIntroOpen': 'Understand your policy, motor help, and cashless hospitals',
     'guide.title': 'How much cover do you need?',
     'guide.subtitle': '4 quick questions — no jargon',
     'guide.heroCta': 'Find the right cover amount',
@@ -4579,30 +4579,57 @@ function renderPrototypeBanner(_text) {
   return '';
 }
 
-/** Post-purchase shortcuts — left-to-right = priority (Support jumps to #2 when cases are open). */
+function renderAfterBuyCard({ variant, action, extra = '', name, tag = '', iconName, count = 0, alert = false }) {
+  const ariaLabel = tag ? `${name}. ${tag}` : name;
+  const titleOnly = tag ? '' : ' home-after-cat--title-only';
+  return `<button type="button" class="home-cat home-after-cat home-after-cat--${variant}${titleOnly}${alert ? ' home-after-cat--alert' : ''}" role="listitem" data-action="${action}" ${extra} aria-label="${ariaLabel}">
+      ${count ? `<span class="home-after-cat__badge" aria-hidden="true">${count}</span>` : ''}
+      <span class="home-cat__icon" aria-hidden="true"><span class="home-after-cat__icon-box home-after-cat__icon-box--${variant}">${icon(iconName, ICON_SIZE.lg, 'hollow-icon')}</span></span>
+      <span class="home-cat__copy">
+        <span class="home-cat__name">${name}</span>
+        ${tag ? `<span class="home-cat__tag">${tag}</span>` : ''}
+      </span>
+      <span class="home-cat__go" aria-hidden="true">${icon('chevronRight', ICON_SIZE.sm)}</span>
+    </button>`;
+}
+
+/** Post-purchase tools — 2×2 cards (same pattern as Buy insurance). */
 function renderHomeCustomerToolsStrip() {
   const openN = openCasesCount();
-  const doctor = `<button type="button" class="help-tile customer-tool-tile customer-tool-tile--lead" role="listitem" data-action="open-policy-doctor" aria-label="Policy Doctor — understand your cover">
-              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--doctor">${icon('doctor', ICON_SIZE.lg)}</div>
-              <div class="help-tile__label">Policy Doctor</div>
-            </button>`;
-  const support = `<button type="button" class="help-tile customer-tool-tile customer-tool-tile--badge${openN ? ' customer-tool-tile--urgent' : ''}" role="listitem" data-action="open-cases" aria-label="Support cases${openN ? ` — ${openN} open` : ''}">
-              ${openN ? `<span class="customer-tool-tile__count" aria-hidden="true">${openN}</span>` : ''}
-              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--cases">${icon('support', ICON_SIZE.lg)}</div>
-              <div class="help-tile__label">Support</div>
-            </button>`;
-  const motor = `<button type="button" class="help-tile customer-tool-tile" role="listitem" data-action="set-view" data-view="help" data-help="motor" aria-label="Cashless garages and roadside help">
-              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--motor">${icon('motor', ICON_SIZE.lg)}</div>
-              <div class="help-tile__label">Motor</div>
-            </button>`;
-  const hospital = `<button type="button" class="help-tile customer-tool-tile" role="listitem" data-action="set-view" data-view="help" data-help="network" aria-label="Find cashless hospital">
-              <div class="help-tile__icon customer-tool-tile__icon customer-tool-tile__icon--hospital">${icon('mapPin', ICON_SIZE.lg)}</div>
-              <div class="help-tile__label">Hospitals</div>
-            </button>`;
-  const ordered = openN
-    ? [doctor, support, hospital, motor]
-    : [doctor, hospital, motor, support];
-  return ordered.join('');
+  return [
+    renderAfterBuyCard({
+      variant: 'policy',
+      action: 'open-policy-doctor',
+      name: 'Policy Doctor',
+      tag: 'Quick policy help',
+      iconName: 'doctor',
+    }),
+    renderAfterBuyCard({
+      variant: 'support',
+      action: 'open-cases',
+      name: 'Support',
+      tag: openN ? `${openN} open case${openN === 1 ? '' : 's'}` : 'Track or raise a request',
+      iconName: 'support',
+      count: openN,
+      alert: !!openN,
+    }),
+    renderAfterBuyCard({
+      variant: 'health',
+      action: 'set-view',
+      extra: 'data-view="help" data-help="network"',
+      name: 'Hospitals',
+      tag: 'Find cashless hospitals',
+      iconName: 'mapPin',
+    }),
+    renderAfterBuyCard({
+      variant: 'motor',
+      action: 'set-view',
+      extra: 'data-view="help" data-help="motor"',
+      name: 'Motor help',
+      tag: 'Garages & roadside assist',
+      iconName: 'motor',
+    }),
+  ].join('');
 }
 
 function renderServiceAlertRow(it) {
@@ -4777,9 +4804,12 @@ function renderDoctorPolicyPick() {
       <h3 class="doctor-pick__heading" id="doctorPickUpload">Or upload a document</h3>
       <label class="doctor-upload">
         <input type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" data-action="doctor-upload" hidden>
-        <span class="doctor-upload__icon" aria-hidden="true">${icon('file', ICON_SIZE.x2)}</span>
-        <span class="doctor-upload__title">Choose PDF or photo</span>
-        <span class="doctor-upload__hint">Policy schedule, certificate, or renewal notice · Max 10 MB</span>
+        <span class="doctor-upload__icon" aria-hidden="true">${icon('file', ICON_SIZE.lg)}</span>
+        <span class="doctor-upload__body">
+          <span class="doctor-upload__title">Upload PDF or photo</span>
+          <span class="doctor-upload__hint">Schedule or certificate · up to 10 MB</span>
+        </span>
+        ${icon('chevronRight', ICON_SIZE.sm, 'hollow-icon doctor-upload__chev')}
       </label>
       ${policyDoctorState.uploadLoading ? `<p class="doctor-upload__status" role="status">Analyzing your document…</p>` : ''}
     </section>
@@ -5045,6 +5075,32 @@ function renderClaimDetail() {
   </div>`;
 }
 
+function renderTrendingMiniRow(p, tab) {
+  let product = 'health';
+  let meta = `${p.plan} · ₹${p.si}L · ★${p.rating}`;
+  if (tab === 'motor') {
+    product = 'motor';
+    meta = `Comprehensive · IDV ${formatPremium(p.idv)}`;
+  } else if (tab === 'term') {
+    product = 'term';
+    meta = `₹${p.cover}L cover · ${p.claims}% claims`;
+  } else if (tab === 'home') {
+    product = 'home';
+    meta = `Structure ₹${p.structure}L · ${p.perils}`;
+  }
+  return `<button type="button" class="trending-mini" data-action="quote" data-product="${product}">
+    <div class="trending-mini__logo" style="background:${insurerColor(p.insurer)}" aria-hidden="true">${insurerInitials(p.insurer)}</div>
+    <span class="trending-mini__body">
+      <span class="trending-mini__top">
+        <span class="trending-mini__name">${p.insurer}</span>
+        <span class="trending-mini__price">${formatPremium(p.premium)}<span>/yr</span></span>
+      </span>
+      <span class="trending-mini__meta">${meta}</span>
+    </span>
+    ${icon('chevronRight', ICON_SIZE.sm, 'hollow-icon trending-mini__chev')}
+  </button>`;
+}
+
 function renderHome() {
 
   const trendingPlans = homeTrendingTab === 'motor'
@@ -5055,47 +5111,31 @@ function renderHome() {
         ? homePlans.slice(0, 2)
         : healthPlans.slice(0, 2);
 
-  const trendingHtml = trendingPlans.map(p => {
-    if (homeTrendingTab === 'motor') {
-      return `<button type="button" class="trending-mini" data-action="quote" data-product="motor">
-        <div class="trending-mini__logo" style="background:${insurerColor(p.insurer)}">${insurerInitials(p.insurer)}</div>
-        <div class="trending-mini__info"><div class="trending-mini__name">${p.insurer}</div><div class="trending-mini__meta">Comprehensive · IDV ${formatPremium(p.idv)}</div></div>
-        <div class="trending-mini__price">${formatPremium(p.premium)}<span>/yr</span></div>
-      </button>`;
-    }
-    if (homeTrendingTab === 'term') {
-      return `<button type="button" class="trending-mini" data-action="quote" data-product="term">
-        <div class="trending-mini__logo" style="background:${insurerColor(p.insurer)}">${insurerInitials(p.insurer)}</div>
-        <div class="trending-mini__info"><div class="trending-mini__name">${p.insurer}</div><div class="trending-mini__meta">₹${p.cover}L cover · ${p.claims}% claims</div></div>
-        <div class="trending-mini__price">${formatPremium(p.premium)}<span>/yr</span></div>
-      </button>`;
-    }
-    if (homeTrendingTab === 'home') {
-      return `<button type="button" class="trending-mini" data-action="quote" data-product="home">
-        <div class="trending-mini__logo" style="background:${insurerColor(p.insurer)}">${insurerInitials(p.insurer)}</div>
-        <div class="trending-mini__info"><div class="trending-mini__name">${p.insurer}</div><div class="trending-mini__meta">Structure ₹${p.structure}L · ${p.perils}</div></div>
-        <div class="trending-mini__price">${formatPremium(p.premium)}<span>/yr</span></div>
-      </button>`;
-    }
-    return `<button type="button" class="trending-mini" data-action="quote" data-product="health">
-      <div class="trending-mini__logo" style="background:${insurerColor(p.insurer)}">${insurerInitials(p.insurer)}</div>
-      <div class="trending-mini__info"><div class="trending-mini__name">${p.insurer}</div><div class="trending-mini__meta">${p.plan} · ₹${p.si}L · ★${p.rating}</div></div>
-      <div class="trending-mini__price">${formatPremium(p.premium)}<span>/yr</span></div>
-    </button>`;
-  }).join('');
+  const trendingHtml = trendingPlans.map((p) => renderTrendingMiniRow(p, homeTrendingTab)).join('');
 
   const productById = (id) => products.find(p => p.id === id);
+
+  const homeCatMeta = {
+    health: { tag: 'Family & individual', price: '₹14,200', unit: '/yr' },
+    motor: { tag: 'Car & bike', price: '₹10,850', unit: '/yr' },
+    term: { tag: 'Cover up to ₹1 Cr', price: '₹999', unit: '/mo' },
+    home: { tag: 'House & belongings', price: '₹2,100', unit: '/yr' },
+  };
 
   const featuredHtml = HOME_FEATURED_IDS.map(id => {
     const p = productById(id);
     if (!p) return '';
-    return `<button type="button" class="home-cat" data-action="quote" data-product="${p.id}" aria-label="${p.name}">
-      <span class="home-cat__head">
-        <span class="home-cat__icon" aria-hidden="true">${iconProduct(p.icon, p.color, ICON_SIZE.md)}</span>
-        <span class="home-cat__name">${p.name}</span>
+    const meta = homeCatMeta[id] || { tag: p.tag, price: p.from, unit: '/yr' };
+    return `<button type="button" class="home-cat home-cat--${p.id}" data-action="quote" data-product="${p.id}" aria-label="${p.name}, ${meta.tag}, starts ${meta.price}${meta.unit}">
+      <span class="home-cat__top">
+        <span class="home-cat__icon" aria-hidden="true">${iconProduct(p.icon, p.color, ICON_SIZE.lg)}</span>
+        <span class="home-cat__go" aria-hidden="true">${icon('chevronRight', ICON_SIZE.sm)}</span>
       </span>
-      <span class="home-cat__tag">${p.tag}</span>
-      <span class="home-cat__from">From <strong>${p.from}</strong>/yr</span>
+      <span class="home-cat__copy">
+        <span class="home-cat__name">${p.name}</span>
+        <span class="home-cat__tag">${meta.tag}</span>
+      </span>
+      <span class="home-cat__from"><span class="home-cat__kicker">Starts</span> <strong>${meta.price}</strong><span class="home-cat__unit">${meta.unit}</span></span>
     </button>`;
   }).join('');
 
@@ -5175,9 +5215,12 @@ function renderHome() {
 
       <div class="home-v2__body">
         <div class="home-cat-section home-cat-section--prominent">
-          <div class="section__head">
-            <h2>Buy insurance</h2>
-            <button type="button" class="section__link" data-action="set-view" data-view="explore">View all</button>
+          <div class="section__head home-cat-section__head">
+            <div class="home-cat-section__titles">
+              <h2>Buy insurance</h2>
+              <p class="home-cat-section__lead">Pick a cover and compare plans.</p>
+            </div>
+            <button type="button" class="section__link home-cat-section__all" data-action="set-view" data-view="explore">View all</button>
           </div>
           <div class="home-cat-grid">${featuredHtml}</div>
           ${HOME_MORE_IDS.length ? `<div class="home-more-grid">${moreHtml}</div>` : ''}
@@ -5185,18 +5228,17 @@ function renderHome() {
 
         <div class="quick-actions quick-actions--v2">
           <button type="button" class="quick-action quick-action--renew" data-action="open-renewals" aria-label="Renew existing policies">
-            <span class="quick-action__icon quick-action__icon--renew">${icon('renew', ICON_SIZE.md)}</span>
-            ${policies.filter((p) => daysUntilRenewal(p.renewalISO) <= 30).length ? `<span class="quick-action__badge" aria-hidden="true">${policies.filter((p) => daysUntilRenewal(p.renewalISO) <= 30).length}</span>` : ''}
-            <span>Renew</span>
+            <span class="quick-action__icon quick-action__icon--renew">${icon('renew', ICON_SIZE.md)}${policies.filter((p) => daysUntilRenewal(p.renewalISO) <= 30).length ? `<span class="quick-action__badge" aria-hidden="true">${policies.filter((p) => daysUntilRenewal(p.renewalISO) <= 30).length}</span>` : ''}</span>
+            <span class="quick-action__label">Renew</span>
           </button>
           <button type="button" class="quick-action" data-action="set-view" data-view="policies">
-            <span class="quick-action__icon quick-action__icon--policy">${icon('policy', ICON_SIZE.md)}</span><span>Policies</span>
+            <span class="quick-action__icon quick-action__icon--policy">${icon('policy', ICON_SIZE.md)}</span><span class="quick-action__label">Policies</span>
           </button>
           <button type="button" class="quick-action" data-action="set-view" data-view="claims">
-            <span class="quick-action__icon quick-action__icon--claim">${icon('claim', ICON_SIZE.md)}</span><span>Claims</span>
+            <span class="quick-action__icon quick-action__icon--claim">${icon('claim', ICON_SIZE.md)}</span><span class="quick-action__label">Claims</span>
           </button>
           <button type="button" class="quick-action" data-action="expert-modal">
-            <span class="quick-action__icon quick-action__icon--advisor">${icon('advisor', ICON_SIZE.md)}</span><span>Advisor</span>
+            <span class="quick-action__icon quick-action__icon--advisor">${icon('advisor', ICON_SIZE.md)}</span><span class="quick-action__label">Advisor</span>
           </button>
         </div>
 
@@ -5205,8 +5247,8 @@ function renderHome() {
             <h2>${t('home.keyFeaturesTitle')}</h2>
             <p class="customer-tools__intro">${openCasesCount() ? t('home.keyFeaturesIntroOpen') : t('home.keyFeaturesIntro')}</p>
           </div>
-          <div class="help-grid customer-tools__grid customer-tools__grid--strip" role="list" aria-label="Key features after you buy">
-            ${renderHomeCustomerToolsStrip()}
+          <div class="home-after-section home-after-section--compact" role="list" aria-label="After you buy, tools by insurance type">
+            <div class="home-cat-grid home-after-grid">${renderHomeCustomerToolsStrip()}</div>
           </div>
         </div>
 
@@ -5222,7 +5264,9 @@ function renderHome() {
             <button type="button" role="tab" aria-selected="${homeTrendingTab === 'term'}" class="trending-tab ${homeTrendingTab === 'term' ? 'active' : ''}" data-trending="term">Term</button>
             <button type="button" role="tab" aria-selected="${homeTrendingTab === 'home'}" class="trending-tab ${homeTrendingTab === 'home' ? 'active' : ''}" data-trending="home">Home</button>
           </div>
-          <div class="trending-list" role="tabpanel" aria-live="polite">${trendingHtml}</div>
+          <div class="trending-panel">
+            <div class="trending-list" role="tabpanel" aria-live="polite">${trendingHtml}</div>
+          </div>
         </div>
 
         ${renderInsuranceFooter()}
@@ -5232,18 +5276,20 @@ function renderHome() {
 
 function renderExplore() {
   const tiles = products.map(p => `
-    <button class="product-tile" data-action="quote" data-product="${p.id}" style="grid-column: span 2; flex-direction: row; padding: 1rem; justify-content: flex-start; gap: 0.75rem;">
+    <button class="product-tile explore-product" data-action="quote" data-product="${p.id}">
       ${iconProduct(p.icon, p.color, ICON_SIZE.lg)}
-      <div style="text-align:left"><div class="product-tile__name" style="font-size:0.875rem">${t(`product.${p.id}`)}</div>
-      <div style="font-size:0.75rem;color:var(--color-ink-muted)">${t('explore.buy')}</div></div>
+      <span class="explore-product__copy">
+        <span class="product-tile__name">${t(`product.${p.id}`)}</span>
+        <span class="explore-product__hint">${t('explore.buy')}</span>
+      </span>
     </button>`).join('');
 
-  return `<div class="section main--padded" style="padding-top:1rem">
+  return `<div class="section main--padded explore-page">
     <h1>${t('explore.title')}</h1>
     <p class="subtitle">${t('explore.subtitle')}</p>
-    <div class="product-grid" style="grid-template-columns:1fr 1fr">${tiles}</div>
-    <h2 style="margin-top:1.5rem">${t('explore.categories')}</h2>
-    <div class="help-grid">
+    <div class="explore-products">${tiles}</div>
+    <h2 class="explore-page__heading">${t('explore.categories')}</h2>
+    <div class="help-grid explore-cats">
       <button class="help-tile" data-action="quote" data-product="health" data-health-preset="family"><div class="help-tile__icon">${icon('family', ICON_SIZE.lg)}</div><div class="help-tile__label">${t('explore.family')}</div></button>
       <button class="help-tile" data-action="quote" data-product="health" data-health-preset="senior"><div class="help-tile__icon">${icon('senior', ICON_SIZE.lg)}</div><div class="help-tile__label">${t('explore.senior')}</div></button>
       <button class="help-tile" data-action="quote" data-product="motor"><div class="help-tile__icon">${icon('motor', ICON_SIZE.lg)}</div><div class="help-tile__label">${t('explore.car')}</div></button>
