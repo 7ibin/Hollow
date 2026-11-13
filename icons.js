@@ -56,6 +56,7 @@ const MATERIAL_ICONS = {
   campaign: 'campaign',
   info: 'info',
   mail: 'mail',
+  edit: 'edit',
 };
 
 const ICON_OUTLINE = new Set([
@@ -157,15 +158,9 @@ function iconHeroPolicyChip() {
 }
 
 function iconHeroQuoteGo() {
-  return `<svg class="quote-card__btn-go-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path
-      class="quote-card__btn-go-chevron"
-      d="M10 8.25 14.75 12 10 15.75"
-      stroke="currentColor"
-      stroke-width="2.75"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
+  /* Single bold chevron — reads cleaner in the small hero chip (PB / ID default) */
+  return `<svg class="quote-card__btn-go-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+    <path d="M9 7.25 15.25 12 9 16.75" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>`;
 }
 

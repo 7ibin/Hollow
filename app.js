@@ -74,6 +74,9 @@ const i18n = {
     'signup.demoOtp': 'Your OTP:',
     'signup.trust1': 'Compare plans', 'signup.trust2': '256-bit secure', 'signup.trust3': 'No spam calls',
     'account.title': 'My account', 'account.logout': 'Log out', 'account.phone': 'Mobile', 'account.policies': 'My policies',
+    'account.editProfile': 'Edit profile', 'account.editShort': 'Edit', 'account.nameLabel': 'Full name', 'account.profileHint': 'Shown on quotes and policy documents',
+    'account.saveProfile': 'Save profile', 'account.cancel': 'Cancel', 'account.profileSaved': 'Profile updated',
+    'account.nameRequired': 'Please enter your full name', 'account.phoneLocked': 'Verified at login — change via support if needed',
     'account.email': 'Email', 'account.emailHint': 'Policy PDF, renewal & payment receipts', 'account.saveEmail': 'Save email',
     'account.emailSaved': 'Email updated', 'account.emailInvalid': 'Enter a valid email address',
     'signup.emailLabel': 'Email (optional)', 'signup.emailPlaceholder': 'you@email.com',
@@ -192,7 +195,7 @@ const i18n = {
     'home.heroTitle': 'Find the right insurance, faster',
     'home.heroSub': 'Compare Health, Motor, Term Life & Home without the jargon — AI guidance and licensed experts when you need help.',
     'home.heroCta': 'Find the Right Insurance',
-    'home.heroCtaVisible': 'Find the right insurance',
+    'home.heroCtaVisible': 'Get quotes',
     'home.quoteLabel': 'What do you need cover for?',
     'home.supportTitle': 'Need help choosing?',
     'home.supportAi': 'Ask Hollow AI',
@@ -688,6 +691,8 @@ const SIGNUP_DEMO_OTP = '123456';
 let authUser = null;
 let signupDraft = { name: '', phone: '', email: '', pendingOtp: null, sentAt: 0, error: '', tab: 'login', channel: 'sms' };
 let accountEmailNotice = '';
+let accountProfileEdit = false;
+let accountProfileNotice = '';
 let accountPrivacyNotice = '';
 let renewLookupError = '';
 let checkoutResumeWizard = null;
@@ -2047,6 +2052,34 @@ function saveAccountEmail() {
   render();
 }
 
+function openAccountProfileEdit() {
+  accountProfileEdit = true;
+  accountProfileNotice = '';
+  accountEmailNotice = '';
+  render();
+  requestAnimationFrame(() => document.getElementById('accountProfileName')?.focus());
+}
+
+function cancelAccountProfileEdit() {
+  accountProfileEdit = false;
+  accountProfileNotice = '';
+  render();
+}
+
+function saveAccountProfile() {
+  const name = document.getElementById('accountProfileName')?.value.trim() || '';
+  if (!name) {
+    accountProfileNotice = t('account.nameRequired');
+    render();
+    requestAnimationFrame(() => document.getElementById('accountProfileName')?.focus());
+    return;
+  }
+  saveAuthUser({ ...authUser, name });
+  accountProfileEdit = false;
+  accountProfileNotice = t('account.profileSaved');
+  render();
+}
+
 function loadAppSettings() {
   try {
     const raw = localStorage.getItem('hollowSettings');
@@ -2087,6 +2120,8 @@ function logout() {
   authUser = null;
   signupDraft = { name: '', phone: '', email: '', pendingOtp: null, sentAt: 0, error: '', tab: 'login', channel: 'sms' };
   accountEmailNotice = '';
+  accountProfileEdit = false;
+  accountProfileNotice = '';
   updateAuthHeader();
   wizardState = null;
   document.body.classList.remove('wizard-mode', 'signup-mode');
@@ -5313,6 +5348,26 @@ function renderAccount() {
   const emailNotice = accountEmailNotice
     ? `<p class="account-email-notice ${accountEmailNotice === t('account.emailInvalid') ? 'account-email-notice--error' : 'account-email-notice--ok'}" role="status">${esc(accountEmailNotice)}</p>`
     : '';
+  const profileNoticeIsError = accountProfileNotice === t('account.nameRequired');
+  const profileNoticeHtml = accountProfileNotice
+    ? `<p class="account-email-notice ${profileNoticeIsError ? 'account-email-notice--error' : 'account-email-notice--ok'}" role="status">${esc(accountProfileNotice)}</p>`
+    : '';
+  const profileEditPanel = accountProfileEdit
+    ? `<div class="account-profile-edit" id="accountProfileEdit">
+      <h2 class="account-profile-edit__title">${icon('user', ICON_SIZE.md, 'hollow-icon hollow-icon--inline')} ${t('account.editProfile')}</h2>
+      <p class="account-profile-edit__hint">${t('account.profileHint')}</p>
+      ${profileNoticeHtml}
+      <label class="account-contact__label" for="accountProfileName">${t('account.nameLabel')}</label>
+      <input class="account-contact__input" id="accountProfileName" type="text" autocomplete="name" value="${esc(authUser.name || '')}" placeholder="e.g. Priya Sharma">
+      <label class="account-contact__label" for="accountProfilePhone">${t('account.phone')}</label>
+      <input class="account-contact__input input-readonly" id="accountProfilePhone" type="tel" readonly value="${esc(displayPhone)}" aria-describedby="accountProfilePhoneHint">
+      <p class="account-profile-edit__locked" id="accountProfilePhoneHint">${t('account.phoneLocked')}</p>
+      <div class="account-profile-edit__actions">
+        <button type="button" class="btn btn--primary btn--block btn--sm" data-action="save-account-profile">${t('account.saveProfile')}</button>
+        <button type="button" class="btn btn--secondary btn--block btn--sm" data-action="cancel-account-profile">${t('account.cancel')}</button>
+      </div>
+    </div>`
+    : '';
   return `<div class="section main--padded account-page" style="padding-top:1rem">
     <h1>${t('account.title')}</h1>
     <div class="account-card">
@@ -5322,7 +5377,10 @@ function renderAccount() {
         <div class="account-card__meta">${t('account.phone')} · ${esc(displayPhone)}</div>
         ${email ? `<div class="account-card__meta account-card__meta--email">${icon('mail', ICON_SIZE.sm, 'hollow-icon hollow-icon--inline')} ${esc(email)}</div>` : ''}
       </div>
+      ${accountProfileEdit ? '' : `<button type="button" class="account-card__edit" data-action="account-edit-profile" aria-controls="accountProfileEdit" aria-expanded="false" aria-label="${t('account.editProfile')}">${t('account.editShort')}</button>`}
     </div>
+    ${profileEditPanel}
+    ${!accountProfileEdit ? profileNoticeHtml : ''}
     <div class="account-contact">
       <h2 class="account-contact__title">${icon('mail', ICON_SIZE.md, 'hollow-icon hollow-icon--inline')} ${t('account.email')}</h2>
       <p class="account-contact__hint">${t('account.emailHint')}</p>
@@ -5346,7 +5404,7 @@ function renderAccount() {
       </button>
     </div>
     <div class="account-settings">
-      <h2 class="account-settings__title">${icon('settings', ICON_SIZE.md, 'hollow-icon hollow-icon--inline')} ${t('account.settings')}</h2>
+      <h2 class="account-settings__title">${icon('settings', ICON_SIZE.md, 'hollow-icon hollow-icon--inline')}<span class="account-settings__title-text">${t('account.settings')}</span></h2>
       <div class="setting-row">
         <span class="setting-row__icon">${icon('notifications', ICON_SIZE.lg)}</span>
         <div class="setting-row__body">
@@ -6824,18 +6882,26 @@ function panFieldIssue(pan) {
   return null;
 }
 
-function shouldShowCheckoutFieldIssue(issue, rawValue, highlightEmpty) {
-  if (!issue) return false;
-  const hasValue = String(rawValue || '').trim().length > 0;
-  if (issue.code === 'invalid') return hasValue;
-  return highlightEmpty;
+function resolveCheckoutFieldState(issue, rawValue, { highlightEmpty = false, touched = false } = {}) {
+  const val = String(rawValue || '').trim();
+  if (val && !issue) return { mod: 'form-group--ok', showError: false };
+  if (issue && (issue.code === 'invalid' || val || touched || highlightEmpty)) {
+    return { mod: 'form-group--invalid', showError: true };
+  }
+  return { mod: '', showError: false };
 }
 
 function checkoutFieldGroupClass(issue, rawValue, highlightEmpty) {
-  if (!shouldShowCheckoutFieldIssue(issue, rawValue, highlightEmpty)) return 'form-group form-group--checkout-field';
-  const hasValue = String(rawValue || '').trim().length > 0;
-  const mod = hasValue || issue.code === 'invalid' ? 'form-group--invalid' : 'form-group--needs';
-  return `form-group form-group--checkout-field ${mod}`;
+  const state = resolveCheckoutFieldState(issue, rawValue, { highlightEmpty, touched: false });
+  const mod = state.mod ? ` ${state.mod}` : '';
+  return `form-group form-group--checkout-field${mod}`;
+}
+
+function checkoutFieldLabel(inputId, text, { required = true, optionalNote = '' } = {}) {
+  const req = required
+    ? '<span class="checkout-field__required" aria-hidden="true">*</span>'
+    : `<span class="checkout-field__optional">${optionalNote || 'Optional'}</span>`;
+  return `<label for="${inputId}">${text} ${req}</label>`;
 }
 
 function renderCheckoutValidatedInput({
@@ -6846,13 +6912,13 @@ function renderCheckoutValidatedInput({
   issue,
   highlightEmpty,
 }) {
-  const show = shouldShowCheckoutFieldIssue(issue, value, highlightEmpty);
+  const state = resolveCheckoutFieldState(issue, value, { highlightEmpty, touched: false });
   const groupClass = checkoutFieldGroupClass(issue, value, highlightEmpty);
-  const errHtml = show
+  const errHtml = state.showError && issue
     ? `<p class="form-group__field-error" id="${inputId}Error" role="alert">${issue.message}</p>`
     : '';
-  const ariaInvalid = show ? 'true' : 'false';
-  const ariaDesc = show ? ` aria-describedby="${inputId}Error"` : '';
+  const ariaInvalid = state.mod === 'form-group--invalid' ? 'true' : 'false';
+  const ariaDesc = state.showError && issue ? ` aria-describedby="${inputId}Error"` : '';
   return `<div class="${groupClass}" data-checkout-field="${inputId}">
     ${labelHtml}
     <input id="${inputId}" value="${esc(value)}" aria-invalid="${ariaInvalid}"${ariaDesc} ${inputAttrs}>
@@ -6862,37 +6928,48 @@ function renderCheckoutValidatedInput({
 
 function syncCheckoutFieldUi() {
   const highlight = !!wizardState?.checkoutHighlightErrors;
+  const opts = { highlightEmpty: highlight };
   const product = wizardState?.type || activeProduct || 'health';
   captureCheckoutFormFromDOM();
   if (product === 'term') {
-    syncCheckoutOneField('checkoutNominee', nomineeFieldIssue(checkoutForm.nominee), checkoutForm.nominee, highlight);
-    syncCheckoutOneField('checkoutPan', panFieldIssue(checkoutForm.pan), checkoutForm.pan, highlight);
+    syncCheckoutOneField('checkoutNominee', nomineeFieldIssue(checkoutForm.nominee), checkoutForm.nominee, opts);
+    syncCheckoutOneField('checkoutPan', panFieldIssue(checkoutForm.pan), checkoutForm.pan, opts);
   } else if (product === 'health') {
-    syncCheckoutOneField('checkoutProposerName', checkoutProposerIssue(checkoutForm.proposerName), checkoutForm.proposerName, highlight);
-    syncCheckoutOneField('checkoutNominee', nomineeFieldIssue(checkoutForm.nominee), checkoutForm.nominee, highlight);
+    syncCheckoutOneField('checkoutProposerName', checkoutProposerIssue(checkoutForm.proposerName), checkoutForm.proposerName, opts);
+    syncCheckoutOneField('checkoutNominee', nomineeFieldIssue(checkoutForm.nominee), checkoutForm.nominee, opts);
+    const nomDobIssue = checkoutForm.nomineeDob && parseCheckoutDate(checkoutForm.nomineeDob) == null
+      ? { code: 'invalid', message: 'Enter a valid nominee date of birth' }
+      : null;
+    syncCheckoutOneField('checkoutNomineeDob', nomDobIssue, checkoutForm.nomineeDob, opts);
     quoteForm.health?.members.filter((m) => m.selected).forEach((m) => {
       ensureMemberIdentityFields(m);
       const nameId = `insuredName-${m.id}`;
       const dobId = `insuredDob-${m.id}`;
-      syncCheckoutOneField(nameId, insuredNameIssue(m.fullName, m.label), m.fullName, highlight);
-      syncCheckoutOneField(dobId, insuredDobIssue(m.dob, m.label, m.age), m.dob, highlight);
+      syncCheckoutOneField(nameId, insuredNameIssue(m.fullName, m.label), m.fullName, opts);
+      syncCheckoutOneField(dobId, insuredDobIssue(m.dob, m.label, m.age), m.dob, opts);
     });
   }
   syncCheckoutReviewCta();
 }
 
-function syncCheckoutOneField(inputId, issue, rawValue, highlightEmpty) {
+function markCheckoutFieldTouched(el) {
+  if (el?.dataset) el.dataset.checkoutTouched = '1';
+}
+
+function syncCheckoutOneField(inputId, issue, rawValue, options = {}) {
+  const highlightEmpty = !!options.highlightEmpty;
   const input = document.getElementById(inputId);
   if (!input) return;
   const group = input.closest('[data-checkout-field]') || input.closest('.form-group');
   if (!group) return;
-  const show = issue && shouldShowCheckoutFieldIssue(issue, rawValue, highlightEmpty);
-  const hasValue = String(rawValue ?? input.value ?? '').trim().length > 0;
-  group.classList.remove('form-group--invalid', 'form-group--needs');
-  if (show) group.classList.add(hasValue || issue.code === 'invalid' ? 'form-group--invalid' : 'form-group--needs');
-  input.setAttribute('aria-invalid', show ? 'true' : 'false');
+  const val = String(rawValue ?? input.value ?? '').trim();
+  const touched = input.dataset.checkoutTouched === '1';
+  const state = resolveCheckoutFieldState(issue, val, { highlightEmpty, touched });
+  group.classList.remove('form-group--invalid', 'form-group--needs', 'form-group--ok');
+  if (state.mod) group.classList.add(state.mod);
+  input.setAttribute('aria-invalid', state.mod === 'form-group--invalid' ? 'true' : 'false');
   let errEl = document.getElementById(`${inputId}Error`);
-  if (show) {
+  if (state.showError && issue) {
     if (!errEl) {
       errEl = document.createElement('p');
       errEl.id = `${inputId}Error`;
@@ -7005,47 +7082,86 @@ function renderHealthCheckoutProposal() {
   const insured = selectedHealthMembers();
   const minDob = minCheckoutDobIso();
   const maxDob = maxCheckoutDobIso();
+  const highlight = !!wizardState?.checkoutHighlightErrors;
   const insuredRows = insured.map((m) => {
     ensureMemberIdentityFields(m);
     const ageHint = m.age !== '' && m.age != null ? `Quoted age: ${m.age}` : '';
-    return `<div class="checkout-insured" data-insured-row="${m.id}">
-      <div class="checkout-insured__head">
-        <span class="checkout-insured__relation">${m.label}</span>
+    const nameField = renderCheckoutValidatedInput({
+      inputId: `insuredName-${m.id}`,
+      labelHtml: checkoutFieldLabel(`insuredName-${m.id}`, 'Full name', { required: true }),
+      value: m.fullName,
+      inputAttrs: 'type="text" placeholder="As on Aadhaar / PAN" autocomplete="name" enterkeyhint="next" aria-required="true"',
+      issue: insuredNameIssue(m.fullName, m.label),
+      highlightEmpty: highlight,
+    });
+    const dobField = renderCheckoutValidatedInput({
+      inputId: `insuredDob-${m.id}`,
+      labelHtml: checkoutFieldLabel(`insuredDob-${m.id}`, 'Date of birth', { required: true }),
+      value: m.dob,
+      inputAttrs: `type="date" class="checkout-date" min="${minDob}" max="${maxDob}" aria-label="${m.label} date of birth" aria-required="true"`,
+      issue: insuredDobIssue(m.dob, m.label, m.age),
+      highlightEmpty: highlight,
+    });
+    return `<div class="checkout-member-card checkout-insured" data-insured-row="${m.id}">
+      <div class="checkout-member-card__title">
+        <span class="checkout-member-card__badge">${m.label}</span>
         ${ageHint ? `<span class="checkout-insured__meta">${ageHint}</span>` : ''}
       </div>
-      <div class="form-row form-row--2 checkout-insured__fields">
-        <div class="form-group">
-          <label for="insuredName-${m.id}">Full name</label>
-          <input id="insuredName-${m.id}" type="text" value="${esc(m.fullName)}" placeholder="As on ID proof" autocomplete="name">
-        </div>
-        <div class="form-group">
-          <label for="insuredDob-${m.id}">Date of birth</label>
-          <input id="insuredDob-${m.id}" type="date" class="checkout-date" value="${esc(m.dob)}" min="${minDob}" max="${maxDob}" aria-label="${m.label} date of birth">
-        </div>
+      <div class="checkout-insured__fields">
+        ${nameField}
+        ${dobField}
       </div>
     </div>`;
   }).join('');
 
-  return `<section class="checkout-proposal" aria-labelledby="checkoutProposalTitle">
+  const proposerField = renderCheckoutValidatedInput({
+    inputId: 'checkoutProposerName',
+    labelHtml: checkoutFieldLabel('checkoutProposerName', 'Your full name', { required: true }),
+    value: checkoutForm.proposerName,
+    inputAttrs: 'type="text" placeholder="As on Aadhaar / PAN" autocomplete="name" enterkeyhint="next" aria-required="true"',
+    issue: checkoutProposerIssue(checkoutForm.proposerName),
+    highlightEmpty: highlight,
+  });
+  const nomineeNameField = renderCheckoutValidatedInput({
+    inputId: 'checkoutNominee',
+    labelHtml: checkoutFieldLabel('checkoutNominee', 'Nominee name', { required: true }),
+    value: checkoutForm.nominee,
+    inputAttrs: 'type="text" placeholder="Full legal name" autocomplete="name" enterkeyhint="next" aria-required="true"',
+    issue: nomineeFieldIssue(checkoutForm.nominee),
+    highlightEmpty: highlight,
+  });
+  const nomineeDobOptional = checkoutForm.nomineeDob && parseCheckoutDate(checkoutForm.nomineeDob) == null
+    ? { code: 'invalid', message: 'Enter a valid nominee date of birth' }
+    : null;
+  const nomineeDobField = renderCheckoutValidatedInput({
+    inputId: 'checkoutNomineeDob',
+    labelHtml: checkoutFieldLabel('checkoutNomineeDob', 'Nominee DOB', { required: false }),
+    value: checkoutForm.nomineeDob,
+    inputAttrs: `type="date" class="checkout-date" min="${minDob}" max="${maxDob}"`,
+    issue: nomineeDobOptional,
+    highlightEmpty: highlight,
+  });
+
+  return `<section class="checkout-proposal checkout-proposal--stacked" aria-labelledby="checkoutProposalTitle">
     <h2 class="quote-form__h2" id="checkoutProposalTitle">Proposal details</h2>
-    <p class="quote-form__hint">Legal names and DOB are required to issue the policy (same as insurer proposal form).</p>
-    <div class="form-group">
-      <label for="checkoutProposerName">Proposer full name</label>
-      <input id="checkoutProposerName" type="text" value="${esc(checkoutForm.proposerName)}" placeholder="Person buying this policy" autocomplete="name">
-      <p class="quote-form__hint checkout-proposal__hint">Usually the same as Self if you are the primary earner.</p>
+    <p class="checkout-proposal__lead">Names and DOB must match your ID — same as the insurer application.</p>
+    <p class="checkout-proposal__reqkey" id="checkoutProposalReqKey">
+      <span class="checkout-proposal__reqkey-item"><span class="checkout-field__required" aria-hidden="true">*</span> Required field</span>
+      <span class="checkout-proposal__reqkey-item checkout-proposal__reqkey-item--optional">Only nominee DOB is optional</span>
+    </p>
+    <div class="checkout-field-card checkout-field-card--proposer">
+      <p class="checkout-field-card__label">Policy buyer <span class="checkout-field-card__required" aria-hidden="true">*</span></p>
+      <div class="checkout-field checkout-field--last">
+        ${proposerField}
+        <p class="checkout-proposal__hint">Same as Self if you are buying for yourself.</p>
+      </div>
     </div>
-    <h3 class="checkout-proposal__sub">Insured members</h3>
+    <h3 class="checkout-proposal__sub">Insured members <span class="checkout-proposal__sub-req" aria-hidden="true">*</span></h3>
     ${insuredRows}
-    <h3 class="checkout-proposal__sub">Nominee</h3>
-    <div class="form-row form-row--2">
-      <div class="form-group">
-        <label for="checkoutNominee">Nominee full name</label>
-        <input id="checkoutNominee" type="text" value="${esc(checkoutForm.nominee)}" placeholder="Full name" autocomplete="name">
-      </div>
-      <div class="form-group">
-        <label for="checkoutNomineeDob">Nominee date of birth <span class="checkout-optional">(optional)</span></label>
-        <input id="checkoutNomineeDob" type="date" class="checkout-date" value="${esc(checkoutForm.nomineeDob)}" min="${minDob}" max="${maxDob}">
-      </div>
+    <h3 class="checkout-proposal__sub">Nominee <span class="checkout-proposal__sub-req" aria-hidden="true">*</span></h3>
+    <div class="checkout-field-card checkout-field-card--nominee">
+      ${nomineeNameField}
+      <div class="checkout-field checkout-field--last">${nomineeDobField}</div>
     </div>
   </section>`;
 }
@@ -8297,6 +8413,15 @@ function bindEvents() {
   document.querySelectorAll('[data-action="save-account-email"]').forEach((el) => {
     el.addEventListener('click', saveAccountEmail);
   });
+  document.querySelectorAll('[data-action="account-edit-profile"]').forEach((el) => {
+    el.addEventListener('click', openAccountProfileEdit);
+  });
+  document.querySelectorAll('[data-action="save-account-profile"]').forEach((el) => {
+    el.addEventListener('click', saveAccountProfile);
+  });
+  document.querySelectorAll('[data-action="cancel-account-profile"]').forEach((el) => {
+    el.addEventListener('click', cancelAccountProfileEdit);
+  });
 
   document.querySelectorAll('[data-action="go-back"], [data-action="back"], [data-action="help-back"], [data-action="compare-back"], [data-action="claim-start-back"]').forEach(el => {
     el.setAttribute('aria-label', 'Go back');
@@ -8552,32 +8677,46 @@ function bindEvents() {
   });
 
   const bumpCheckoutCta = () => syncCheckoutFieldUi();
-  document.getElementById('checkoutProposerName')?.addEventListener('input', (e) => {
-    checkoutForm.proposerName = e.target.value;
-    bumpCheckoutCta();
+  const bindCheckoutLiveField = (el, onUpdate) => {
+    if (!el) return;
+    const touch = () => markCheckoutFieldTouched(el);
+    el.addEventListener('focus', touch);
+    el.addEventListener('input', () => {
+      touch();
+      onUpdate?.(el);
+      bumpCheckoutCta();
+    });
+    el.addEventListener('change', () => {
+      touch();
+      onUpdate?.(el);
+      bumpCheckoutCta();
+    });
+    el.addEventListener('blur', () => {
+      touch();
+      bumpCheckoutCta();
+    });
+  };
+  bindCheckoutLiveField(document.getElementById('checkoutProposerName'), (el) => {
+    checkoutForm.proposerName = el.value;
   });
-  document.getElementById('checkoutNominee')?.addEventListener('input', (e) => {
-    checkoutForm.nominee = e.target.value;
-    bumpCheckoutCta();
+  bindCheckoutLiveField(document.getElementById('checkoutNominee'), (el) => {
+    checkoutForm.nominee = el.value;
   });
-  document.getElementById('checkoutNomineeDob')?.addEventListener('change', (e) => {
-    checkoutForm.nomineeDob = e.target.value;
-    bumpCheckoutCta();
+  bindCheckoutLiveField(document.getElementById('checkoutNomineeDob'), (el) => {
+    checkoutForm.nomineeDob = el.value;
   });
   document.querySelectorAll('[id^="insuredName-"]').forEach((el) => {
-    el.addEventListener('input', () => {
+    bindCheckoutLiveField(el, () => {
       const id = el.id.replace('insuredName-', '');
       const m = quoteForm.health.members.find((x) => x.id === id);
       if (m) m.fullName = el.value;
-      bumpCheckoutCta();
     });
   });
   document.querySelectorAll('[id^="insuredDob-"]').forEach((el) => {
-    el.addEventListener('change', () => {
+    bindCheckoutLiveField(el, () => {
       const id = el.id.replace('insuredDob-', '');
       const m = quoteForm.health.members.find((x) => x.id === id);
       if (m) m.dob = el.value;
-      bumpCheckoutCta();
     });
   });
   document.getElementById('checkoutPan')?.addEventListener('input', (e) => {
@@ -9795,11 +9934,11 @@ function bindWizardMembersKeyboardViewport() {
   });
   document.addEventListener('focusout', (e) => {
     if (!isWizardMembersFormField(e.target)) return;
-    setTimeout(() => {
+    window.setTimeout(() => {
       const active = document.activeElement;
       if (isWizardMembersFormField(active)) return;
       resetWizardMembersKeyboardViewport();
-    }, 120);
+    }, 220);
   });
 }
 
