@@ -6395,7 +6395,11 @@ function bindQuoteFormEvents() {
     field.addEventListener('click', (e) => {
       e.stopPropagation();
       if (e.target === input) return;
-      input.focus();
+      try {
+        input.focus({ preventScroll: true });
+      } catch {
+        input.focus();
+      }
     });
     const refreshAgeValidity = () => {
       const cleaned = input.value.replace(/\D/g, '').slice(0, 2);
@@ -9753,6 +9757,7 @@ function syncWizardMembersKeyboardViewport() {
 }
 
 function scrollMemberFormFieldIntoPane(input) {
+  if (window.matchMedia('(pointer: coarse)').matches) return;
   const scroll = input.closest('.members-step-scroll');
   if (!scroll) return;
   const anchor = input.closest('.member-row--on, .members-step-footer-fields');

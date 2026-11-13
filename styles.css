@@ -4636,28 +4636,18 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .main > .app-view > .memb
   z-index: 3;
   isolation: isolate;
 }
-/* Members step — keep CTA off the keyboard row while age/pincode is focused */
-body.wizard-mode.wizard-members-fit.wizard-keyboard-open.wizard-members-input-focused .main > .app-view > .members-step-footer {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: var(--wizard-keyboard-inset, 0px);
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  z-index: 30;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  height: 0;
-  min-height: 0;
-  padding: 0;
-  border: none;
-  box-shadow: none;
-  overflow: hidden;
+/* Members step — hide docked CTA while typing age/pincode on touch (keyboard resizes layout) */
+@media (pointer: coarse) {
+  body.wizard-mode.wizard-members-fit.wizard-members-input-focused .main > .app-view > .members-step-footer {
+    display: none;
+  }
+  body.wizard-mode.wizard-members-fit.wizard-members-input-focused .main > .app-view > .wizard-body.quote-form--members-compact {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
 }
 body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-scroll {
-  scroll-padding-bottom: 1.5rem;
+  scroll-padding-bottom: 1.25rem;
 }
 .quote-form--members-compact .pincode-footer-row {
   display: flex;
