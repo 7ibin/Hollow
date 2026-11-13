@@ -6050,11 +6050,11 @@ function renderHealthWizard(step) {
     let genderFields;
     if (implicitGender) {
       const isMale = implicitGender === 'male';
-      const genderLabel = isMale ? 'Male' : 'Female';
-      genderFields = `<div class="member-input-block member-input-block--gender member-input-block--gender-implicit">
+      genderFields = `<div class="member-input-block member-input-block--gender">
               <span class="member-input-block__label">Gender</span>
-              <div class="member-gender-field member-gender-field--locked member-gender-field--implicit" role="group" aria-label="${m.label} gender ${genderLabel}">
-                <span class="member-gender-implicit" aria-hidden="true">${genderLabel}</span>
+              <div class="member-gender-field member-gender-field--locked" role="radiogroup" aria-label="${m.label} gender ${isMale ? 'Male' : 'Female'}">
+                <button type="button" class="member-gender-btn ${isMale ? 'selected' : 'member-gender-btn--locked-off'}" disabled aria-disabled="true" aria-checked="${isMale}" aria-label="Male">Male</button>
+                <button type="button" class="member-gender-btn ${!isMale ? 'selected' : 'member-gender-btn--locked-off'}" disabled aria-disabled="true" aria-checked="${!isMale}" aria-label="Female">Female</button>
               </div>
             </div>`;
     } else {
@@ -6175,9 +6175,9 @@ function renderHealthWizard(step) {
           </div>
         </div>
       </div>
-      <div class="wizard-step-footer members-step-footer">
-        ${quoteContinueBtn('Continue', 'Medical history')}
-      </div>
+    </div>
+    <div class="wizard-step-footer members-step-footer">
+      ${quoteContinueBtn('Continue', 'Medical history')}
     </div>`;
 
   if (step === 1) {

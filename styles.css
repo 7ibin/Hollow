@@ -3518,11 +3518,15 @@ body.wizard-mode.wizard-docked-step:not(.signup-mode) .home-step-fit > .wizard-s
 body.wizard-mode.wizard-docked-step:not(.signup-mode) .motor-step-fit > .wizard-step-footer {
   margin-top: auto;
 }
-body.wizard-mode.wizard-docked-step:not(.signup-mode) .wizard-body.quote-form--members-compact > .wizard-step-footer.members-step-footer {
+body.wizard-mode.wizard-docked-step:not(.signup-mode) .main > .app-view > .wizard-step-footer.members-step-footer {
   flex: 0 0 auto;
   flex-shrink: 0;
-  margin-top: auto;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0;
   overflow: visible;
+  padding-left: var(--mobile-gutter);
+  padding-right: var(--mobile-gutter);
 }
 body.wizard-mode.wizard-docked-step:not(.signup-mode) .wizard-step-footer {
   flex: 0 0 auto;
@@ -4603,20 +4607,23 @@ body.wizard-mode.wizard-motor-fit .motor-step-scroll {
 .quote-form--members-compact .member-list-panel--compact .member-add-child + .members-step-footer-fields {
   margin-top: 0.55rem;
 }
-body.wizard-mode.wizard-members-fit .members-step-footer {
+body.wizard-mode.wizard-members-fit .main > .app-view > .members-step-footer {
   overflow: visible;
   flex-shrink: 0;
   min-height: min-content;
-  padding-bottom: calc(1.05rem + var(--safe-bottom));
+  padding: 0.45rem var(--mobile-gutter) calc(1.05rem + var(--safe-bottom));
 }
-body.wizard-mode.wizard-members-fit .members-step-footer .quote-form__continue {
+body.wizard-mode.wizard-members-fit .main > .app-view > .members-step-footer .quote-form__continue {
   margin-top: 0.15rem;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0;
   position: relative;
   z-index: 1;
 }
 body.wizard-mode.wizard-docked-step.wizard-members-fit .main > .app-view > .wizard-body.quote-form--members-compact {
+  flex: 1 1 auto;
+  min-height: 0;
   padding-bottom: 0;
+  overflow: hidden;
 }
 body.wizard-mode.wizard-docked-step.wizard-members-fit .members-step-fit {
   flex: 1 1 auto;
@@ -4624,13 +4631,10 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .members-step-fit {
   padding-bottom: 0;
   overflow: hidden;
 }
-body.wizard-mode.wizard-docked-step.wizard-members-fit .wizard-body.quote-form--members-compact > .members-step-footer {
+body.wizard-mode.wizard-docked-step.wizard-members-fit .main > .app-view > .members-step-footer {
   position: relative;
   z-index: 3;
   isolation: isolate;
-}
-body.wizard-mode.wizard-docked-step.wizard-members-fit .wizard-body.quote-form--members-compact > .members-step-footer .quote-form__continue {
-  margin-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px));
 }
 .quote-form--members-compact .pincode-footer-row {
   display: flex;
@@ -4840,7 +4844,7 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .wizard-body.quote-form--
 .quote-form--members-compact .member-row--on .member-row__body {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 0.4rem 0.55rem;
   min-height: var(--member-row-on-control-h);
@@ -4861,10 +4865,9 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .wizard-body.quote-form--
   margin-right: 0.15rem;
 }
 .quote-form--members-compact .member-row--on .member-row__detail {
-  flex: 1 1 11.25rem;
+  flex: 1 1 0;
   min-width: 0;
   width: auto;
-  max-width: 100%;
 }
 .quote-form--members-compact .member-row--on .member-row__check {
   width: 20px;
@@ -4930,10 +4933,6 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .wizard-body.quote-form--
   min-width: 0;
   max-width: none;
 }
-.quote-form--members-compact .member-row--on .member-input-block--gender-implicit {
-  flex: 0 1 auto;
-  max-width: 5.5rem;
-}
 .quote-form--members-compact .member-age-field,
 .quote-form--members-compact .member-gender-field {
   height: 2.75rem;
@@ -4944,6 +4943,7 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .wizard-body.quote-form--
   min-height: var(--member-row-on-control-h);
   max-height: var(--member-row-on-control-h);
   border-radius: 8px;
+  flex-shrink: 0;
 }
 .quote-form--members-compact .member-row--on .member-age-field {
   width: 100%;
@@ -4971,28 +4971,6 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .wizard-body.quote-form--
   max-width: 100%;
   padding: 3px;
   gap: 0.15rem;
-  flex-shrink: 1;
-}
-.quote-form--members-compact .member-row--on .member-gender-field--implicit {
-  width: auto;
-  min-width: 3.25rem;
-  max-width: 100%;
-  padding: 0 0.45rem;
-  justify-content: center;
-  background: linear-gradient(180deg, #f0f6fc 0%, #e6eef6 100%);
-  border-color: #b8cfe4;
-  box-shadow: inset 0 0 0 1px rgba(13, 79, 139, 0.08);
-}
-.quote-form--members-compact .member-gender-implicit {
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1.2;
-  color: var(--color-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: center;
-  width: 100%;
 }
 .quote-form--members-compact .member-row__age {
   font-size: 0.9375rem;
@@ -5034,13 +5012,9 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .wizard-body.quote-form--
 .quote-form--members-compact .member-row--on .member-gender-btn {
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 0 0.25rem;
+  padding: 0 0.35rem;
   min-height: 100%;
-  min-width: 0;
   border-radius: 6px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .quote-form--members-compact .quote-form__continue {
   margin-top: 0.15rem;
@@ -9505,11 +9479,30 @@ body.wizard-mode .ai-fab { bottom: calc(1rem + var(--safe-bottom)); }
     --mobile-gutter: clamp(0.65rem, 3.25cqw, 0.85rem);
   }
   .quote-form--members-compact .member-row--on .member-row__detail {
-    flex: 1 1 100%;
     min-width: 0;
   }
-  .quote-form--members-compact .member-row--on .member-row__title {
-    font-size: 0.875rem;
+  .quote-form--members-compact .member-row--on .member-row__inputs {
+    gap: 0.38rem;
+  }
+  .quote-form--members-compact .member-row--on .member-input-block--age {
+    max-width: 5rem;
+  }
+  .quote-form--members-compact .member-row--on .member-age-field__suffix {
+    font-size: 0.625rem;
+  }
+  .quote-form--members-compact .member-row--on .member-gender-field {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+  .quote-form--members-compact .member-row--on .member-gender-btn {
+    min-width: 0;
+    padding: 0 0.3rem;
+  }
+  .quote-form--members-compact .member-row--on .member-gender-field--locked .member-gender-btn--locked-off:disabled {
+    flex: 0.72 1 0;
+  }
+  .quote-form--members-compact .member-row--on .member-gender-field--locked .member-gender-btn.selected:disabled {
+    flex: 1.28 1 0;
   }
   .quote-form--members-compact .pincode-footer-row__label,
   .quote-form--members-compact .health-existing-row__label {
