@@ -63,6 +63,53 @@ html.safe-area-preview {
   --safe-bottom: 34px;
 }
 
+/* QA preview (?qa=1): 390px production shell — not Figma capture (no scroll hacks) */
+html.qa-preview {
+  background: #b8c4d0;
+}
+html.qa-preview body {
+  background: #b8c4d0;
+}
+html.qa-preview body.qa-preview {
+  margin: 0 auto;
+  min-height: 100dvh;
+}
+html.qa-preview #app {
+  width: 100%;
+  max-width: 390px;
+  min-width: 0;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  box-shadow:
+    0 0 0 1px rgba(15, 23, 42, 0.14),
+    0 12px 40px rgba(15, 23, 42, 0.12);
+}
+@media (min-width: 391px) {
+  html.qa-preview #app {
+    width: 390px;
+    min-width: 390px;
+  }
+}
+body.qa-preview::after {
+  content: 'QA · 390px';
+  position: fixed;
+  top: calc(0.35rem + var(--safe-top, env(safe-area-inset-top, 0px)));
+  right: calc(0.45rem + var(--safe-right, env(safe-area-inset-right, 0px)));
+  z-index: 10000;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
 *, *::before, *::after { box-sizing: border-box; }
 
 .sr-only {

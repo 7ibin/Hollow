@@ -2333,6 +2333,10 @@ function readDesignCaptureQuery() {
   };
 }
 
+function isQaPreviewMode() {
+  return new URLSearchParams(window.location.search).get('qa') === '1';
+}
+
 function applyDesignCaptureTheme(theme) {
   if (theme === 'dark' || theme === 'light') {
     document.documentElement.setAttribute('data-theme', theme);
@@ -10491,6 +10495,9 @@ function initSplash({ skip = false } = {}) {
 
 const designCaptureQuery = readDesignCaptureQuery();
 applyDesignCaptureTheme(designCaptureQuery.theme);
+if (isQaPreviewMode() && !designCaptureQuery.screen) {
+  document.body.classList.add('qa-preview');
+}
 let designCaptureOverlay = null;
 const designCaptureApplied = Boolean(
   designCaptureQuery.screen && DESIGN_CAPTURE_SCREENS.has(designCaptureQuery.screen),

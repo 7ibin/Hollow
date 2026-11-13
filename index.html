@@ -7,6 +7,9 @@
       if (/[?&]safe=1(?:&|$)/.test(location.search)) {
         document.documentElement.classList.add('safe-area-preview');
       }
+      if (/[?&]qa=1(?:&|$)/.test(location.search)) {
+        document.documentElement.classList.add('qa-preview');
+      }
       if (/[?&]screen=[^&]+/.test(location.search)) {
         document.documentElement.classList.add('design-capture');
       }
