@@ -4636,6 +4636,29 @@ body.wizard-mode.wizard-docked-step.wizard-members-fit .main > .app-view > .memb
   z-index: 3;
   isolation: isolate;
 }
+/* Members step — keep CTA off the keyboard row while age/pincode is focused */
+body.wizard-mode.wizard-members-fit.wizard-keyboard-open.wizard-members-input-focused .main > .app-view > .members-step-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--wizard-keyboard-inset, 0px);
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  z-index: 30;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  height: 0;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  overflow: hidden;
+}
+body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-scroll {
+  scroll-padding-bottom: 1.5rem;
+}
 .quote-form--members-compact .pincode-footer-row {
   display: flex;
   flex-wrap: nowrap;

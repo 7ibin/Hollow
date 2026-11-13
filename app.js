@@ -9725,6 +9725,75 @@ function routeAIQuery(query) {
   };
 }
 
+let wizardMembersKeyboardBound = false;
+
+function isWizardMembersFormField(el) {
+  return el?.matches?.('.member-row__age, #healthPincode');
+}
+
+function resetWizardMembersKeyboardViewport() {
+  document.body.classList.remove('wizard-keyboard-open', 'wizard-members-input-focused');
+  document.documentElement.style.setProperty('--wizard-keyboard-inset', '0px');
+}
+
+function syncWizardMembersKeyboardViewport() {
+  if (!document.body.classList.contains('wizard-members-fit')) {
+    resetWizardMembersKeyboardViewport();
+    return;
+  }
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const layoutHeight = window.innerHeight;
+  const keyboardGap = Math.max(0, layoutHeight - vv.height - vv.offsetTop);
+  const inputFocused = document.body.classList.contains('wizard-members-input-focused');
+  const keyboardOpen = keyboardGap > 48 || (inputFocused && keyboardGap > 20);
+  const inset = keyboardOpen ? keyboardGap : 0;
+  document.documentElement.style.setProperty('--wizard-keyboard-inset', `${inset}px`);
+  document.body.classList.toggle('wizard-keyboard-open', keyboardOpen && inputFocused);
+}
+
+function scrollMemberFormFieldIntoPane(input) {
+  const scroll = input.closest('.members-step-scroll');
+  if (!scroll) return;
+  const anchor = input.closest('.member-row--on, .members-step-footer-fields');
+  if (!anchor) return;
+  const scrollRect = scroll.getBoundingClientRect();
+  const anchorRect = anchor.getBoundingClientRect();
+  const delta = anchorRect.top - scrollRect.top;
+  if (delta < 10 || delta > scrollRect.height * 0.42) {
+    scroll.scrollTop += delta - 12;
+  }
+}
+
+function bindWizardMembersKeyboardViewport() {
+  if (wizardMembersKeyboardBound) return;
+  wizardMembersKeyboardBound = true;
+  const onVV = () => syncWizardMembersKeyboardViewport();
+  window.visualViewport?.addEventListener('resize', onVV);
+  window.visualViewport?.addEventListener('scroll', onVV);
+  window.addEventListener('resize', onVV);
+  document.addEventListener('focusin', (e) => {
+    if (!document.body.classList.contains('wizard-members-fit')) return;
+    const input = e.target;
+    if (!isWizardMembersFormField(input)) return;
+    document.body.classList.add('wizard-members-input-focused');
+    requestAnimationFrame(() => {
+      scrollMemberFormFieldIntoPane(input);
+      onVV();
+    });
+    setTimeout(onVV, 100);
+    setTimeout(onVV, 280);
+  });
+  document.addEventListener('focusout', (e) => {
+    if (!isWizardMembersFormField(e.target)) return;
+    setTimeout(() => {
+      const active = document.activeElement;
+      if (isWizardMembersFormField(active)) return;
+      resetWizardMembersKeyboardViewport();
+    }, 120);
+  });
+}
+
 let aiKeyboardViewportBound = false;
 
 function resetAIPanelViewport() {
@@ -10299,6 +10368,7 @@ document.getElementById('bottomNav').addEventListener('click', e => {
   if (btn?.dataset.view) { wizardState = null; setView(btn.dataset.view); }
 });
 bindAIKeyboardViewport();
+bindWizardMembersKeyboardViewport();
 document.getElementById('aiFab').addEventListener('click', (e) => openAIPanel('', null, null, false, e.currentTarget));
 document.getElementById('aiClose').addEventListener('click', goBack);
 document.getElementById('aiOverlay').addEventListener('click', goBack);
