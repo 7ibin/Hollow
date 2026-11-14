@@ -238,29 +238,59 @@ const i18n = {
     'guide.result.term': 'Suggested life cover',
     'guide.term.age': 'Your age',
     'term.agePlaceholder': '32',
-    'term.ageGuide': 'Enter your current age.',
-    'term.ageHintEmpty': 'Must be 18–65 years',
+    'term.ageGuide': 'Your age for matching term plans.',
+    'term.ageGuideSub': 'Must be 18 to 65 years',
+    'term.ageHintEmpty': '',
     'term.ageHintPartial': 'Use a complete age from 18 to 65.',
     'term.ageHintOk': 'We’ll show plans for this age.',
     'term.ageYears': 'Years',
     'home.pincodePlaceholder': '110001',
-    'home.pincodeGuide': 'Enter your property pincode.',
-    'home.pincodeHintEmpty': 'Must be 6 digits',
+    'home.pincodeGuide': '6-digit pincode where the home is located.',
+    'home.pincodeHintEmpty': '',
     'home.pincodeHintPartial': 'Enter all 6 digits',
     'home.pincodeHintOk': 'We’ll match plans for this area.',
     'home.pincodeSuffix': 'PIN',
     'home.areaPlaceholder': '1200',
-    'home.areaGuide': 'Total carpet + wall area you want covered.',
-    'home.areaHintEmpty': 'Required — 100 to 50,000',
+    'home.areaGuide': 'Total built-up area of the home, in square feet.',
+    'home.areaHintEmpty': '',
     'home.areaHintPartial': 'Enter area between 100 and 50,000 sq ft',
-    'home.areaHintOk': 'Used to size structure cover.',
+    'home.areaHintOk': 'Used to estimate building cover.',
     'home.areaSuffix': 'Sq ft',
-    'home.structurePlaceholder': '50',
-    'home.structureGuide': 'Rebuilding cost of the structure (not contents).',
-    'home.structureHintEmpty': 'Required — ₹5L to ₹500L',
-    'home.structureHintPartial': 'Enter value between 5 and 500 (lakhs)',
-    'home.structureHintOk': 'Used for building cover premium.',
-    'home.structureSuffix': '₹L',
+    'home.occupancyLabel': 'Do you own or rent this home?',
+    'home.propertyKindLabel': 'Property type',
+    'home.coverLabel': 'What should we insure?',
+    'home.coverStructureNote': 'Building cover only — belongings are not included.',
+    'home.coverChipStructureLine': 'Building only',
+    'home.coverChipStructureSub': 'No belongings',
+    'home.coverChipContentsLine': 'Belongings',
+    'home.coverChipContentsSub': 'Furniture & valuables',
+    'home.coverChipBothLine': 'Both',
+    'home.coverChipBothSub': 'Building and belongings',
+    'home.constructionPlaceholder': '2500',
+    'home.constructionGuide': 'Typical cost to rebuild one sq ft in your area (labour + materials).',
+    'home.constructionHintPartial': 'Use ₹500 to ₹25,000 per sq ft',
+    'home.constructionHintOk': 'Used with built-up area for rebuild value.',
+    'home.constructionSuffix': 'per sq ft',
+    'home.buildEstimateTitle': 'Estimated rebuild cost',
+    'home.buildEstimateMeta': 'Area (sq ft) multiplied by rebuild cost per sq ft',
+    'home.buildEstimateWarnLow': 'Too low for quotes (minimum ₹5 lakh). Try a larger area or higher cost per sq ft.',
+    'home.buildEstimateWarnHigh': 'Too high for quotes (maximum ₹500 lakh). Try a smaller area or lower cost per sq ft.',
+    'home.leadStep0': 'Tell us about the property. You can change these details anytime before you pay.',
+    'home.contentsPlaceholder': '10',
+    'home.contentsGuide': 'Total value of furniture, appliances, and valuables — enter amount in lakhs.',
+    'home.contentsHintPartial': 'Enter 1 to 200 (e.g. 10 = ₹10 lakh)',
+    'home.contentsHintOk': 'Used for belongings cover premium.',
+    'home.contentsSuffix': 'Lakhs',
+    'home.tenantCoverNote': 'As a tenant, you can insure your belongings only. Building cover is for owners.',
+    'home.labelConstruction': 'Rebuild cost per sq ft',
+    'home.labelContents': 'Contents value',
+    'home.footerTrust': 'Indicative quotes from leading general insurers',
+    'motor.regPlaceholder': 'DL 01 AB 1234',
+    'motor.regGuide': 'Registration number from your RC.',
+    'motor.regGuideSub': 'Example: DL 01 AB 1234 · used for Vahan lookup',
+    'motor.regHintEmpty': '',
+    'motor.regHintOk': 'We’ll match motor quotes for this vehicle.',
+    'motor.regPrefix': 'Reg No',
     'guide.term.income': 'Annual income (approx.)',
     'guide.term.dependents': 'Financial dependents',
     'guide.term.dependents.0': 'None',
@@ -664,7 +694,8 @@ let checkoutShouldFocusPayment = false;
 let termAgeShouldFocus = false;
 let homePincodeShouldFocus = false;
 let homeAreaShouldFocus = false;
-let homeStructureShouldFocus = false;
+let homeConstructionShouldFocus = false;
+let homeContentsShouldFocus = false;
 let productFilter = {};
 let productSort = {};
 let selectedPlanId = null;
@@ -930,6 +961,24 @@ function isHealthChildMemberId(id) {
   return id === 'son' || id === 'daughter' || (typeof id === 'string' && id.startsWith('child-'));
 }
 
+const HEALTH_LIFESTYLE_MIN_AGE = 18;
+
+/** Tobacco / alcohol questions only for adults (18+). */
+function healthMemberNeedsLifestyleQuestions(member) {
+  if (!member) return true;
+  const age = parseHealthMemberAge(member.age);
+  if (age !== '' && age < HEALTH_LIFESTYLE_MIN_AGE) return false;
+  if (age === '' && isHealthChildMemberId(member.id)) return false;
+  return true;
+}
+
+function applyHealthMemberLifestyleDefaults(member) {
+  if (!member || healthMemberNeedsLifestyleQuestions(member)) return;
+  const med = ensureMemberMedical(member);
+  med.smoking = 'no';
+  med.alcohol = 'no';
+}
+
 /** Gender implied by member role — no picker on the members step. */
 function healthMemberImplicitGender(id) {
   if (id === 'son' || id === 'father') return 'male';
@@ -1098,7 +1147,7 @@ function defaultHealthQuoteForm() {
 }
 
 function defaultTermQuoteForm() {
-  return { age: '', cover: 100, tenure: 30, smoking: '', incomeLakh: '' };
+  return { age: '', cover: 100, tenure: 30, smoking: 'no', incomeLakh: '' };
 }
 
 function defaultCoverGuideAnswers(product) {
@@ -1117,39 +1166,121 @@ function defaultMotorQuoteForm() {
   };
 }
 
+/** NCB % options when there was no claim last year (India standard ladder). */
+const MOTOR_NCB_LEVELS = [
+  { pct: 50, hint: '5+ claim-free years' },
+  { pct: 35, hint: '4 claim-free years' },
+  { pct: 25, hint: '3 claim-free years' },
+  { pct: 0, hint: 'New / 1st year' },
+];
+
+function motorHadClaimLastYear(m = quoteForm.motor) {
+  return m?.ncbProfile === 'claim';
+}
+
+function isMotorRegNoValid(raw) {
+  return Boolean(String(raw ?? '').trim());
+}
+
+function syncMotorRegFieldVisual(wrap, { empty, ok }) {
+  if (!wrap) return;
+  wrap.classList.remove(
+    'term-age-field--ok',
+    'term-age-field--needs',
+    'term-age-field--idle',
+    'term-age-field--invalid',
+    'term-age-field--error',
+  );
+  if (ok) wrap.classList.add('term-age-field--ok');
+  else if (empty) wrap.classList.add('term-age-field--needs');
+  else wrap.classList.add('term-age-field--invalid');
+}
+
+function renderMotorNcbSection(m) {
+  const hadClaim = motorHadClaimLastYear(m);
+  const noClaim = Boolean(m.ncbProfile && !hadClaim);
+  const ncbButtons = MOTOR_NCB_LEVELS.map(({ pct, hint }) => `
+              <button type="button" class="chip ${m.ncbProfile === String(pct) ? 'selected' : ''}" data-motor-ncb-profile="${pct}" aria-label="${esc(`${pct}% NCB, ${hint}`)}">${chipBtnContent(`${pct}%`, hint)}</button>`).join('');
+  return `
+          <div class="form-group form-group--motor-q motor-ncb-block">
+            <label>Claim in the last policy year?</label>
+            <p class="quote-form__hint quote-form__hint--motor">A claim usually resets your NCB to 0% on renewal.</p>
+            ${quoteChoiceGroup(`
+              <button type="button" class="chip ${noClaim ? 'selected' : ''}" data-motor-claim-last="no" aria-label="No claim last year">${chipBtnContent('No', 'No claim')}</button>
+              <button type="button" class="chip ${hadClaim ? 'selected' : ''}" data-motor-claim-last="yes" aria-label="Had a claim last year">${chipBtnContent('Yes', 'Had a claim')}</button>
+            `)}
+            <div class="motor-ncb-pick${hadClaim ? ' motor-ncb-pick--hidden' : ''}" id="motorNcbPick">
+              <label class="motor-ncb-pick__label">Your existing NCB discount</label>
+              ${quoteChoiceGroup(ncbButtons, 'multi')}
+            </div>
+          </div>`;
+}
+
+const HOME_OCCUPANCY_LABELS = { owner: 'Owner', tenant: 'Tenant' };
+const HOME_KIND_LABELS = { apartment: 'Apartment', independent_house: 'Independent house' };
 const HOME_PROPERTY_LABELS = {
   owned_apartment: 'Owned apartment',
   independent_house: 'Independent house',
-  rented: 'Rented',
+  rented: 'Tenant',
 };
 
 const HOME_COVER_LABELS = {
-  both: 'Structure + contents',
-  structure: 'Structure only',
-  contents: 'Contents only',
+  both: 'Building and belongings',
+  structure: 'Building only',
+  contents: 'Belongings only',
 };
 
 function defaultHomeQuoteForm() {
   return {
     pincode: '',
+    occupancy: 'owner',
+    propertyKind: 'apartment',
     propertyType: 'owned_apartment',
     areaSqFt: '',
-    coverType: 'both',
+    constructionCostPerSqFt: '',
+    coverType: 'structure',
     structureValueLakh: '',
+    contentsValueLakh: '',
   };
 }
 
+function normalizeHomeQuoteForm(raw) {
+  const h = { ...defaultHomeQuoteForm(), ...(raw || {}) };
+  if (!raw?.occupancy) {
+    h.occupancy = raw?.propertyType === 'rented' ? 'tenant' : 'owner';
+  }
+  if (!raw?.propertyKind) {
+    h.propertyKind = raw?.propertyType === 'independent_house' ? 'independent_house' : 'apartment';
+  }
+  if (h.occupancy === 'tenant') h.coverType = 'contents';
+  h.propertyType = h.occupancy === 'tenant'
+    ? 'rented'
+    : (h.propertyKind === 'independent_house' ? 'independent_house' : 'owned_apartment');
+  return h;
+}
+
+function homeNeedsBuilding(h) {
+  return h.occupancy === 'owner' && h.coverType !== 'contents';
+}
+
+function homeNeedsContents(h) {
+  return h.coverType !== 'structure';
+}
+
 function homeQuoteSummary() {
-  const h = quoteForm.home || defaultHomeQuoteForm();
-  const prop = HOME_PROPERTY_LABELS[h.propertyType] || 'Property';
+  const h = normalizeHomeQuoteForm(quoteForm.home);
+  const occ = HOME_OCCUPANCY_LABELS[h.occupancy] || 'Owner';
+  const kind = HOME_KIND_LABELS[h.propertyKind] || 'Property';
   const cover = HOME_COVER_LABELS[h.coverType] || 'Cover';
-  const area = h.areaSqFt ? `${h.areaSqFt} sq ft` : '— sq ft';
   const pin = /^\d{6}$/.test(h.pincode) ? h.pincode : 'Pincode';
-  return `${pin} · ${prop} · ${area} · ${cover}`;
+  const struct = h.structureValueLakh ? `₹${h.structureValueLakh}L bldg` : '';
+  const cont = h.contentsValueLakh ? `₹${h.contentsValueLakh}L contents` : '';
+  const values = [struct, cont].filter(Boolean).join(' · ') || '—';
+  return `${pin} · ${occ} · ${kind} · ${cover} · ${values}`;
 }
 
 function homePremiumForPlan(plan, form = quoteForm.home) {
-  const h = form || defaultHomeQuoteForm();
+  const h = normalizeHomeQuoteForm(form);
   let p = plan.premium;
   const area = Number(h.areaSqFt);
   if (area > 0) p = Math.round(p * (area / 1000));
@@ -1157,9 +1288,13 @@ function homePremiumForPlan(plan, form = quoteForm.home) {
   if (structVal > 0 && plan.structure) {
     p = Math.round(p * (structVal / plan.structure));
   }
+  const contentsVal = Number(h.contentsValueLakh);
+  if (contentsVal > 0 && plan.contents) {
+    p = Math.round(p * (contentsVal / plan.contents));
+  }
   if (h.coverType === 'structure') p = Math.round(p * 0.72);
   else if (h.coverType === 'contents') p = Math.round(p * 0.45);
-  if (h.propertyType === 'rented') p = Math.round(p * 0.9);
+  if (h.occupancy === 'tenant') p = Math.round(p * 0.9);
   return p;
 }
 
@@ -1198,61 +1333,178 @@ function homeAreaInvalidMessage(digits) {
   return 'Enter area between 100 and 50,000 sq ft';
 }
 
-function homeStructureInputValue(raw) {
+function homeConstructionCostInputValue(raw) {
+  if (raw === '' || raw == null) return '';
+  return String(raw).replace(/\D/g, '').slice(0, 5);
+}
+
+function isValidHomeConstructionCostPerSqFt(value) {
+  const digits = homeConstructionCostInputValue(value);
+  if (digits === '') return false;
+  const n = parseInt(digits, 10);
+  return Number.isFinite(n) && n >= 500 && n <= 25000;
+}
+
+function homeConstructionInvalidMessage(digits) {
+  if (digits === '') return 'Enter rebuild cost per sq ft';
+  const n = parseInt(digits, 10);
+  if (!Number.isFinite(n) || n < 500) return 'Minimum ₹500 per sq ft';
+  if (n > 25000) return 'Maximum ₹25,000 per sq ft';
+  return 'Use ₹500 to ₹25,000 per sq ft';
+}
+
+function homeComputedStructureLakh(areaSqFt, costPerSqFt) {
+  const area = parseInt(homeAreaInputValue(areaSqFt), 10);
+  const cost = parseInt(homeConstructionCostInputValue(costPerSqFt), 10);
+  if (!Number.isFinite(area) || !Number.isFinite(cost) || area <= 0 || cost <= 0) return NaN;
+  return Math.round((area * cost) / 100000);
+}
+
+function isValidHomeStructureFromBuild(areaSqFt, costPerSqFt) {
+  const lakh = homeComputedStructureLakh(areaSqFt, costPerSqFt);
+  return Number.isFinite(lakh) && lakh >= 5 && lakh <= 500;
+}
+
+function homeBuildEstimateLabel(h) {
+  const lakh = homeComputedStructureLakh(h.areaSqFt, h.constructionCostPerSqFt);
+  if (!Number.isFinite(lakh) || lakh <= 0) return '';
+  return `₹${lakh} lakh`;
+}
+
+function homeBuildEstimateBand(areaSqFt, costPerSqFt) {
+  const lakh = homeComputedStructureLakh(areaSqFt, costPerSqFt);
+  if (!Number.isFinite(lakh) || lakh <= 0) return '';
+  if (lakh < 5) return 'low';
+  if (lakh > 500) return 'high';
+  return 'ok';
+}
+
+function renderHomeBuildEstimateHtml(h) {
+  const label = homeBuildEstimateLabel(h);
+  if (!label) return '';
+  const band = homeBuildEstimateBand(h.areaSqFt, h.constructionCostPerSqFt);
+  const warn = band === 'low'
+    ? t('home.buildEstimateWarnLow')
+    : band === 'high'
+      ? t('home.buildEstimateWarnHigh')
+      : '';
+  const warnHtml = warn
+    ? `<p class="home-build-estimate__warn" id="homeBuildEstimateWarn" role="note">${warn}</p>`
+    : '';
+  return `<div class="home-build-estimate home-build-estimate--${band}" id="homeBuildEstimate" role="status" aria-live="polite">
+        <span class="home-build-estimate__label">${t('home.buildEstimateTitle')}</span>
+        <strong class="home-build-estimate__value">${label}</strong>
+        <span class="home-build-estimate__meta">${t('home.buildEstimateMeta')}</span>
+        ${warnHtml}
+      </div>`;
+}
+
+function homeContentsInputValue(raw) {
   if (raw === '' || raw == null) return '';
   return String(raw).replace(/\D/g, '').slice(0, 3);
 }
 
-function isValidHomeStructureValueLakh(value) {
-  const digits = homeStructureInputValue(value);
+function isValidHomeContentsValueLakh(value) {
+  const digits = homeContentsInputValue(value);
   if (digits === '') return false;
   const n = parseInt(digits, 10);
-  return Number.isFinite(n) && n >= 5 && n <= 500;
+  return Number.isFinite(n) && n >= 1 && n <= 200;
 }
 
-function homeStructureInvalidMessage(digits) {
-  if (digits === '') return 'Enter structure value in lakhs';
+function homeContentsInvalidMessage(digits) {
+  if (digits === '') return 'Enter contents value in lakhs';
   const n = parseInt(digits, 10);
-  if (!Number.isFinite(n) || n < 5) return 'Minimum ₹5 lakh';
-  if (n > 500) return 'Maximum ₹500 lakh';
-  return 'Enter value between 5 and 500 (lakhs)';
+  if (!Number.isFinite(n) || n < 1) return 'Minimum ₹1 lakh';
+  if (n > 200) return 'Maximum ₹200 lakh';
+  return 'Enter between ₹1 lakh and ₹200 lakh';
+}
+
+function homeContentsSuffixLabel(digits) {
+  if (digits === '') return t('home.contentsSuffix');
+  const n = parseInt(digits, 10);
+  if (!Number.isFinite(n)) return t('home.contentsSuffix');
+  return `₹${n} Lakhs`;
+}
+
+function homeContentsHintText(digits) {
+  if (digits === '') return '';
+  const n = parseInt(digits, 10);
+  if (isValidHomeContentsValueLakh(digits)) {
+    return t('home.contentsHintOk');
+  }
+  if (!Number.isFinite(n)) return t('home.contentsHintPartial');
+  return `Enter 1 to 200 lakhs (you entered ${n})`;
+}
+
+function syncHomeStructureFromBuild(h) {
+  const lakh = homeComputedStructureLakh(h.areaSqFt, h.constructionCostPerSqFt);
+  if (Number.isFinite(lakh) && lakh > 0) h.structureValueLakh = lakh;
 }
 
 function captureHomeFormFromDOM() {
-  const h = quoteForm.home || defaultHomeQuoteForm();
+  const h = normalizeHomeQuoteForm(quoteForm.home);
   quoteForm.home = h;
   const pinEl = document.getElementById('homePincode');
   if (pinEl) h.pincode = pinEl.value.replace(/\D/g, '').slice(0, 6);
-  h.propertyType = document.querySelector('[data-home-property].chip.selected')?.dataset.homeProperty || h.propertyType;
-  h.coverType = document.querySelector('[data-home-cover].chip.selected')?.dataset.homeCover || h.coverType;
+  h.occupancy = document.querySelector('[data-home-occupancy].chip.selected')?.dataset.homeOccupancy || h.occupancy;
+  h.propertyKind = document.querySelector('[data-home-property-kind].chip.selected')?.dataset.homePropertyKind || h.propertyKind;
+  const coverBtn = document.querySelector('[data-home-cover].chip.selected');
+  if (coverBtn) h.coverType = coverBtn.dataset.homeCover;
+  if (h.occupancy === 'tenant') h.coverType = 'contents';
   const areaEl = document.getElementById('homeAreaSqFt');
   if (areaEl) {
     const digits = homeAreaInputValue(areaEl.value);
     h.areaSqFt = digits === '' ? '' : parseInt(digits, 10);
   }
-  const structEl = document.getElementById('homeStructureValueLakh');
-  if (structEl) {
-    const digits = homeStructureInputValue(structEl.value);
-    h.structureValueLakh = digits === '' ? '' : parseInt(digits, 10);
+  const costEl = document.getElementById('homeConstructionCost');
+  if (costEl) {
+    const digits = homeConstructionCostInputValue(costEl.value);
+    h.constructionCostPerSqFt = digits === '' ? '' : parseInt(digits, 10);
   }
+  const contentsEl = document.getElementById('homeContentsValueLakh');
+  if (contentsEl) {
+    const digits = homeContentsInputValue(contentsEl.value);
+    h.contentsValueLakh = digits === '' ? '' : parseInt(digits, 10);
+  }
+  if (homeNeedsBuilding(h)) syncHomeStructureFromBuild(h);
+  h.propertyType = h.occupancy === 'tenant'
+    ? 'rented'
+    : (h.propertyKind === 'independent_house' ? 'independent_house' : 'owned_apartment');
 }
 
 function validateHomeStep(step) {
   if (step !== 0) return true;
-  const h = quoteForm.home || defaultHomeQuoteForm();
+  const h = normalizeHomeQuoteForm(quoteForm.home);
+  quoteForm.home = h;
   if (!isValidHomePincode(h.pincode)) {
     wizardState.formError = 'Enter a valid 6-digit pincode';
     homePincodeShouldFocus = true;
     return false;
   }
-  if (!isValidHomeAreaSqFt(h.areaSqFt)) {
-    wizardState.formError = 'Enter built-up area between 100 and 50,000 sq ft';
-    homeAreaShouldFocus = true;
-    return false;
+  if (homeNeedsBuilding(h)) {
+    if (!isValidHomeAreaSqFt(h.areaSqFt)) {
+      wizardState.formError = 'Enter built-up area between 100 and 50,000 sq ft';
+      homeAreaShouldFocus = true;
+      return false;
+    }
+    if (!isValidHomeConstructionCostPerSqFt(h.constructionCostPerSqFt)) {
+      wizardState.formError = 'Enter rebuild cost between ₹500 and ₹25,000 per sq ft';
+      homeConstructionShouldFocus = true;
+      return false;
+    }
+    syncHomeStructureFromBuild(h);
+    if (!isValidHomeStructureFromBuild(h.areaSqFt, h.constructionCostPerSqFt)) {
+      const lakh = homeComputedStructureLakh(h.areaSqFt, h.constructionCostPerSqFt);
+      wizardState.formError = Number.isFinite(lakh) && lakh > 0
+        ? `Estimated rebuild is ₹${lakh} lakh — change area or cost per sq ft to stay between ₹5 lakh and ₹500 lakh`
+        : 'Enter built-up area and rebuild cost per sq ft';
+      homeConstructionShouldFocus = true;
+      return false;
+    }
   }
-  if (h.coverType !== 'contents' && !isValidHomeStructureValueLakh(h.structureValueLakh)) {
-    wizardState.formError = 'Enter structure value between ₹5L and ₹500L (in lakhs)';
-    homeStructureShouldFocus = true;
+  if (homeNeedsContents(h) && !isValidHomeContentsValueLakh(h.contentsValueLakh)) {
+    wizardState.formError = 'Enter contents value between ₹1 lakh and ₹200 lakh';
+    homeContentsShouldFocus = true;
     return false;
   }
   wizardState.formError = '';
@@ -1643,7 +1895,10 @@ const AI_TERM_GLOSSARY = {
   'free look': '15–30 day window after buying to cancel and get a full refund if you change your mind.',
 };
 
-function t(k) { return i18n.en[k] || k; }
+function t(k) {
+  if (Object.prototype.hasOwnProperty.call(i18n.en, k)) return i18n.en[k];
+  return k;
+}
 function phoneTelHref() {
   const digits = PHONE_NUMBER.replace(/\D/g, '');
   return digits ? `tel:${digits}` : 'tel:';
@@ -2576,11 +2831,16 @@ function seedTermQuoteFormForCapture() {
 
 function seedHomeQuoteFormForCapture() {
   quoteForm.home = defaultHomeQuoteForm();
-  quoteForm.home.pincode = '110017';
-  quoteForm.home.propertyType = 'owned_apartment';
-  quoteForm.home.areaSqFt = 1200;
-  quoteForm.home.coverType = 'both';
-  quoteForm.home.structureValueLakh = 50;
+  quoteForm.home = normalizeHomeQuoteForm({
+    pincode: '110017',
+    occupancy: 'owner',
+    propertyKind: 'apartment',
+    areaSqFt: 1200,
+    constructionCostPerSqFt: 2500,
+    coverType: 'structure',
+    contentsValueLakh: 10,
+  });
+  syncHomeStructureFromBuild(quoteForm.home);
 }
 
 function seedCheckoutForCapture(product) {
@@ -3724,7 +3984,7 @@ function getFilteredPlans(product) {
       plans.sort((a, b) => Math.abs(a.cover - targetCover) - Math.abs(b.cover - targetCover) || a.premium - b.premium);
     } else plans.sort((a, b) => a.premium - b.premium);
   } else if (product === 'home') {
-    const h = quoteForm.home || defaultHomeQuoteForm();
+    const h = normalizeHomeQuoteForm(quoteForm.home);
     if (f === 'structure') plans = plans.filter((p) => p.structure >= 40);
     if (f === 'contents') plans = plans.filter((p) => p.contents >= 10);
     const structTarget = Number(h.structureValueLakh);
@@ -3867,6 +4127,12 @@ function termAgeInvalidMessage(ageNum, rawDigits = '') {
   return 'Enter an age from 18 to 65.';
 }
 
+function termAgePersistGuideHtml(id, mainKey, subKey) {
+  const sub = subKey ? t(subKey) : '';
+  const subPart = sub ? `<span class="term-age-field__guide-sub">${sub}</span>` : '';
+  return `<p class="term-age-field__guide term-age-field__guide--persist" id="${id}">${t(mainKey)}${subPart}</p>`;
+}
+
 function syncTermAgeInvalidMessage(wrap, input, { empty, ok, age, digits }) {
   let invalidEl = document.getElementById('termAgeInvalid');
   if (ok || empty) {
@@ -3882,7 +4148,7 @@ function syncTermAgeInvalidMessage(wrap, input, { empty, ok, age, digits }) {
     wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
   }
   invalidEl.textContent = msg;
-  const described = ['termAgeHint', 'termAgeInvalid'];
+  const described = ['termAgeGuide', 'termAgeInvalid'];
   if (document.getElementById('termAgeError')) described.push('termAgeError');
   input.setAttribute('aria-describedby', described.join(' '));
 }
@@ -3911,15 +4177,9 @@ function renderTermQuoteStep0() {
   else if (ageFilledInvalid) ageStateClass = 'term-age-field--invalid';
   else if (ageEmpty) ageStateClass = 'term-age-field--needs';
   const ageDigits = termAgeInputValue(tq.age);
-  const ageHintText = ageOk
-    ? t('term.ageHintOk')
-    : ageEmpty
-      ? t('term.ageHintEmpty')
-      : t('term.ageHintPartial');
   const ageDescribedBy = [
-    ageEmpty ? 'termAgeGuide' : '',
-    'termAgeHint',
-    ageFilledInvalid ? 'termAgeInvalid' : '',
+    'termAgeGuide',
+    ageFilledInvalid && !ageShowError ? 'termAgeInvalid' : '',
     ageShowError ? 'termAgeError' : '',
   ].filter(Boolean).join(' ');
   const ageFilledInvalidMsg = ageFilledInvalid && !ageShowError
@@ -3930,9 +4190,7 @@ function renderTermQuoteStep0() {
     : '';
   const smokeMissing = !tq.smoking;
   const smokeShowError = smokeMissing && !!(wizardState?.formError && /smoke/i.test(wizardState.formError));
-  const ageGuide = ageEmpty
-    ? `<p class="term-age-field__guide" id="termAgeGuide">${t('term.ageGuide')}</p>`
-    : '';
+  const ageGuide = termAgePersistGuideHtml('termAgeGuide', 'term.ageGuide', 'term.ageGuideSub');
   const coverOpts = [50, 100, 150, 200];
   const tenureOpts = [
     { v: 20, label: '20 years' },
@@ -3973,27 +4231,26 @@ function renderTermQuoteStep0() {
             </div>
             ${ageFilledInvalidMsg}
             ${ageInlineError}
-            <span class="term-age-field__hint" id="termAgeHint">${ageHintText}</span>
           </div>
           <div class="form-group form-group--term-q term-smoking-field${smokeShowError ? ' term-smoking-field--error' : ''}">
             <label id="termSmokingLabel">Do you smoke?<span class="term-field__required" aria-hidden="true">*</span></label>
             ${smokeShowError ? '<p class="term-field__error" id="termSmokingError" role="alert">Select an option to continue.</p>' : ''}
             ${quoteChoiceGroup(`
-              <button type="button" class="chip ${tq.smoking === 'no' ? 'selected' : ''}" data-term-smoking="no">${chipBtnContent('No', 'Non-smoker')}</button>
-              <button type="button" class="chip ${tq.smoking === 'yes' ? 'selected' : ''}" data-term-smoking="yes">${chipBtnContent('Yes', 'Smoker')}</button>
+              <button type="button" class="chip ${tq.smoking === 'no' ? 'selected' : ''}" data-term-smoking="no" aria-label="Non-smoker">${chipBtnContent('No', 'Non-smoker')}</button>
+              <button type="button" class="chip ${tq.smoking === 'yes' ? 'selected' : ''}" data-term-smoking="yes" aria-label="Smoker">${chipBtnContent('Yes', 'Smoker')}</button>
             `)}
           </div>
           <div class="form-group form-group--term-q">
             <label>Cover amount</label>
             ${quoteChoiceGroup(coverOpts.map((c) => {
     const line = c >= 100 ? `₹${c / 100} Cr` : `₹${c}L`;
-    return `<button type="button" class="chip ${tq.cover === c ? 'selected' : ''}" data-term-cover="${c}">${chipBtnContent(line, 'Life cover')}</button>`;
+    return `<button type="button" class="chip ${tq.cover === c ? 'selected' : ''}" data-term-cover="${c}" aria-label="${esc(`${line} life cover`)}">${chipBtnContent(line, 'Life cover')}</button>`;
   }).join(''), 'multi')}
           </div>
           <div class="form-group form-group--term-q">
             <label>Policy term</label>
             ${quoteChoiceGroup(tenureOpts.map((o) => `
-              <button type="button" class="chip ${tq.tenure === o.v ? 'selected' : ''}" data-term-tenure="${o.v}">${chipBtnContent(o.label, 'Term')}</button>`).join(''), 'multi')}
+              <button type="button" class="chip ${tq.tenure === o.v ? 'selected' : ''}" data-term-tenure="${o.v}" aria-label="${esc(`${o.label} term`)}">${chipBtnContent(o.label, 'Term')}</button>`).join(''), 'multi')}
           </div>
         </div>
       </div>
@@ -4005,7 +4262,8 @@ function renderTermQuoteStep0() {
 }
 
 function renderHomeQuoteStep0() {
-  const h = quoteForm.home || defaultHomeQuoteForm();
+  const h = normalizeHomeQuoteForm(quoteForm.home);
+  quoteForm.home = h;
   const formErr = wizardState?.formError
     ? `<p class="quote-form-error" role="alert">${wizardState.formError}</p>`
     : '';
@@ -4019,20 +4277,12 @@ function renderHomeQuoteStep0() {
   else if (pinShowError) pinStateClass = 'term-age-field--error';
   else if (pinFilledInvalid) pinStateClass = 'term-age-field--invalid';
   else if (pinEmpty) pinStateClass = 'term-age-field--needs';
-  const pinHintText = pinOk
-    ? t('home.pincodeHintOk')
-    : pinEmpty
-      ? t('home.pincodeHintEmpty')
-      : t('home.pincodeHintPartial');
   const pinDescribedBy = [
-    pinEmpty ? 'homePincodeGuide' : '',
-    'homePincodeHint',
+    'homePincodeGuide',
     pinFilledInvalid && !pinShowError ? 'homePincodeInvalid' : '',
     pinShowError ? 'homePincodeError' : '',
   ].filter(Boolean).join(' ');
-  const pinGuide = pinEmpty
-    ? `<p class="term-age-field__guide" id="homePincodeGuide">${t('home.pincodeGuide')}</p>`
-    : '';
+  const pinGuide = termAgePersistGuideHtml('homePincodeGuide', 'home.pincodeGuide');
   const pinInvalidMsg = pinFilledInvalid && !pinShowError
     ? `<p class="term-age-field__invalid" id="homePincodeInvalid" role="alert">${homePincodeInvalidMessage(pinDigits)}</p>`
     : '';
@@ -4049,62 +4299,83 @@ function renderHomeQuoteStep0() {
   else if (areaShowError) areaStateClass = 'term-age-field--error';
   else if (areaFilledInvalid) areaStateClass = 'term-age-field--invalid';
   else if (areaEmpty) areaStateClass = 'term-age-field--needs';
-  const areaHintText = areaOk
-    ? t('home.areaHintOk')
-    : areaEmpty
-      ? t('home.areaHintEmpty')
-      : t('home.areaHintPartial');
   const areaDescribedBy = [
-    areaEmpty ? 'homeAreaGuide' : '',
-    'homeAreaHint',
+    'homeAreaGuide',
     areaFilledInvalid && !areaShowError ? 'homeAreaInvalid' : '',
     areaShowError ? 'homeAreaError' : '',
   ].filter(Boolean).join(' ');
-  const areaGuide = areaEmpty
-    ? `<p class="term-age-field__guide" id="homeAreaGuide">${t('home.areaGuide')}</p>`
-    : '';
+  const areaGuide = termAgePersistGuideHtml('homeAreaGuide', 'home.areaGuide');
   const areaInvalidMsg = areaFilledInvalid && !areaShowError
     ? `<p class="term-age-field__invalid" id="homeAreaInvalid" role="alert">${homeAreaInvalidMessage(areaDigits)}</p>`
     : '';
   const areaInlineError = areaShowError
     ? '<p class="term-age-field__error" id="homeAreaError" role="alert">Enter built-up area between 100 and 50,000 sq ft</p>'
     : '';
-  const showStructureValue = h.coverType !== 'contents';
-  const structDigits = homeStructureInputValue(h.structureValueLakh);
-  const structEmpty = structDigits === '';
-  const structOk = isValidHomeStructureValueLakh(structDigits);
-  const structShowError = showStructureValue && !structOk && !!(wizardState?.formError && /structure value/i.test(wizardState.formError));
-  const structFilledInvalid = !structEmpty && !structOk;
-  let structStateClass = 'term-age-field--idle';
-  if (structOk) structStateClass = 'term-age-field--ok';
-  else if (structShowError) structStateClass = 'term-age-field--error';
-  else if (structFilledInvalid) structStateClass = 'term-age-field--invalid';
-  else if (structEmpty) structStateClass = 'term-age-field--needs';
-  const structHintText = structOk
-    ? t('home.structureHintOk')
-    : structEmpty
-      ? t('home.structureHintEmpty')
-      : t('home.structureHintPartial');
-  const structDescribedBy = [
-    structEmpty ? 'homeStructureGuide' : '',
-    'homeStructureHint',
-    structFilledInvalid && !structShowError ? 'homeStructureInvalid' : '',
-    structShowError ? 'homeStructureError' : '',
+  const needsBuilding = homeNeedsBuilding(h);
+  const needsContents = homeNeedsContents(h);
+  if (needsBuilding) syncHomeStructureFromBuild(h);
+
+  const costDigits = homeConstructionCostInputValue(h.constructionCostPerSqFt);
+  const costEmpty = costDigits === '';
+  const costOk = isValidHomeConstructionCostPerSqFt(costDigits);
+  const costShowError = needsBuilding && !costOk && !!(wizardState?.formError && /(construction|rebuild cost)/i.test(wizardState.formError));
+  const costFilledInvalid = !costEmpty && !costOk;
+  let costStateClass = 'term-age-field--idle';
+  if (costOk) costStateClass = 'term-age-field--ok';
+  else if (costShowError) costStateClass = 'term-age-field--error';
+  else if (costFilledInvalid) costStateClass = 'term-age-field--invalid';
+  else if (costEmpty) costStateClass = 'term-age-field--needs';
+  const costDescribedBy = [
+    'homeConstructionGuide',
+    costFilledInvalid && !costShowError ? 'homeConstructionInvalid' : '',
+    costShowError ? 'homeConstructionError' : '',
   ].filter(Boolean).join(' ');
-  const structGuide = structEmpty
-    ? `<p class="term-age-field__guide" id="homeStructureGuide">${t('home.structureGuide')}</p>`
+  const costGuide = termAgePersistGuideHtml('homeConstructionGuide', 'home.constructionGuide');
+  const costInvalidMsg = costFilledInvalid && !costShowError
+    ? `<p class="term-age-field__invalid" id="homeConstructionInvalid" role="alert">${homeConstructionInvalidMessage(costDigits)}</p>`
     : '';
-  const structInvalidMsg = structFilledInvalid && !structShowError
-    ? `<p class="term-age-field__invalid" id="homeStructureInvalid" role="alert">${homeStructureInvalidMessage(structDigits)}</p>`
+  const costInlineError = costShowError
+    ? '<p class="term-age-field__error" id="homeConstructionError" role="alert">Enter rebuild cost between ₹500 and ₹25,000 per sq ft</p>'
     : '';
-  const structInlineError = structShowError
-    ? '<p class="term-age-field__error" id="homeStructureError" role="alert">Enter structure value between ₹5L and ₹500L (in lakhs)</p>'
+
+  const contentsDigits = homeContentsInputValue(h.contentsValueLakh);
+  const contentsEmpty = contentsDigits === '';
+  const contentsOk = isValidHomeContentsValueLakh(contentsDigits);
+  const contentsShowError = needsContents && !contentsOk && !!(wizardState?.formError && /contents/i.test(wizardState.formError));
+  const contentsFilledInvalid = !contentsEmpty && !contentsOk;
+  let contentsStateClass = 'term-age-field--idle';
+  if (contentsOk) contentsStateClass = 'term-age-field--ok';
+  else if (contentsShowError) contentsStateClass = 'term-age-field--error';
+  else if (contentsFilledInvalid) contentsStateClass = 'term-age-field--invalid';
+  else if (contentsEmpty) contentsStateClass = 'term-age-field--needs';
+  const contentsDescribedBy = [
+    'homeContentsGuide',
+    contentsFilledInvalid && !contentsShowError ? 'homeContentsInvalid' : '',
+    contentsShowError ? 'homeContentsError' : '',
+  ].filter(Boolean).join(' ');
+  const contentsGuide = termAgePersistGuideHtml('homeContentsGuide', 'home.contentsGuide');
+  const contentsInvalidMsg = contentsFilledInvalid && !contentsShowError
+    ? `<p class="term-age-field__invalid" id="homeContentsInvalid" role="alert">${homeContentsInvalidMessage(contentsDigits)}</p>`
     : '';
+  const contentsInlineError = contentsShowError
+    ? '<p class="term-age-field__error" id="homeContentsError" role="alert">Enter contents value between ₹1 lakh and ₹200 lakh</p>'
+    : '';
+
+  const buildEstimateHtml = needsBuilding ? renderHomeBuildEstimateHtml(h) : '';
+  const isTenant = h.occupancy === 'tenant';
+  const coverChoiceHtml = isTenant
+    ? `<p class="home-tenant-cover-note" id="homeTenantCoverNote">${t('home.tenantCoverNote')}</p>`
+    : quoteChoiceGroup(`
+        <button type="button" class="chip ${h.coverType === 'structure' ? 'selected' : ''}" data-home-cover="structure" aria-label="${esc(HOME_COVER_LABELS.structure)}">${chipBtnContent(t('home.coverChipStructureLine'), t('home.coverChipStructureSub'))}</button>
+        <button type="button" class="chip ${h.coverType === 'contents' ? 'selected' : ''}" data-home-cover="contents" aria-label="${esc(HOME_COVER_LABELS.contents)}">${chipBtnContent(t('home.coverChipContentsLine'), t('home.coverChipContentsSub'))}</button>
+        <button type="button" class="chip ${h.coverType === 'both' ? 'selected' : ''}" data-home-cover="both" aria-label="${esc(HOME_COVER_LABELS.both)}">${chipBtnContent(t('home.coverChipBothLine'), t('home.coverChipBothSub'))}</button>
+      `, 'multi');
+
   return `
     <div class="home-step-fit">
       ${formErr}
       <div class="home-step-scroll">
-        <p class="quote-form__lead quote-form__lead--home">Property basics for home cover — edit anytime before you pay.</p>
+        <p class="quote-form__lead quote-form__lead--home">${t('home.leadStep0')}</p>
         <div class="home-step-stack">
           <div class="form-group form-group--home-q term-age-field home-pincode-field ${pinStateClass}">
             <label class="term-age-field__label" id="homePincodeLabel" for="homePincode">
@@ -4133,15 +4404,27 @@ function renderHomeQuoteStep0() {
             </div>
             ${pinInvalidMsg}
             ${pinInlineError}
-            <span class="term-age-field__hint" id="homePincodeHint">${pinHintText}</span>
           </div>
-          <div class="form-group form-group--home-q"><label>Property type</label>
+          <div class="form-group form-group--home-q">
+            <label>${t('home.occupancyLabel')}</label>
             ${quoteChoiceGroup(`
-              <button type="button" class="chip ${h.propertyType === 'owned_apartment' ? 'selected' : ''}" data-home-property="owned_apartment">${chipBtnContent('Apartment', 'Owned flat')}</button>
-              <button type="button" class="chip ${h.propertyType === 'independent_house' ? 'selected' : ''}" data-home-property="independent_house">${chipBtnContent('House', 'Independent')}</button>
-              <button type="button" class="chip ${h.propertyType === 'rented' ? 'selected' : ''}" data-home-property="rented">${chipBtnContent('Rented', 'Tenant cover')}</button>
-            `, 'multi')}
+              <button type="button" class="chip ${h.occupancy === 'owner' ? 'selected' : ''}" data-home-occupancy="owner" aria-label="I own this home">${chipBtnContent('Owner', 'I own this home')}</button>
+              <button type="button" class="chip ${h.occupancy === 'tenant' ? 'selected' : ''}" data-home-occupancy="tenant" aria-label="I rent here">${chipBtnContent('Tenant', 'I rent here')}</button>
+            `)}
           </div>
+          <div class="form-group form-group--home-q">
+            <label>${t('home.propertyKindLabel')}</label>
+            ${quoteChoiceGroup(`
+              <button type="button" class="chip ${h.propertyKind === 'apartment' ? 'selected' : ''}" data-home-property-kind="apartment" aria-label="Apartment, flat in a building">${chipBtnContent('Apartment', 'Flat in a building')}</button>
+              <button type="button" class="chip ${h.propertyKind === 'independent_house' ? 'selected' : ''}" data-home-property-kind="independent_house" aria-label="Standalone house">${chipBtnContent('House', 'Standalone')}</button>
+            `)}
+          </div>
+          <div class="form-group form-group--home-q">
+            <label>${t('home.coverLabel')}</label>
+            ${coverChoiceHtml}
+            ${!isTenant && h.coverType === 'structure' ? `<p class="home-cover-note">${t('home.coverStructureNote')}</p>` : ''}
+          </div>
+          ${needsBuilding ? `
           <div class="form-group form-group--home-q term-age-field home-area-field ${areaStateClass}">
             <label class="term-age-field__label" id="homeAreaLabel" for="homeAreaSqFt">
               Built-up area<span class="term-age-field__required" aria-hidden="true">*</span>
@@ -4168,48 +4451,68 @@ function renderHomeQuoteStep0() {
             </div>
             ${areaInvalidMsg}
             ${areaInlineError}
-            <span class="term-age-field__hint" id="homeAreaHint">${areaHintText}</span>
           </div>
-          <div class="form-group form-group--home-q"><label>Cover for</label>
-            ${quoteChoiceGroup(`
-              <button type="button" class="chip ${h.coverType === 'both' ? 'selected' : ''}" data-home-cover="both">${chipBtnContent('Both', 'Structure + contents')}</button>
-              <button type="button" class="chip ${h.coverType === 'structure' ? 'selected' : ''}" data-home-cover="structure">${chipBtnContent('Building', 'Structure only')}</button>
-              <button type="button" class="chip ${h.coverType === 'contents' ? 'selected' : ''}" data-home-cover="contents">${chipBtnContent('Contents', 'Belongings only')}</button>
-            `, 'multi')}
-          </div>
-          ${showStructureValue ? `
-          <div class="form-group form-group--home-q term-age-field home-structure-field ${structStateClass}">
-            <label class="term-age-field__label" id="homeStructureLabel" for="homeStructureValueLakh">
-              Structure value<span class="term-age-field__required" aria-hidden="true">*</span>
+          <div class="form-group form-group--home-q term-age-field home-construction-field ${costStateClass}">
+            <label class="term-age-field__label" id="homeConstructionLabel" for="homeConstructionCost">
+              ${t('home.labelConstruction')}<span class="term-age-field__required" aria-hidden="true">*</span>
             </label>
-            ${structGuide}
+            ${costGuide}
             <div class="term-age-field__control">
               <input
-                id="homeStructureValueLakh"
+                id="homeConstructionCost"
+                class="term-age-input"
+                type="text"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="5"
+                value="${esc(costDigits)}"
+                placeholder="${t('home.constructionPlaceholder')}"
+                enterkeyhint="done"
+                required
+                aria-labelledby="homeConstructionLabel homeConstructionSuffix"
+                aria-describedby="${costDescribedBy}"
+                aria-required="true"
+                aria-invalid="${costOk ? 'false' : 'true'}"
+              >
+              <span class="term-age-field__suffix" id="homeConstructionSuffix" lang="en">${t('home.constructionSuffix')}</span>
+            </div>
+            ${costInvalidMsg}
+            ${costInlineError}
+          </div>
+          ${buildEstimateHtml}
+          ` : ''}
+          ${needsContents ? `
+          <div class="form-group form-group--home-q term-age-field home-contents-field ${contentsStateClass}">
+            <label class="term-age-field__label" id="homeContentsLabel" for="homeContentsValueLakh">
+              ${t('home.labelContents')}<span class="term-age-field__required" aria-hidden="true">*</span>
+            </label>
+            ${contentsGuide}
+            <div class="term-age-field__control">
+              <input
+                id="homeContentsValueLakh"
                 class="term-age-input"
                 type="text"
                 inputmode="numeric"
                 pattern="[0-9]*"
                 maxlength="3"
-                value="${esc(structDigits)}"
-                placeholder="${t('home.structurePlaceholder')}"
+                value="${esc(contentsDigits)}"
+                placeholder="${t('home.contentsPlaceholder')}"
                 enterkeyhint="done"
                 required
-                aria-labelledby="homeStructureLabel homeStructureSuffix"
-                aria-describedby="${structDescribedBy}"
+                aria-labelledby="homeContentsLabel homeContentsSuffix"
+                aria-describedby="${contentsDescribedBy}"
                 aria-required="true"
-                aria-invalid="${structOk ? 'false' : 'true'}"
+                aria-invalid="${contentsOk ? 'false' : 'true'}"
               >
-              <span class="term-age-field__suffix" id="homeStructureSuffix" lang="en">${t('home.structureSuffix')}</span>
+              <span class="term-age-field__suffix" id="homeContentsSuffix" lang="en">${homeContentsSuffixLabel(contentsDigits)}</span>
             </div>
-            ${structInvalidMsg}
-            ${structInlineError}
-            <span class="term-age-field__hint" id="homeStructureHint">${structHintText}</span>
+            ${contentsInvalidMsg}
+            ${contentsInlineError}
           </div>` : ''}
         </div>
       </div>
       <div class="wizard-step-footer home-step-footer">
-        <p class="home-step-footer__trust">Indicative quotes from leading general insurers</p>
+        <p class="home-step-footer__trust">${t('home.footerTrust')}</p>
         ${quoteContinueBtn('Compare plans', 'See home insurance quotes')}
       </div>
     </div>`;
@@ -5925,8 +6228,7 @@ function renderHealthPlanTypeChooser(planType) {
 function captureHealthFormFromDOM() {
   const h = quoteForm.health;
   const planSeg = document.querySelector('[data-health-plan-type].plan-type-seg--on');
-  const planChip = document.querySelector('[data-health-plan-type].chip.selected');
-  h.planType = planSeg?.dataset.healthPlanType || planChip?.dataset.healthPlanType || h.planType;
+  h.planType = planSeg?.dataset.healthPlanType || h.planType;
   h.pincode = document.getElementById('healthPincode')?.value.replace(/\D/g, '').slice(0, 6) || h.pincode;
   h.existingPolicy = document.querySelector('[data-health-existing].selected')?.dataset.healthExisting || h.existingPolicy;
   const si = document.querySelector('[data-health-si].chip.selected')?.dataset.healthSi;
@@ -5938,13 +6240,17 @@ function captureHealthFormFromDOM() {
     if (active) {
       const med = ensureMemberMedical(active);
       med.ped = document.querySelector('[data-health-ped].chip.selected')?.dataset.healthPed || med.ped;
-      med.smoking = document.querySelector('[data-health-smoking].chip.selected')?.dataset.healthSmoking || med.smoking;
-      med.alcohol = document.querySelector('[data-health-alcohol].chip.selected')?.dataset.healthAlcohol || med.alcohol;
       med.surgery12m = document.querySelector('[data-health-surgery].chip.selected')?.dataset.healthSurgery || med.surgery12m;
       med.pedList = [...document.querySelectorAll('[data-ped-opt].chip.selected')].map((el) => el.dataset.pedOpt);
       const otherEl = document.getElementById('healthPedOther');
       if (otherEl) med.pedOtherText = otherEl.value.trim();
       if (!med.pedList.includes('other')) med.pedOtherText = '';
+      if (healthMemberNeedsLifestyleQuestions(active)) {
+        med.smoking = document.querySelector('[data-health-smoking].chip.selected')?.dataset.healthSmoking || med.smoking;
+        med.alcohol = document.querySelector('[data-health-alcohol].chip.selected')?.dataset.healthAlcohol || med.alcohol;
+      } else {
+        applyHealthMemberLifestyleDefaults(active);
+      }
     }
   }
   h.members.forEach((m) => {
@@ -6058,13 +6364,17 @@ function validateHealthStep(step) {
       wizardState.formError = `For ${name}: describe the other condition(s)`;
       return false;
     }
-    if (!med.smoking) {
-      wizardState.formError = `For ${name}: select smoking status`;
-      return false;
-    }
-    if (!med.alcohol) {
-      wizardState.formError = `For ${name}: select alcohol use`;
-      return false;
+    if (healthMemberNeedsLifestyleQuestions(active)) {
+      if (!med.smoking) {
+        wizardState.formError = `For ${name}: select smoking status`;
+        return false;
+      }
+      if (!med.alcohol) {
+        wizardState.formError = `For ${name}: select alcohol use`;
+        return false;
+      }
+    } else {
+      applyHealthMemberLifestyleDefaults(active);
     }
     if (!med.surgery12m) {
       wizardState.formError = `For ${name}: answer the surgery question`;
@@ -6077,12 +6387,16 @@ function validateHealthStep(step) {
 
 function validateMotorStep(step) {
   const m = quoteForm.motor;
-  if (step === 0 && !m.regNo?.trim()) {
+  if (step === 0 && !isMotorRegNoValid(m.regNo)) {
     wizardState.formError = 'Enter vehicle registration number';
     return false;
   }
   if (step === 0 && !m.ncbProfile) {
-    wizardState.formError = 'Select your claim / NCB status';
+    wizardState.formError = 'Answer whether you had a claim last year';
+    return false;
+  }
+  if (step === 0 && m.ncbProfile !== 'claim' && !MOTOR_NCB_LEVELS.some((o) => String(o.pct) === String(m.ncbProfile))) {
+    wizardState.formError = 'Select your NCB discount';
     return false;
   }
   wizardState.formError = '';
@@ -6245,14 +6559,17 @@ function renderHealthWizard(step) {
   if (step === 1) {
     ensureHealthMedicalMemberId();
     const active = getActiveMedicalMember();
+    if (active) applyHealthMemberLifestyleDefaults(active);
     const med = active ? ensureMemberMedical(active) : defaultMemberMedical();
     const activeId = active?.id || 'self';
     const sel = selectedHealthMembers();
+    const lifestyleQuestions = active ? healthMemberNeedsLifestyleQuestions(active) : true;
     const selIdx = sel.findIndex((m) => m.id === activeId);
     const hasMoreMembers = selIdx >= 0 && selIdx < sel.length - 1;
     const pedChips = HEALTH_PED_OPTIONS.map((o) => {
       const sub = o.id === 'other' ? 'Not listed above' : '';
-      return `<button type="button" class="chip ${med.pedList.includes(o.id) ? 'selected' : ''}" data-ped-opt="${o.id}">${chipBtnContent(o.en, sub)}</button>`;
+      const a11y = sub ? `${o.en}, ${sub}` : o.en;
+      return `<button type="button" class="chip ${med.pedList.includes(o.id) ? 'selected' : ''}" data-ped-opt="${o.id}" aria-label="${esc(a11y)}">${chipBtnContent(o.en, sub)}</button>`;
     }).join('');
     const multiMember = sel.length > 1;
     const pedLabel = multiMember
@@ -6275,8 +6592,8 @@ function renderHealthWizard(step) {
       <div class="medical-step-stack" id="medicalMemberPanel" role="tabpanel" aria-labelledby="medicalMemberSwitcherLabel">
         <div class="form-group form-group--medical-q"><label>${pedLabel}</label>
           ${quoteChoiceGroup(`
-            <button type="button" class="chip ${med.ped === 'no' ? 'selected' : ''}" data-health-ped="no">${chipBtnContent('No', 'No PED')}</button>
-            <button type="button" class="chip ${med.ped === 'yes' ? 'selected' : ''}" data-health-ped="yes">${chipBtnContent('Yes', 'Has PED')}</button>
+            <button type="button" class="chip ${med.ped === 'no' ? 'selected' : ''}" data-health-ped="no" aria-label="No pre-existing disease">${chipBtnContent('No', 'No PED')}</button>
+            <button type="button" class="chip ${med.ped === 'yes' ? 'selected' : ''}" data-health-ped="yes" aria-label="Has pre-existing disease">${chipBtnContent('Yes', 'Has PED')}</button>
           `)}
         </div>
         ${med.ped === 'yes' ? `<div class="form-group form-group--medical-q"><label>Which condition(s)?</label>
@@ -6285,23 +6602,24 @@ function renderHealthWizard(step) {
             <label for="healthPedOther">Other condition(s)</label>
             <input id="healthPedOther" type="text" value="${esc(med.pedOtherText || '')}" placeholder="e.g. Arthritis" maxlength="120" autocomplete="off">
           </div>` : ''}</div>` : ''}
+        ${lifestyleQuestions ? `
         <div class="form-group form-group--medical-q"><label>Smoking</label>
           ${quoteChoiceGroup(`
-            <button type="button" class="chip ${med.smoking === 'no' ? 'selected' : ''}" data-health-smoking="no">${chipBtnContent('No', 'Non-smoker')}</button>
-            <button type="button" class="chip ${med.smoking === 'yes' ? 'selected' : ''}" data-health-smoking="yes">${chipBtnContent('Yes', 'Smoker')}</button>
+            <button type="button" class="chip ${med.smoking === 'no' ? 'selected' : ''}" data-health-smoking="no" aria-label="Non-smoker">${chipBtnContent('No', 'Non-smoker')}</button>
+            <button type="button" class="chip ${med.smoking === 'yes' ? 'selected' : ''}" data-health-smoking="yes" aria-label="Smoker">${chipBtnContent('Yes', 'Smoker')}</button>
           `)}
         </div>
         <div class="form-group form-group--medical-q"><label>Alcohol</label>
           ${quoteChoiceGroup(`
-            <button type="button" class="chip ${med.alcohol === 'no' ? 'selected' : ''}" data-health-alcohol="no">${chipBtnContent('No', 'None')}</button>
-            <button type="button" class="chip ${med.alcohol === 'occasional' ? 'selected' : ''}" data-health-alcohol="occasional">${chipBtnContent('Sometimes', 'Occasional')}</button>
-            <button type="button" class="chip ${med.alcohol === 'yes' ? 'selected' : ''}" data-health-alcohol="yes">${chipBtnContent('Yes', 'Regular')}</button>
+            <button type="button" class="chip ${med.alcohol === 'no' ? 'selected' : ''}" data-health-alcohol="no" aria-label="No alcohol">${chipBtnContent('No', 'None')}</button>
+            <button type="button" class="chip ${med.alcohol === 'occasional' ? 'selected' : ''}" data-health-alcohol="occasional" aria-label="Occasional alcohol">${chipBtnContent('Sometimes', 'Occasional')}</button>
+            <button type="button" class="chip ${med.alcohol === 'yes' ? 'selected' : ''}" data-health-alcohol="yes" aria-label="Regular alcohol">${chipBtnContent('Yes', 'Regular')}</button>
           `, 'multi')}
-        </div>
+        </div>` : `<p class="quote-form__hint quote-form__hint--medical quote-form__hint--lifestyle-skip">Smoking and alcohol questions apply from age ${HEALTH_LIFESTYLE_MIN_AGE}.</p>`}
         <div class="form-group form-group--medical-q"><label>Hospital / surgery (last 12 months)?</label>
           ${quoteChoiceGroup(`
-            <button type="button" class="chip ${med.surgery12m === 'no' ? 'selected' : ''}" data-health-surgery="no">${chipBtnContent('No', 'None')}</button>
-            <button type="button" class="chip ${med.surgery12m === 'yes' ? 'selected' : ''}" data-health-surgery="yes">${chipBtnContent('Yes', 'Had surgery')}</button>
+            <button type="button" class="chip ${med.surgery12m === 'no' ? 'selected' : ''}" data-health-surgery="no" aria-label="No hospital or surgery in the last 12 months">${chipBtnContent('No', 'None')}</button>
+            <button type="button" class="chip ${med.surgery12m === 'yes' ? 'selected' : ''}" data-health-surgery="yes" aria-label="Had hospital or surgery in the last 12 months">${chipBtnContent('Yes', 'Had surgery')}</button>
           `)}
         </div>
       </div>
@@ -6327,18 +6645,18 @@ function renderHealthWizard(step) {
           <div class="cover-step-stack">
             <div class="form-group form-group--cover-q"><label>Sum insured</label>
               ${quoteChoiceGroup([5, 10, 15, 25, 50].map((n) => `
-                <button type="button" class="chip ${h.sumInsured === n ? 'selected' : ''}" data-health-si="${n}">${chipBtnContent(`₹${n}L`, 'Sum insured')}</button>`).join(''), 'multi')}
+                <button type="button" class="chip ${h.sumInsured === n ? 'selected' : ''}" data-health-si="${n}" aria-label="${esc(`₹${n} lakh sum insured`)}">${chipBtnContent(`₹${n}L`, 'Sum insured')}</button>`).join(''), 'multi')}
             </div>
             <div class="form-group form-group--cover-q"><label>Room rent preference</label>
               ${quoteChoiceGroup(`
-                <button type="button" class="chip ${h.roomRent === 'no_cap' ? 'selected' : ''}" data-health-room="no_cap">${chipBtnContent('No cap', 'Any room')}</button>
-                <button type="button" class="chip ${h.roomRent === 'single_ac' ? 'selected' : ''}" data-health-room="single_ac">${chipBtnContent('Single AC', 'Capped room')}</button>
+                <button type="button" class="chip ${h.roomRent === 'no_cap' ? 'selected' : ''}" data-health-room="no_cap" aria-label="No room rent cap, any room">${chipBtnContent('No cap', 'Any room')}</button>
+                <button type="button" class="chip ${h.roomRent === 'single_ac' ? 'selected' : ''}" data-health-room="single_ac" aria-label="Single AC room, capped room rent">${chipBtnContent('Single AC', 'Capped room')}</button>
               `)}
             </div>
             <div class="form-group form-group--cover-q"><label>Need maternity cover?</label>
               ${quoteChoiceGroup(`
-                <button type="button" class="chip ${h.maternity === 'not_needed' ? 'selected' : ''}" data-health-maternity="not_needed">${chipBtnContent('No', 'Not needed')}</button>
-                <button type="button" class="chip ${h.maternity === 'needed' ? 'selected' : ''}" data-health-maternity="needed">${chipBtnContent('Yes', 'Include')}</button>
+                <button type="button" class="chip ${h.maternity === 'not_needed' ? 'selected' : ''}" data-health-maternity="not_needed" aria-label="Maternity cover not needed">${chipBtnContent('No', 'Not needed')}</button>
+                <button type="button" class="chip ${h.maternity === 'needed' ? 'selected' : ''}" data-health-maternity="needed" aria-label="Include maternity cover">${chipBtnContent('Yes', 'Include')}</button>
               `)}
             </div>
           </div>
@@ -6484,6 +6802,32 @@ function bindQuoteFormEvents() {
     healthPincodeInput.addEventListener('input', refreshPincode);
     healthPincodeInput.addEventListener('blur', refreshPincode);
   }
+  const motorRegInput = document.getElementById('motorRegNo');
+  if (motorRegInput) {
+    const refreshMotorReg = () => {
+      const val = motorRegInput.value.trim().toUpperCase();
+      if (quoteForm.motor) quoteForm.motor.regNo = val;
+      const empty = val === '';
+      const ok = isMotorRegNoValid(val);
+      motorRegInput.setAttribute('aria-invalid', ok ? 'false' : 'true');
+      const wrap = motorRegInput.closest('.motor-reg-field');
+      if (wrap?.classList.contains('term-age-field--error') && (ok || empty)) {
+        wrap.classList.remove('term-age-field--error');
+        document.getElementById('motorRegNoError')?.remove();
+      }
+      syncMotorRegFieldVisual(wrap, { empty, ok });
+      if (ok && wizardState?.formError && /registration/i.test(wizardState.formError)) {
+        wizardState.formError = '';
+      }
+    };
+    refreshMotorReg();
+    motorRegInput.addEventListener('input', refreshMotorReg);
+    motorRegInput.addEventListener('blur', refreshMotorReg);
+  }
+  motorRegInput?.closest('.term-age-field__control')?.addEventListener('click', (e) => {
+    if (e.target === motorRegInput) return;
+    motorRegInput?.focus();
+  });
   document.querySelectorAll('[data-action="switch-medical-member"]').forEach((btn) => {
     btn.addEventListener('click', () => {
       captureHealthFormFromDOM();
@@ -6510,10 +6854,21 @@ function bindQuoteFormEvents() {
       renderPreserveScroll();
     });
   });
-  document.querySelectorAll('[data-home-property]').forEach((btn) => {
+  document.querySelectorAll('[data-home-occupancy]').forEach((btn) => {
     btn.addEventListener('click', () => {
       captureHomeFormFromDOM();
-      quoteForm.home.propertyType = btn.dataset.homeProperty;
+      quoteForm.home = normalizeHomeQuoteForm(quoteForm.home);
+      quoteForm.home.occupancy = btn.dataset.homeOccupancy;
+      if (quoteForm.home.occupancy === 'tenant') quoteForm.home.coverType = 'contents';
+      if (wizardState) wizardState.formError = '';
+      renderPreserveScroll();
+    });
+  });
+  document.querySelectorAll('[data-home-property-kind]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      captureHomeFormFromDOM();
+      quoteForm.home = normalizeHomeQuoteForm(quoteForm.home);
+      quoteForm.home.propertyKind = btn.dataset.homePropertyKind;
       if (wizardState) wizardState.formError = '';
       renderPreserveScroll();
     });
@@ -6528,7 +6883,7 @@ function bindQuoteFormEvents() {
   });
 
   document.querySelectorAll('.quote-form .chip, .quote-form .member-gender-btn').forEach((btn) => {
-    if (btn.dataset.homeProperty || btn.dataset.homeCover) return;
+    if (btn.dataset.homeOccupancy || btn.dataset.homePropertyKind || btn.dataset.homeCover) return;
     if (btn.dataset.healthPed) return;
     btn.addEventListener('click', () => {
       if (btn.dataset.pedOpt) {
@@ -6583,6 +6938,18 @@ function bindQuoteFormEvents() {
         renderPreserveScroll();
         return;
       }
+      if (btn.dataset.motorClaimLast) {
+        captureMotorFormFromDOM();
+        const motor = quoteForm.motor;
+        if (btn.dataset.motorClaimLast === 'yes') {
+          motor.ncbProfile = 'claim';
+        } else if (motor.ncbProfile === 'claim' || !motor.ncbProfile) {
+          motor.ncbProfile = '25';
+        }
+        if (wizardState) wizardState.formError = '';
+        renderPreserveScroll();
+        return;
+      }
       const group = btn.closest('.chip-group');
       if (group) {
         group.querySelectorAll('.chip').forEach((c) => c.classList.remove('selected'));
@@ -6598,6 +6965,22 @@ function bindQuoteFormEvents() {
 
 function renderMotorQuoteStep0() {
   const m = quoteForm.motor || defaultMotorQuoteForm();
+  const regVal = String(m.regNo || '').trim();
+  const regEmpty = regVal === '';
+  const regOk = isMotorRegNoValid(regVal);
+  const regShowError = !regOk && !!(wizardState?.formError && /registration/i.test(wizardState.formError));
+  let regStateClass = 'term-age-field--idle';
+  if (regOk) regStateClass = 'term-age-field--ok';
+  else if (regShowError) regStateClass = 'term-age-field--error';
+  else if (regEmpty) regStateClass = 'term-age-field--needs';
+  const regDescribedBy = [
+    'motorRegNoGuide',
+    regShowError ? 'motorRegNoError' : '',
+  ].filter(Boolean).join(' ');
+  const regGuide = termAgePersistGuideHtml('motorRegNoGuide', 'motor.regGuide', 'motor.regGuideSub');
+  const regInlineError = regShowError
+    ? '<p class="term-age-field__error" id="motorRegNoError" role="alert">Enter vehicle registration number</p>'
+    : '';
   const formErr = wizardState?.formError
     ? `<p class="quote-form-error" role="alert">${wizardState.formError}</p>`
     : '';
@@ -6608,17 +6991,31 @@ function renderMotorQuoteStep0() {
         ${renderRenewalBanner()}
         <p class="quote-form__lead quote-form__lead--motor">Vehicle details to match motor quotes — change anytime before you pay.</p>
         <div class="motor-step-stack">
-          <div class="form-group form-group--motor-q">
-            <label for="motorRegNo">Vehicle registration number</label>
-            <input
-              id="motorRegNo"
-              class="motor-reg-input"
-              type="text"
-              value="${esc(m.regNo)}"
-              placeholder="DL 01 AB 1234"
-              autocomplete="off"
-              style="text-transform:uppercase"
-            >
+          <div class="form-group form-group--motor-q term-age-field motor-reg-field ${regStateClass}" id="motorRegNoGroup">
+            <label class="term-age-field__label" id="motorRegNoLabel" for="motorRegNo">
+              Vehicle registration number<span class="term-age-field__required" aria-hidden="true">*</span>
+            </label>
+            ${regGuide}
+            <div class="term-age-field__control">
+              <span class="term-age-field__prefix" id="motorRegNoPrefix" lang="en">${t('motor.regPrefix')}</span>
+              <input
+                id="motorRegNo"
+                class="term-age-input"
+                type="text"
+                value="${esc(m.regNo)}"
+                placeholder="${t('motor.regPlaceholder')}"
+                autocomplete="off"
+                spellcheck="false"
+                enterkeyhint="done"
+                required
+                aria-labelledby="motorRegNoLabel motorRegNoPrefix"
+                aria-describedby="${regDescribedBy}"
+                aria-required="true"
+                aria-invalid="${regOk ? 'false' : 'true'}"
+                style="text-transform:uppercase"
+              >
+            </div>
+            ${regInlineError}
           </div>
           <div class="quote-vahan-card quote-vahan-card--compact" role="status">
             <div class="quote-vahan-card__badge">From Vahan</div>
@@ -6628,17 +7025,11 @@ function renderMotorQuoteStep0() {
           <div class="form-group form-group--motor-q">
             <label>Policy type</label>
             ${quoteChoiceGroup(`
-              <button type="button" class="chip ${m.policyType === 'tp' ? 'selected' : ''}" data-motor-policy="tp">${chipBtnContent('Third party', 'Legal minimum')}</button>
-              <button type="button" class="chip ${m.policyType === 'comprehensive' ? 'selected' : ''}" data-motor-policy="comprehensive">${chipBtnContent('Comprehensive', 'Own damage + TP')}</button>
+              <button type="button" class="chip ${m.policyType === 'tp' ? 'selected' : ''}" data-motor-policy="tp" aria-label="Third party, legal minimum">${chipBtnContent('Third party', 'Legal minimum')}</button>
+              <button type="button" class="chip ${m.policyType === 'comprehensive' ? 'selected' : ''}" data-motor-policy="comprehensive" aria-label="Comprehensive, own damage and third party">${chipBtnContent('Comprehensive', 'Own damage + TP')}</button>
             `)}
           </div>
-          <div class="form-group form-group--motor-q">
-            <label>Claims &amp; NCB last year</label>
-            <p class="quote-form__hint quote-form__hint--motor">Pick one — a claim in the last policy year resets NCB to 0%.</p>
-            ${quoteChoiceGroup([50, 35, 25, 0].map((n) => `
-              <button type="button" class="chip ${m.ncbProfile === String(n) ? 'selected' : ''}" data-motor-ncb-profile="${n}">${chipBtnContent(`${n}% NCB`, 'No claim')}</button>`).join('')
-              + `<button type="button" class="chip ${m.ncbProfile === 'claim' ? 'selected' : ''}" data-motor-ncb-profile="claim">${chipBtnContent('0% NCB', 'Had a claim')}</button>`, 'multi')}
-          </div>
+          ${renderMotorNcbSection(m)}
         </div>
       </div>
       <div class="wizard-step-footer motor-step-footer">
@@ -7904,10 +8295,18 @@ function render(options = {}) {
       el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
     });
   }
-  if (homeStructureShouldFocus) {
-    homeStructureShouldFocus = false;
+  if (homeConstructionShouldFocus) {
+    homeConstructionShouldFocus = false;
     requestAnimationFrame(() => {
-      const el = document.getElementById('homeStructureValueLakh');
+      const el = document.getElementById('homeConstructionCost');
+      el?.focus();
+      el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
+    });
+  }
+  if (homeContentsShouldFocus) {
+    homeContentsShouldFocus = false;
+    requestAnimationFrame(() => {
+      const el = document.getElementById('homeContentsValueLakh');
       el?.focus();
       el?.scrollIntoView?.({ block: 'nearest', behavior: 'smooth' });
     });
@@ -8029,7 +8428,10 @@ function advanceWizard() {
     if (wizardState.step === 1) {
       const sel = selectedHealthMembers();
       wizardState.medicalMemberId = sel[0]?.id || 'self';
-      sel.forEach((m) => { ensureMemberMedical(m).confirmed = false; });
+      sel.forEach((m) => {
+        ensureMemberMedical(m).confirmed = false;
+        applyHealthMemberLifestyleDefaults(m);
+      });
     }
     pushAppState();
     if (startResultsLoadingIfNeeded(type, wizardState.step)) return;
@@ -8157,19 +8559,6 @@ function bindEvents() {
     }
     syncTermAgeFieldVisual(wrap, { empty, ok });
     syncTermAgeInvalidMessage(wrap, termAgeInput, { empty, ok, age, digits });
-    const hintEl = document.getElementById('termAgeHint');
-    if (hintEl) {
-      hintEl.textContent = ok
-        ? t('term.ageHintOk')
-        : empty
-          ? t('term.ageHintEmpty')
-          : t('term.ageHintPartial');
-    }
-    const guideEl = document.getElementById('termAgeGuide');
-    if (!empty && guideEl) {
-      guideEl.remove();
-      termAgeInput.setAttribute('aria-describedby', 'termAgeHint');
-    }
     if (ok && wizardState?.formError && /age/i.test(wizardState.formError)) {
       wizardState.formError = '';
       document.getElementById('termAgeError')?.remove();
@@ -8217,7 +8606,7 @@ function bindEvents() {
       wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
     }
     invalidEl.textContent = msg;
-    input.setAttribute('aria-describedby', ['homePincodeHint', 'homePincodeInvalid'].join(' '));
+    input.setAttribute('aria-describedby', ['homePincodeGuide', 'homePincodeInvalid'].join(' '));
   };
   homePincodeInput?.addEventListener('input', () => {
     const digits = homePincodeInput.value.replace(/\D/g, '').slice(0, 6);
@@ -8233,19 +8622,6 @@ function bindEvents() {
     }
     syncHomePincodeFieldVisual(wrap, { empty, ok });
     syncHomePincodeInvalidMessage(wrap, homePincodeInput, { empty, ok, digits });
-    const hintEl = document.getElementById('homePincodeHint');
-    if (hintEl) {
-      hintEl.textContent = ok
-        ? t('home.pincodeHintOk')
-        : empty
-          ? t('home.pincodeHintEmpty')
-          : t('home.pincodeHintPartial');
-    }
-    const guideEl = document.getElementById('homePincodeGuide');
-    if (!empty && guideEl) {
-      guideEl.remove();
-      homePincodeInput.setAttribute('aria-describedby', homePincodeInput.getAttribute('aria-describedby')?.replace('homePincodeGuide', '').trim() || 'homePincodeHint');
-    }
     if (ok && wizardState?.formError && /pincode/i.test(wizardState.formError)) {
       wizardState.formError = '';
     }
@@ -8284,7 +8660,7 @@ function bindEvents() {
       wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
     }
     invalidEl.textContent = msg;
-    input.setAttribute('aria-describedby', ['homeAreaHint', 'homeAreaInvalid'].join(' '));
+    input.setAttribute('aria-describedby', ['homeAreaGuide', 'homeAreaInvalid'].join(' '));
   };
   homeAreaInput?.addEventListener('input', () => {
     const digits = homeAreaInputValue(homeAreaInput.value);
@@ -8300,24 +8676,13 @@ function bindEvents() {
     }
     syncHomeAreaFieldVisual(wrap, { empty, ok });
     syncHomeAreaInvalidMessage(wrap, homeAreaInput, { empty, ok, digits });
-    const hintEl = document.getElementById('homeAreaHint');
-    if (hintEl) {
-      hintEl.textContent = ok
-        ? t('home.areaHintOk')
-        : empty
-          ? t('home.areaHintEmpty')
-          : t('home.areaHintPartial');
-    }
-    const guideEl = document.getElementById('homeAreaGuide');
-    if (!empty && guideEl) {
-      guideEl.remove();
-      homeAreaInput.setAttribute(
-        'aria-describedby',
-        homeAreaInput.getAttribute('aria-describedby')?.replace('homeAreaGuide', '').trim() || 'homeAreaHint',
-      );
-    }
     if (ok && wizardState?.formError && /built-up area/i.test(wizardState.formError)) {
       wizardState.formError = '';
+    }
+    if (quoteForm.home) {
+      quoteForm.home.areaSqFt = digits === '' ? '' : parseInt(digits, 10);
+      syncHomeStructureFromBuild(quoteForm.home);
+      refreshHomeBuildEstimateUI();
     }
   });
   homeAreaInput?.addEventListener('change', () => {
@@ -8328,8 +8693,44 @@ function bindEvents() {
     homeAreaInput?.focus();
   });
 
-  const homeStructureInput = document.getElementById('homeStructureValueLakh');
-  const syncHomeStructureFieldVisual = (wrap, { empty, ok }) => {
+  const refreshHomeBuildEstimateUI = () => {
+    const h = normalizeHomeQuoteForm(quoteForm.home);
+    const wrap = document.getElementById('homeBuildEstimate');
+    if (!wrap) return;
+    const label = homeBuildEstimateLabel(h);
+    if (!label) {
+      wrap.hidden = true;
+      return;
+    }
+    wrap.hidden = false;
+    const band = homeBuildEstimateBand(h.areaSqFt, h.constructionCostPerSqFt);
+    wrap.classList.remove('home-build-estimate--ok', 'home-build-estimate--low', 'home-build-estimate--high');
+    if (band) wrap.classList.add(`home-build-estimate--${band}`);
+    const valueEl = wrap.querySelector('.home-build-estimate__value');
+    if (valueEl) valueEl.textContent = label;
+    const warnText = band === 'low'
+      ? t('home.buildEstimateWarnLow')
+      : band === 'high'
+        ? t('home.buildEstimateWarnHigh')
+        : '';
+    let warnEl = document.getElementById('homeBuildEstimateWarn');
+    if (warnText) {
+      if (!warnEl) {
+        warnEl = document.createElement('p');
+        warnEl.id = 'homeBuildEstimateWarn';
+        warnEl.className = 'home-build-estimate__warn';
+        warnEl.setAttribute('role', 'note');
+        wrap.appendChild(warnEl);
+      }
+      warnEl.textContent = warnText;
+      warnEl.hidden = false;
+    } else {
+      warnEl?.remove();
+    }
+  };
+
+  const homeConstructionInput = document.getElementById('homeConstructionCost');
+  const syncHomeConstructionFieldVisual = (wrap, { empty, ok }) => {
     if (!wrap) return;
     wrap.classList.remove(
       'term-age-field--ok',
@@ -8342,63 +8743,108 @@ function bindEvents() {
     else if (empty) wrap.classList.add('term-age-field--needs');
     else wrap.classList.add('term-age-field--invalid');
   };
-  const syncHomeStructureInvalidMessage = (wrap, input, { empty, ok, digits }) => {
-    let invalidEl = document.getElementById('homeStructureInvalid');
+  const syncHomeConstructionInvalidMessage = (wrap, input, { empty, ok, digits }) => {
+    let invalidEl = document.getElementById('homeConstructionInvalid');
     if (ok || empty) {
       invalidEl?.remove();
       return;
     }
-    const msg = homeStructureInvalidMessage(digits);
+    const msg = homeConstructionInvalidMessage(digits);
     if (!invalidEl) {
       invalidEl = document.createElement('p');
-      invalidEl.id = 'homeStructureInvalid';
+      invalidEl.id = 'homeConstructionInvalid';
       invalidEl.className = 'term-age-field__invalid';
       invalidEl.setAttribute('role', 'alert');
       wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
     }
     invalidEl.textContent = msg;
-    input.setAttribute('aria-describedby', ['homeStructureHint', 'homeStructureInvalid'].join(' '));
+    input.setAttribute('aria-describedby', ['homeConstructionGuide', 'homeConstructionInvalid'].join(' '));
   };
-  homeStructureInput?.addEventListener('input', () => {
-    const digits = homeStructureInputValue(homeStructureInput.value);
-    if (digits !== homeStructureInput.value) homeStructureInput.value = digits;
-    quoteForm.home.structureValueLakh = digits === '' ? '' : parseInt(digits, 10);
-    const ok = isValidHomeStructureValueLakh(digits);
+  homeConstructionInput?.addEventListener('input', () => {
+    const digits = homeConstructionCostInputValue(homeConstructionInput.value);
+    if (digits !== homeConstructionInput.value) homeConstructionInput.value = digits;
+    quoteForm.home.constructionCostPerSqFt = digits === '' ? '' : parseInt(digits, 10);
+    syncHomeStructureFromBuild(quoteForm.home);
+    refreshHomeBuildEstimateUI();
+    const ok = isValidHomeConstructionCostPerSqFt(digits);
     const empty = digits === '';
-    homeStructureInput.setAttribute('aria-invalid', ok ? 'false' : 'true');
-    const wrap = homeStructureInput.closest('.home-structure-field');
+    homeConstructionInput.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    const wrap = homeConstructionInput.closest('.home-construction-field');
     if (wrap?.classList.contains('term-age-field--error') && (ok || empty)) {
       wrap.classList.remove('term-age-field--error');
-      document.getElementById('homeStructureError')?.remove();
+      document.getElementById('homeConstructionError')?.remove();
     }
-    syncHomeStructureFieldVisual(wrap, { empty, ok });
-    syncHomeStructureInvalidMessage(wrap, homeStructureInput, { empty, ok, digits });
-    const hintEl = document.getElementById('homeStructureHint');
-    if (hintEl) {
-      hintEl.textContent = ok
-        ? t('home.structureHintOk')
-        : empty
-          ? t('home.structureHintEmpty')
-          : t('home.structureHintPartial');
-    }
-    const guideEl = document.getElementById('homeStructureGuide');
-    if (!empty && guideEl) {
-      guideEl.remove();
-      homeStructureInput.setAttribute(
-        'aria-describedby',
-        homeStructureInput.getAttribute('aria-describedby')?.replace('homeStructureGuide', '').trim() || 'homeStructureHint',
-      );
-    }
-    if (ok && wizardState?.formError && /structure value/i.test(wizardState.formError)) {
+    syncHomeConstructionFieldVisual(wrap, { empty, ok });
+    syncHomeConstructionInvalidMessage(wrap, homeConstructionInput, { empty, ok, digits });
+    if (ok && wizardState?.formError && /construction/i.test(wizardState.formError)) {
       wizardState.formError = '';
     }
   });
-  homeStructureInput?.addEventListener('change', () => {
+  homeConstructionInput?.addEventListener('change', () => {
     captureHomeFormFromDOM();
   });
-  homeStructureInput?.closest('.term-age-field__control')?.addEventListener('click', (e) => {
-    if (e.target === homeStructureInput) return;
-    homeStructureInput?.focus();
+  homeConstructionInput?.closest('.term-age-field__control')?.addEventListener('click', (e) => {
+    if (e.target === homeConstructionInput) return;
+    homeConstructionInput?.focus();
+  });
+
+  const homeContentsInput = document.getElementById('homeContentsValueLakh');
+  const syncHomeContentsFieldVisual = (wrap, { empty, ok }) => {
+    if (!wrap) return;
+    wrap.classList.remove(
+      'term-age-field--ok',
+      'term-age-field--needs',
+      'term-age-field--idle',
+      'term-age-field--invalid',
+      'term-age-field--error',
+    );
+    if (ok) wrap.classList.add('term-age-field--ok');
+    else if (empty) wrap.classList.add('term-age-field--needs');
+    else wrap.classList.add('term-age-field--invalid');
+  };
+  const syncHomeContentsInvalidMessage = (wrap, input, { empty, ok, digits }) => {
+    let invalidEl = document.getElementById('homeContentsInvalid');
+    if (ok || empty) {
+      invalidEl?.remove();
+      return;
+    }
+    const msg = homeContentsInvalidMessage(digits);
+    if (!invalidEl) {
+      invalidEl = document.createElement('p');
+      invalidEl.id = 'homeContentsInvalid';
+      invalidEl.className = 'term-age-field__invalid';
+      invalidEl.setAttribute('role', 'alert');
+      wrap?.querySelector('.term-age-field__control')?.insertAdjacentElement('afterend', invalidEl);
+    }
+    invalidEl.textContent = msg;
+    input.setAttribute('aria-describedby', ['homeContentsGuide', 'homeContentsInvalid'].join(' '));
+  };
+  homeContentsInput?.addEventListener('input', () => {
+    const digits = homeContentsInputValue(homeContentsInput.value);
+    if (digits !== homeContentsInput.value) homeContentsInput.value = digits;
+    quoteForm.home.contentsValueLakh = digits === '' ? '' : parseInt(digits, 10);
+    const ok = isValidHomeContentsValueLakh(digits);
+    const empty = digits === '';
+    homeContentsInput.setAttribute('aria-invalid', ok ? 'false' : 'true');
+    const wrap = homeContentsInput.closest('.home-contents-field');
+    if (wrap?.classList.contains('term-age-field--error') && (ok || empty)) {
+      wrap.classList.remove('term-age-field--error');
+      document.getElementById('homeContentsError')?.remove();
+    }
+    syncHomeContentsFieldVisual(wrap, { empty, ok });
+    syncHomeContentsInvalidMessage(wrap, homeContentsInput, { empty, ok, digits });
+    const suffixEl = document.getElementById('homeContentsSuffix');
+    if (suffixEl) suffixEl.textContent = homeContentsSuffixLabel(digits);
+    if (ok && wizardState?.formError && /contents/i.test(wizardState.formError)) {
+      wizardState.formError = '';
+    }
+  });
+  homeContentsInput?.addEventListener('change', () => {
+    captureHomeFormFromDOM();
+  });
+  homeContentsInput?.closest('.term-age-field__control')?.addEventListener('click', (e) => {
+    if (e.target === homeContentsInput) return;
+    homeContentsInput?.focus();
   });
 
   document.querySelectorAll('[data-action="set-view"]').forEach(el => {
@@ -9938,7 +10384,7 @@ function bindWizardMembersKeyboardViewport() {
       const active = document.activeElement;
       if (isWizardMembersFormField(active)) return;
       resetWizardMembersKeyboardViewport();
-    }, 220);
+    }, 120);
   });
 }
 

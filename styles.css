@@ -941,7 +941,79 @@ h2 { font-size: 1.125rem; font-weight: 700; color: var(--color-ink); margin: 0 0
   --home-grid-gap: 0.5rem;
   --home-head-gap: 0.65rem;
   --home-section-pad: 0.85rem 0.75rem 0.75rem;
+  /* Type on white cards: primary → muted (WCAG-friendly, one scale) */
+  --home-text-primary: color-mix(in srgb, var(--color-ink) 76%, var(--color-ink-muted));
+  --home-text-body: #475569;
+  --home-text-muted: #64748b;
+  --home-text-subtle: #78859a;
+  --color-ink-home: var(--home-text-primary);
   background: #eef2f7;
+}
+.home-v2 .home-cat-section h2,
+.home-v2 .customer-tools .section__head--stack h2,
+.home-v2 .customer-tools--key-features .section__head--stack h2,
+.home-v2 .home-why-hollow__title,
+.home-v2 .service-alerts__head h2,
+.home-v2 .home-trending h2,
+.home-v2 .why-hollow-item__title,
+.home-v2 .service-alert__title,
+.home-v2 .trending-mini__name,
+.home-v2 .home-cat__name,
+.home-v2 .home-more__name {
+  color: var(--color-ink-home);
+  font-weight: 700;
+}
+.home-v2 .home-cat__name {
+  font-size: 1rem;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+.home-v2 .home-cat-section__lead,
+.home-v2 .customer-tools__intro,
+.home-v2 .customer-tools--key-features .customer-tools__intro {
+  color: var(--home-text-body);
+}
+.home-v2 .home-cat__tag,
+.home-v2 .home-cat__from,
+.home-v2 .home-cat__unit,
+.home-v2 .why-hollow-item__desc,
+.home-v2 .trending-mini__meta,
+.home-v2 .trending-mini__price span,
+.home-v2 .service-alerts__count,
+.home-v2 .service-alert__meta {
+  color: var(--home-text-muted);
+}
+.home-v2 .home-cat__kicker {
+  color: var(--home-text-subtle);
+}
+.home-v2 .home-cat__from strong {
+  color: var(--color-primary);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.home-v2 .quick-actions--v2 .quick-action {
+  color: var(--home-text-body);
+}
+.home-v2 .trending-tab:not(.active) {
+  color: var(--home-text-body);
+}
+.home-v2 .home-cat-section__all {
+  color: var(--color-primary);
+}
+.home-v2 .home-more__from {
+  color: var(--color-accent-text);
+  font-weight: 700;
+}
+.home-v2 .quote-card--v2 .quote-card__label {
+  color: var(--home-text-primary);
+  font-weight: 600;
+}
+.home-v2 .home-after-section--compact .home-cat__name {
+  color: var(--home-text-primary);
+  font-weight: 700;
+}
+.home-v2 .home-after-section--compact .home-cat__tag {
+  color: var(--home-text-muted);
 }
 .home-v2__body {
   display: flex;
@@ -973,9 +1045,6 @@ h2 { font-size: 1.125rem; font-weight: 700; color: var(--color-ink); margin: 0 0
 .home-v2 .service-alerts__head,
 .home-v2 .home-trending .section__head {
   margin-bottom: var(--home-head-gap);
-}
-.home-v2 .home-why-hollow__title {
-  color: var(--color-ink);
 }
 .home-v2 .home-trending .trending-tabs {
   margin-bottom: var(--home-head-gap);
@@ -1522,10 +1591,9 @@ h2 { font-size: 1.125rem; font-weight: 700; color: var(--color-ink); margin: 0 0
 .home-v2 .home-why-hollow__title {
   font-size: 1.125rem;
   margin: 0;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.25;
-  letter-spacing: -0.02em;
-  color: var(--color-ink);
+  letter-spacing: -0.015em;
 }
 .home-v2 .home-why-hollow .why-hollow-panel {
   margin: 0;
@@ -1564,17 +1632,16 @@ h2 { font-size: 1.125rem; font-weight: 700; color: var(--color-ink); margin: 0 0
 .home-v2 .why-hollow-item__title {
   margin: 0;
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.32;
-  letter-spacing: -0.02em;
-  color: var(--color-ink);
+  letter-spacing: -0.015em;
 }
 .home-v2 .why-hollow-item__desc {
   margin: 0;
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.4;
-  color: #6b7c8f;
+  color: var(--home-text-muted);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1602,6 +1669,41 @@ h2 { font-size: 1.125rem; font-weight: 700; color: var(--color-ink); margin: 0 0
   margin-top: 0;
   padding: 0.72rem 0.8rem 0.78rem;
   text-align: center;
+}
+.home-footer--v2.site-footer--mini .home-footer__logo {
+  color: #fff;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  margin-bottom: 0.32rem;
+  letter-spacing: -0.02em;
+}
+.home-footer--v2.site-footer--mini .site-footer__reach {
+  margin: 0 0 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.home-footer--v2.site-footer--mini .site-footer__reach a {
+  color: rgba(255, 255, 255, 0.86);
+  font-weight: 600;
+}
+.home-footer--v2.site-footer--mini .site-footer__reach a:hover,
+.home-footer--v2.site-footer--mini .site-footer__reach a:focus-visible {
+  color: #fff;
+}
+.home-footer--v2.site-footer--mini .site-footer__reach-sep {
+  margin: 0 0.3rem;
+  color: rgba(255, 255, 255, 0.32);
+  opacity: 1;
+}
+.home-footer--v2.site-footer--mini .site-footer__fine {
+  padding: 0 0.15rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.48;
+  color: rgba(255, 255, 255, 0.48);
+  max-width: 18.5rem;
+  margin-inline: auto;
 }
 .home-footer--v2 .legal-footer__disc,
 .home-footer--v2 .site-footer__igms,
@@ -3562,8 +3664,9 @@ body.wizard-mode.wizard-checkout-fit:not(.signup-mode) .checkout-step-footer {
 body.wizard-mode.wizard-docked-step:not(.signup-mode) .main > .app-view {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
+  max-height: 100%;
   overflow: hidden;
 }
 body.wizard-mode.wizard-docked-step:not(.signup-mode) .main > .app-view > .wizard-body.quote-form {
@@ -3730,7 +3833,7 @@ body.wizard-mode:not(.signup-mode) .quote-form__continue-sub {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.28rem 0.32rem;
   width: 100%;
-  max-width: 100%;
+  max-width: min(380px, 100%);
   overflow: visible;
   box-sizing: border-box;
 }
@@ -3745,11 +3848,6 @@ body.wizard-mode:not(.signup-mode) .quote-form__continue-sub {
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
-}
-@container hollow-app (max-width: 360px) {
-  .medical-member-tabs--wrap.medical-member-tabs--seg {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 .medical-member-tabs--seg-fill .medical-member-tab {
   flex: 1 1 0;
@@ -3935,8 +4033,11 @@ body.wizard-mode.wizard-motor-fit .wizard-progress {
   padding-right: var(--mobile-gutter);
 }
 .quote-form--medical-compact {
+  --quote-compact-field-gap: 0.48rem;
   width: 100%;
   max-width: min(520px, 100%);
+  --medical-member-tabs-max-w: min(380px, 100%);
+  --medical-member-tab-row-h: 2rem;
 }
 .quote-form--medical-compact .quote-form__lead--medical {
   font-size: 0.8125rem;
@@ -3964,9 +4065,19 @@ body.wizard-mode.wizard-motor-fit .wizard-progress {
 }
 .quote-form--medical-compact .medical-member-tabs--wrap.medical-member-tabs--seg {
   gap: 0.32rem 0.36rem;
+  max-width: var(--medical-member-tabs-max-w);
+  grid-auto-rows: minmax(0, var(--medical-member-tab-row-h));
+}
+.quote-form--medical-compact .medical-member-tabs--wrap .medical-member-tab {
+  min-height: 1.75rem;
+  max-height: var(--medical-member-tab-row-h);
+  height: var(--medical-member-tab-row-h);
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
 }
 .quote-form--medical-compact .medical-member-tabs--simple .medical-member-tab {
-  min-height: 2rem;
+  min-height: 1.75rem;
+  max-height: var(--medical-member-tab-row-h);
   padding: 0.24rem 0.5rem;
   font-size: 0.75rem;
 }
@@ -3997,47 +4108,25 @@ body.wizard-mode.wizard-motor-fit .wizard-progress {
   content: ' · ';
 }
 .quote-form--medical-compact .medical-step-stack {
-  gap: 0.4rem;
+  gap: var(--quote-compact-field-gap);
   margin-top: 0.1rem;
 }
 .quote-form--medical-compact .form-group--medical-q {
-  margin-bottom: 0.45rem;
-}
-.quote-form--medical-compact .form-group--medical-q:last-child {
-  margin-bottom: 0.15rem;
+  margin-bottom: 0;
 }
 .quote-form--medical-compact .form-group--medical-q label {
   font-size: 0.75rem;
   font-weight: 600;
-  margin-bottom: 0.32rem;
-  line-height: 1.25;
+  margin-bottom: 0.22rem;
+  line-height: 1.2;
   display: block;
-}
-.quote-form--medical-compact .chip-group--segmented {
-  padding: 3px;
-  gap: 0.25rem;
-  border-radius: 10px;
-  border-width: 1px;
-}
-.quote-form--medical-compact .chip-group--segmented .chip {
-  min-height: 2.375rem;
-  padding: 0.28rem 0.3rem;
-  gap: 0.05rem;
-  border-radius: 8px;
-  border-width: 1.5px;
 }
 .quote-form--medical-compact .chip-group--multi .chip {
   flex: 1 1 0;
   min-width: 0;
 }
-.quote-form--medical-compact .chip-group--segmented .chip .chip__line {
-  font-size: 0.875rem;
-  font-weight: 800;
-}
-.quote-form--medical-compact .chip-group--segmented .chip .chip__sub {
-  font-size: 0.625rem;
-  font-weight: 600;
-  line-height: 1.1;
+.quote-form--medical-compact .chip-group--multi .chip:nth-child(3) {
+  flex: 1 1 100%;
 }
 .medical-step-stack {
   flex: 0 0 auto;
@@ -4075,23 +4164,23 @@ body.wizard-mode.wizard-medical-fit .medical-step-footer .quote-form__continue {
 /* Short mobile viewports — tighter medical chips & gaps */
 @supports (height: 100dvh) {
   @media (max-height: 860px) {
-    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .form-group--medical-q {
-      margin-bottom: 0.35rem;
-    }
     body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .medical-step-stack {
-      gap: 0.32rem;
+      gap: 0.36rem;
     }
     body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .quote-form__lead--medical {
       margin-bottom: 0.45rem;
     }
-    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .chip-group--segmented .chip {
-      min-height: 2.25rem;
+    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .chip-group--segmented.chip-group--prominent .chip {
+      min-height: 2.3rem;
       padding: 0.22rem 0.25rem;
     }
-    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .chip-group--segmented .chip .chip__line {
-      font-size: 0.8125rem;
+    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .medical-member-tabs--wrap .medical-member-tab {
+      min-height: 1.65rem;
+      max-height: var(--medical-member-tab-row-h);
+      height: auto;
+      padding: 0.18rem 0.45rem;
     }
-    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .medical-member-tabs--simple .medical-member-tab {
+    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .medical-member-tabs--simple:not(.medical-member-tabs--wrap) .medical-member-tab {
       min-height: 1.9rem;
       padding: 0.2rem 0.45rem;
     }
@@ -4100,6 +4189,7 @@ body.wizard-mode.wizard-medical-fit .medical-step-footer .quote-form__continue {
 
 /* Coverage step — compact layout + docked CTA */
 .quote-form--cover-compact {
+  --quote-compact-field-gap: 0.48rem;
   width: 100%;
   max-width: min(520px, 100%);
 }
@@ -4113,10 +4203,10 @@ body.wizard-mode.wizard-medical-fit .medical-step-footer .quote-form__continue {
 .cover-step-stack {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: var(--quote-compact-field-gap);
 }
 .quote-form--cover-compact .form-group--cover-q {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0;
 }
 .quote-form--cover-compact .form-group--cover-q label {
   font-size: 0.75rem;
@@ -4124,28 +4214,36 @@ body.wizard-mode.wizard-medical-fit .medical-step-footer .quote-form__continue {
   margin-bottom: 0.22rem;
   line-height: 1.2;
 }
-.quote-form--cover-compact .chip-group--segmented {
+.quote-form--cover-compact .chip-group--multi .chip {
+  flex: 1 1 calc(33.333% - 0.28rem);
+  min-width: 0;
+}
+/* Medical — PED condition pick list matches prominent tray */
+.quote-form--medical-compact .chip-group--choice.chip-group--wrap {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
   padding: 3px;
   gap: 0.25rem;
   border-radius: 10px;
-  border-width: 1px;
+  border: 1px solid #c5d9ed;
+  background: #eef3f9;
 }
-.quote-form--cover-compact .chip-group--segmented .chip {
+.quote-form--medical-compact .chip-group--choice.chip-group--wrap .chip {
+  flex: 1 1 calc(50% - 0.25rem);
+  min-width: 8.5rem;
   min-height: 2.5rem;
   padding: 0.28rem 0.32rem;
   gap: 0.05rem;
   border-radius: 8px;
   border-width: 1.5px;
 }
-.quote-form--cover-compact .chip-group--multi .chip {
-  flex: 1 1 calc(33.333% - 0.28rem);
-  min-width: 0;
-}
-.quote-form--cover-compact .chip-group--segmented .chip .chip__line {
+.quote-form--medical-compact .chip-group--choice.chip-group--wrap .chip .chip__line {
   font-size: 0.875rem;
   font-weight: 800;
+  line-height: 1.1;
 }
-.quote-form--cover-compact .chip-group--segmented .chip .chip__sub {
+.quote-form--medical-compact .chip-group--choice.chip-group--wrap .chip .chip__sub {
   font-size: 0.625rem;
   font-weight: 600;
   line-height: 1.1;
@@ -4174,6 +4272,7 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
 .quote-form--term-compact,
 .quote-form--home-compact,
 .quote-form--motor-compact {
+  --quote-compact-field-gap: 0.48rem;
   width: 100%;
   max-width: min(520px, 100%);
 }
@@ -4191,12 +4290,12 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
 .motor-step-stack {
   display: flex;
   flex-direction: column;
-  gap: 0.05rem;
+  gap: var(--quote-compact-field-gap);
 }
 .quote-form--term-compact .form-group--term-q,
 .quote-form--home-compact .form-group--home-q,
 .quote-form--motor-compact .form-group--motor-q {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0;
 }
 .quote-form--term-compact .form-group--term-q label,
 .quote-form--home-compact .form-group--home-q label,
@@ -4290,7 +4389,8 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
   font-weight: 600;
 }
 .quote-form--term-compact .term-age-field__control,
-.quote-form--home-compact .term-age-field__control {
+.quote-form--home-compact .term-age-field__control,
+.quote-form--motor-compact .term-age-field__control {
   display: flex;
   align-items: stretch;
   gap: 0.25rem;
@@ -4305,7 +4405,8 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .quote-form--term-compact .term-age-input,
-.quote-form--home-compact .term-age-input {
+.quote-form--home-compact .term-age-input,
+.quote-form--motor-compact .term-age-input {
   flex: 1 1 auto;
   width: 100%;
   min-width: 3rem;
@@ -4324,27 +4425,32 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
   transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
 }
 .quote-form--term-compact .term-age-input::placeholder,
-.quote-form--home-compact .term-age-input::placeholder {
+.quote-form--home-compact .term-age-input::placeholder,
+.quote-form--motor-compact .term-age-input::placeholder {
   color: #a8b8c8;
   font-weight: 700;
   opacity: 1;
 }
 .quote-form--term-compact .term-age-input:placeholder-shown,
-.quote-form--home-compact .term-age-input:placeholder-shown {
+.quote-form--home-compact .term-age-input:placeholder-shown,
+.quote-form--motor-compact .term-age-input:placeholder-shown {
   color: #b8c5d3;
   font-weight: 700;
 }
 .quote-form--term-compact .term-age-field--needs .term-age-input:placeholder-shown,
-.quote-form--home-compact .term-age-field--needs .term-age-input:placeholder-shown {
+.quote-form--home-compact .term-age-field--needs .term-age-input:placeholder-shown,
+.quote-form--motor-compact .term-age-field--needs .term-age-input:placeholder-shown {
   color: #c4cdd8;
 }
 .quote-form--term-compact .term-age-field--needs .term-age-input::placeholder,
-.quote-form--home-compact .term-age-field--needs .term-age-input::placeholder {
+.quote-form--home-compact .term-age-field--needs .term-age-input::placeholder,
+.quote-form--motor-compact .term-age-field--needs .term-age-input::placeholder {
   color: #b0bec9;
   font-weight: 600;
 }
 .quote-form--term-compact .term-age-field__suffix,
-.quote-form--home-compact .term-age-field__suffix {
+.quote-form--home-compact .term-age-field__suffix,
+.quote-form--motor-compact .term-age-field__suffix {
   flex: 0 0 4.35rem;
   display: flex;
   align-items: center;
@@ -4362,57 +4468,69 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
   transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
 }
 .quote-form--term-compact .term-age-field--needs,
-.quote-form--home-compact .term-age-field--needs .term-age-field__control {
+.quote-form--home-compact .term-age-field--needs .term-age-field__control,
+.quote-form--motor-compact .term-age-field--needs .term-age-field__control {
   border-color: #e8c89a;
   background: #f8f4ee;
 }
 .quote-form--term-compact .term-age-field--needs,
-.quote-form--home-compact .term-age-field--needs .term-age-input {
+.quote-form--home-compact .term-age-field--needs .term-age-input,
+.quote-form--motor-compact .term-age-field--needs .term-age-input {
   border-color: #e8b86d;
   background: #fffaf6;
 }
 .quote-form--term-compact .term-age-field--needs,
-.quote-form--home-compact .term-age-field--needs .term-age-field__suffix {
+.quote-form--home-compact .term-age-field--needs .term-age-field__suffix,
+.quote-form--motor-compact .term-age-field--needs .term-age-field__suffix {
   border-color: #e8d4b8;
   background: #fff;
   color: #9a3412;
 }
 .quote-form--term-compact .term-age-field--idle,
-.quote-form--home-compact .term-age-field--idle .term-age-field__control {
+.quote-form--home-compact .term-age-field--idle .term-age-field__control,
+.quote-form--motor-compact .term-age-field--idle .term-age-field__control {
   border-color: #c5d9ed;
   background: #eef3f9;
 }
 .quote-form--term-compact .term-age-field--invalid,
-.quote-form--home-compact .term-age-field--invalid .term-age-field__control {
+.quote-form--home-compact .term-age-field--invalid .term-age-field__control,
+.quote-form--motor-compact .term-age-field--invalid .term-age-field__control {
   border-color: #f97316;
   background: #fff7ed;
   box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
 }
 .quote-form--term-compact .term-age-field--invalid,
-.quote-form--home-compact .term-age-field--invalid .term-age-input {
+.quote-form--home-compact .term-age-field--invalid .term-age-input,
+.quote-form--motor-compact .term-age-field--invalid .term-age-input {
   color: #9a3412;
 }
 .quote-form--term-compact .term-age-field--invalid,
-.quote-form--home-compact .term-age-field--invalid .term-age-field__suffix {
+.quote-form--home-compact .term-age-field--invalid .term-age-field__suffix,
+.quote-form--motor-compact .term-age-field--invalid .term-age-field__suffix {
   color: #c2410c;
   border-left-color: #fed7aa;
 }
 .quote-form--term-compact .term-age-field--invalid,
-.quote-form--home-compact .term-age-field--invalid .term-age-field__control:focus-within {
+.quote-form--home-compact .term-age-field--invalid .term-age-field__control:focus-within,
+.quote-form--motor-compact .term-age-field--invalid .term-age-field__control:focus-within {
   border-color: #ea580c;
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.2);
 }
 .quote-form--term-compact .term-age-field--needs,
 .quote-form--home-compact .term-age-field--needs .term-age-field__control:focus-within,
 .quote-form--term-compact .term-age-field--idle,
-.quote-form--home-compact .term-age-field--idle .term-age-field__control:focus-within {
+.quote-form--home-compact .term-age-field--idle .term-age-field__control:focus-within,
+.quote-form--motor-compact .term-age-field--needs .term-age-field__control:focus-within,
+.quote-form--motor-compact .term-age-field--idle .term-age-field__control:focus-within {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(13, 79, 139, 0.12);
 }
 .quote-form--term-compact .term-age-field--needs,
 .quote-form--home-compact .term-age-field--needs .term-age-field__control:focus-within .term-age-input,
 .quote-form--term-compact .term-age-field--idle,
-.quote-form--home-compact .term-age-field--idle .term-age-field__control:focus-within .term-age-input {
+.quote-form--home-compact .term-age-field--idle .term-age-field__control:focus-within .term-age-input,
+.quote-form--motor-compact .term-age-field--needs .term-age-field__control:focus-within .term-age-input,
+.quote-form--motor-compact .term-age-field--idle .term-age-field__control:focus-within .term-age-input {
   border-color: var(--color-primary);
   box-shadow: 0 2px 6px rgba(13, 79, 139, 0.08);
 }
@@ -4472,21 +4590,62 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
   border-color: #22c55e;
   box-shadow: none;
 }
+.quote-form--motor-compact .term-age-field--ok .term-age-field__label {
+  color: #166534;
+}
+.quote-form--motor-compact .term-age-field--ok .term-age-field__required {
+  color: #16a34a;
+}
+.quote-form--motor-compact .term-age-field--ok .term-age-field__control {
+  border-color: #86c8a0;
+  background: linear-gradient(180deg, #f6fdf9 0%, #ecf8f1 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(22, 163, 74, 0.08),
+    0 3px 10px rgba(22, 163, 74, 0.1);
+}
+.quote-form--motor-compact .term-age-field--ok .term-age-input {
+  border-color: #9ed4b5;
+  background: #fff;
+  color: #14532d;
+}
+.quote-form--motor-compact .term-age-field--ok .term-age-field__suffix {
+  border-color: #9ed4b5;
+  background: #f0fdf4;
+  color: #166534;
+  box-shadow: none;
+}
+.quote-form--motor-compact .term-age-field--ok .term-age-field__hint {
+  color: #15803d;
+  font-weight: 600;
+}
+.quote-form--motor-compact .term-age-field--ok .term-age-field__control:focus-within {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+.quote-form--motor-compact .term-age-field--ok .term-age-field__control:focus-within .term-age-input,
+.quote-form--motor-compact .term-age-field--ok .term-age-field__control:focus-within .term-age-field__suffix {
+  border-color: #22c55e;
+  box-shadow: none;
+}
 .quote-form--term-compact .term-age-field--error,
-.quote-form--home-compact .term-age-field--error .term-age-field__control {
+.quote-form--home-compact .term-age-field--error .term-age-field__control,
+.quote-form--motor-compact .term-age-field--error .term-age-field__control {
   border-color: #f87171;
   background: #fff5f5;
   box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.18);
 }
 .quote-form--term-compact .term-age-field--error .term-age-input,
 .quote-form--home-compact .term-age-field--error .term-age-input,
+.quote-form--motor-compact .term-age-field--error .term-age-input,
 .quote-form--term-compact .term-age-field--error .term-age-field__suffix,
-.quote-form--home-compact .term-age-field--error .term-age-field__suffix {
+.quote-form--home-compact .term-age-field--error .term-age-field__suffix,
+.quote-form--motor-compact .term-age-field--error .term-age-field__suffix {
   border-color: #fca5a5;
   background: #fff;
 }
 .quote-form--term-compact .term-age-field--error,
-.quote-form--home-compact .term-age-field--error .term-age-field__control:focus-within .term-age-input {
+.quote-form--home-compact .term-age-field--error .term-age-field__control:focus-within .term-age-input,
+.quote-form--motor-compact .term-age-field--error .term-age-field__control:focus-within .term-age-input {
   border-color: #dc2626;
 }
 .quote-form--home-compact .form-group--home-q input:not([type="checkbox"]):not([type="radio"]):not(.term-age-input) {
@@ -4506,35 +4665,214 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(13, 79, 139, 0.14);
 }
-.quote-form--home-compact .home-area-field .term-age-field__suffix {
-  flex: 0 0 4.85rem;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-}
+.quote-form--home-compact .home-pincode-field .term-age-field__suffix,
+.quote-form--home-compact .home-area-field .term-age-field__suffix,
+.quote-form--home-compact .home-construction-field .term-age-field__suffix,
+.quote-form--home-compact .home-contents-field .term-age-field__suffix,
 .quote-form--home-compact .home-structure-field .term-age-field__suffix {
-  flex: 0 0 3.35rem;
-  font-size: 0.8125rem;
-  font-weight: 800;
-}
-.quote-form--motor-compact .motor-reg-input {
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-  min-height: var(--touch-target);
-  padding: 0.6rem 0.75rem;
-  border: 1.5px solid #c5d9ed;
-  border-radius: 10px;
-  font-family: var(--font);
-  font-size: 1rem;
+  flex: 0 0 4.85rem;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  background: var(--color-white);
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.quote-form--home-compact .home-contents-field.term-age-field--invalid .term-age-field__suffix,
+.quote-form--home-compact .home-contents-field.term-age-field--ok .term-age-field__suffix {
+  flex: 0 0 auto;
+  min-width: 4.85rem;
+  max-width: 42%;
+}
+.quote-form--home-compact .home-construction-field .term-age-field__suffix {
+  flex: 0 0 5.35rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0;
+}
+.quote-form--home-compact .home-build-estimate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  margin: 0 0 0.35rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 10px;
+  border: 1px solid #c5d9ed;
+  background: #f5f9fc;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: var(--color-ink-muted);
+}
+.quote-form--home-compact .home-build-estimate__label {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  font-size: 0.75rem;
   color: var(--color-ink);
 }
-.quote-form--motor-compact .motor-reg-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(13, 79, 139, 0.14);
+.quote-form--home-compact .home-build-estimate__value {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--color-primary);
+}
+.quote-form--home-compact .home-build-estimate__meta {
+  flex: 1 1 100%;
+  font-weight: 500;
+}
+.quote-form--home-compact .home-build-estimate[hidden] {
+  display: none !important;
+}
+.quote-form--home-compact .home-build-estimate--low,
+.quote-form--home-compact .home-build-estimate--high {
+  border-color: #e8b86d;
+  background: #fdf8f0;
+}
+.quote-form--home-compact .home-build-estimate--low .home-build-estimate__value,
+.quote-form--home-compact .home-build-estimate--high .home-build-estimate__value {
+  color: #c2410c;
+}
+.quote-form--home-compact .home-build-estimate__warn {
+  flex: 1 1 100%;
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #9a4a0a;
+}
+body.wizard-mode.wizard-home-fit .quote-form__lead--home {
+  margin-bottom: 0.25rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--color-ink);
+}
+body.wizard-mode.wizard-home-fit .home-step-scroll {
+  padding-top: 0.08rem;
+  padding-bottom: 0.45rem;
+}
+body.wizard-mode.wizard-home-fit .quote-form--home-compact .form-group--home-q.term-age-field .term-age-field__guide--persist {
+  margin-bottom: 0.2rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+body.wizard-mode.wizard-term-fit .term-step-stack,
+body.wizard-mode.wizard-home-fit .home-step-stack,
+body.wizard-mode.wizard-motor-fit .motor-step-stack,
+body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .medical-step-stack,
+body.wizard-mode.wizard-cover-fit .cover-step-stack {
+  gap: 0.4rem;
+}
+body.wizard-mode.wizard-term-fit .quote-form--term-compact .chip-group--segmented.chip-group--prominent .chip,
+body.wizard-mode.wizard-home-fit .quote-form--home-compact .chip-group--segmented.chip-group--prominent .chip,
+body.wizard-mode.wizard-motor-fit .quote-form--motor-compact .chip-group--segmented.chip-group--prominent .chip,
+body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .chip-group--segmented.chip-group--prominent .chip,
+body.wizard-mode.wizard-cover-fit .quote-form--cover-compact .chip-group--segmented.chip-group--prominent .chip {
+  min-height: 2.15rem;
+  padding: 0.18rem 0.26rem;
+}
+body.wizard-mode.wizard-term-fit .quote-form--term-compact .chip-group--segmented.chip-group--prominent .chip .chip__line,
+body.wizard-mode.wizard-home-fit .quote-form--home-compact .chip-group--segmented.chip-group--prominent .chip .chip__line,
+body.wizard-mode.wizard-motor-fit .quote-form--motor-compact .chip-group--segmented.chip-group--prominent .chip .chip__line,
+body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .chip-group--segmented.chip-group--prominent .chip .chip__line,
+body.wizard-mode.wizard-cover-fit .quote-form--cover-compact .chip-group--segmented.chip-group--prominent .chip .chip__line {
+  font-size: 0.8125rem;
+}
+body.wizard-mode.wizard-term-fit .quote-form--term-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub,
+body.wizard-mode.wizard-home-fit .quote-form--home-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub,
+body.wizard-mode.wizard-motor-fit .quote-form--motor-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub,
+body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub,
+body.wizard-mode.wizard-cover-fit .quote-form--cover-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub {
+  font-size: 0.6875rem;
+  line-height: 1.35;
+}
+body.wizard-mode.wizard-home-fit .home-build-estimate {
+  margin-bottom: 0.28rem;
+  padding: 0.38rem 0.48rem;
+}
+body.wizard-mode.wizard-home-fit .home-step-footer__trust {
+  margin-bottom: 0.25rem;
+  padding: 0.3rem 0.42rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+.quote-form--home-compact .home-tenant-cover-note,
+.quote-form--home-compact .home-cover-note {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--color-ink-muted);
+}
+.quote-form--home-compact .home-cover-note {
+  color: var(--color-ink);
+}
+.quote-form--term-compact .term-age-field .term-age-field__guide--persist,
+.quote-form--home-compact .term-age-field .term-age-field__guide--persist,
+.quote-form--motor-compact .term-age-field .term-age-field__guide--persist {
+  margin: 0 0 0.32rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--color-ink-muted);
+}
+.quote-form--term-compact .term-age-field.term-age-field--needs .term-age-field__guide--persist,
+.quote-form--home-compact .term-age-field.term-age-field--needs .term-age-field__guide--persist,
+.quote-form--motor-compact .term-age-field.term-age-field--needs .term-age-field__guide--persist {
+  color: #5f6f80;
+}
+.quote-form--term-compact .term-age-field .term-age-field__guide--persist .term-age-field__guide-sub,
+.quote-form--home-compact .term-age-field .term-age-field__guide--persist .term-age-field__guide-sub,
+.quote-form--motor-compact .term-age-field .term-age-field__guide--persist .term-age-field__guide-sub {
+  display: block;
+  margin-top: 0.18rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #7a8796;
+}
+.quote-form--term-compact .term-age-field.term-age-field--ok .term-age-field__guide--persist,
+.quote-form--home-compact .term-age-field.term-age-field--ok .term-age-field__guide--persist,
+.quote-form--motor-compact .term-age-field.term-age-field--ok .term-age-field__guide--persist {
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+.quote-form--motor-compact .motor-reg-field .term-age-field__prefix {
+  flex: 0 0 auto;
+  min-width: 3.65rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0 0.45rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-align: center;
+  color: var(--color-ink-muted);
+  background: var(--color-white);
+  border: 1.5px solid #c5d9ed;
+  border-radius: 8px;
+  pointer-events: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.quote-form--motor-compact .motor-reg-field.term-age-field--needs .term-age-field__prefix {
+  border-color: #e8d4b8;
+  background: #fff;
+  color: #9a3412;
+}
+.quote-form--motor-compact .motor-reg-field.term-age-field--ok .term-age-field__prefix {
+  border-color: #9ed4b5;
+  background: #f0fdf4;
+  color: #166534;
+  box-shadow: none;
+}
+.quote-form--motor-compact .motor-reg-field.term-age-field--error .term-age-field__prefix {
+  border-color: #fca5a5;
+  background: #fff;
+  color: #c2410c;
+}
+.quote-form--motor-compact .motor-reg-field.term-age-field--ok .term-age-field__control:focus-within .term-age-field__prefix {
+  border-color: #22c55e;
+  box-shadow: none;
 }
 .quote-form--motor-compact .quote-form__hint--motor {
   margin: -0.12rem 0 0.35rem;
@@ -4555,28 +4893,48 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
   font-size: 0.75rem;
   color: var(--color-ink-muted);
 }
-.quote-form--motor-compact .chip-group--multi .chip {
-  flex: 1 1 calc(50% - 0.28rem);
+.quote-form--motor-compact .motor-ncb-block {
+  margin-bottom: 0;
 }
-.quote-form--motor-compact .chip-group--multi .chip:nth-child(5) {
-  flex: 1 1 100%;
+.quote-form--motor-compact .motor-ncb-pick {
+  margin-top: 0.55rem;
 }
-.quote-form--term-compact .chip-group--segmented,
-.quote-form--home-compact .chip-group--segmented,
-.quote-form--motor-compact .chip-group--segmented {
-  padding: 3px;
+.quote-form--motor-compact .motor-ncb-pick--hidden {
+  display: none;
+}
+.quote-form--motor-compact .motor-ncb-pick__label {
+  display: block;
+  margin: 0 0 0.22rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--color-ink);
+}
+.quote-form--motor-compact .motor-ncb-pick .chip-group--segmented.chip-group--multi {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.25rem;
-  border-radius: 10px;
-  border-width: 1px;
+  width: 100%;
+  max-width: min(380px, 100%);
+  align-content: start;
 }
-.quote-form--term-compact .chip-group--segmented .chip,
-.quote-form--home-compact .chip-group--segmented .chip,
-.quote-form--motor-compact .chip-group--segmented .chip {
-  min-height: 2.5rem;
-  padding: 0.28rem 0.32rem;
+.quote-form--motor-compact .motor-ncb-pick .chip-group--multi .chip {
+  flex: none;
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.26rem 0.3rem;
   gap: 0.05rem;
-  border-radius: 8px;
-  border-width: 1.5px;
+}
+.quote-form--motor-compact .motor-ncb-pick .chip-group--multi .chip .chip__line {
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.quote-form--motor-compact .motor-ncb-pick .chip-group--multi .chip .chip__sub {
+  font-size: 0.5625rem;
+  font-weight: 600;
+  line-height: 1.15;
 }
 .quote-form--term-compact .chip-group--multi .chip,
 .quote-form--motor-compact .chip-group--multi .chip {
@@ -4587,46 +4945,52 @@ body.wizard-mode.wizard-cover-fit .cover-step-footer .quote-form__continue {
   flex: 1 1 100%;
 }
 .quote-form--home-compact .chip-group--multi .chip {
-  flex: 1 1 calc(33.333% - 0.28rem);
+  flex: 1 1 calc(50% - 0.2rem);
   min-width: 0;
 }
-.quote-form--term-compact .chip-group--segmented .chip .chip__line,
-.quote-form--home-compact .chip-group--segmented .chip .chip__line,
-.quote-form--motor-compact .chip-group--segmented .chip .chip__line {
-  font-size: 0.875rem;
-  font-weight: 800;
+.quote-form--home-compact .chip-group--multi .chip:nth-child(3) {
+  flex: 1 1 100%;
 }
-.quote-form--term-compact .chip-group--segmented .chip .chip__sub,
-.quote-form--home-compact .chip-group--segmented .chip .chip__sub,
-.quote-form--motor-compact .chip-group--segmented .chip .chip__sub {
-  font-size: 0.625rem;
-  font-weight: 600;
-  line-height: 1.1;
-}
-/* Motor — policy type (2-up): shortest practical height */
-.quote-form--motor-compact .chip-group--segmented.chip-group--prominent:not(.chip-group--multi) {
-  padding: 2px;
-  gap: 0.2rem;
-  border-radius: 9px;
+/* Term / home / motor / medical — all prominent choice trays (2-up + multi) */
+.quote-form--term-compact .chip-group--segmented.chip-group--prominent,
+.quote-form--home-compact .chip-group--segmented.chip-group--prominent,
+.quote-form--motor-compact .chip-group--segmented.chip-group--prominent,
+.quote-form--medical-compact .chip-group--segmented.chip-group--prominent,
+.quote-form--cover-compact .chip-group--segmented.chip-group--prominent {
+  padding: 3px;
+  gap: 0.25rem;
+  border-radius: 10px;
   border-width: 1px;
   background: #eef3f9;
 }
-.quote-form--motor-compact .chip-group--segmented.chip-group--prominent:not(.chip-group--multi) .chip {
-  min-height: 2.125rem;
-  padding: 0.18rem 0.28rem;
-  gap: 0;
-  border-radius: 7px;
-  border-width: 1.25px;
+.quote-form--term-compact .chip-group--segmented.chip-group--prominent .chip,
+.quote-form--home-compact .chip-group--segmented.chip-group--prominent .chip,
+.quote-form--motor-compact .chip-group--segmented.chip-group--prominent .chip,
+.quote-form--medical-compact .chip-group--segmented.chip-group--prominent .chip,
+.quote-form--cover-compact .chip-group--segmented.chip-group--prominent .chip {
+  min-height: 2.5rem;
+  padding: 0.28rem 0.32rem;
+  gap: 0.05rem;
+  border-radius: 8px;
+  border-width: 1.5px;
 }
-.quote-form--motor-compact .chip-group--segmented.chip-group--prominent:not(.chip-group--multi) .chip .chip__line {
-  font-size: 0.8125rem;
-  font-weight: 700;
+.quote-form--term-compact .chip-group--segmented.chip-group--prominent .chip .chip__line,
+.quote-form--home-compact .chip-group--segmented.chip-group--prominent .chip .chip__line,
+.quote-form--motor-compact .chip-group--segmented.chip-group--prominent .chip .chip__line,
+.quote-form--medical-compact .chip-group--segmented.chip-group--prominent .chip .chip__line,
+.quote-form--cover-compact .chip-group--segmented.chip-group--prominent .chip .chip__line {
+  font-size: 0.875rem;
+  font-weight: 800;
   line-height: 1.1;
 }
-.quote-form--motor-compact .chip-group--segmented.chip-group--prominent:not(.chip-group--multi) .chip .chip__sub {
-  font-size: 0.5625rem;
+.quote-form--term-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub,
+.quote-form--home-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub,
+.quote-form--motor-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub,
+.quote-form--medical-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub,
+.quote-form--cover-compact .chip-group--segmented.chip-group--prominent .chip .chip__sub {
+  font-size: 0.625rem;
   font-weight: 600;
-  line-height: 1.05;
+  line-height: 1.1;
 }
 .term-step-footer__trust,
 .home-step-footer__trust,
@@ -4654,22 +5018,18 @@ body.wizard-mode.wizard-motor-fit .motor-step-scroll {
 }
 @supports (height: 100dvh) {
   @media (max-height: 860px) {
-    body.wizard-mode.wizard-cover-fit .quote-form--cover-compact .form-group--cover-q {
-      margin-bottom: 0.28rem;
+    body.wizard-mode.wizard-term-fit .term-step-stack,
+    body.wizard-mode.wizard-home-fit .home-step-stack,
+    body.wizard-mode.wizard-motor-fit .motor-step-stack,
+    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .medical-step-stack,
+    body.wizard-mode.wizard-cover-fit .cover-step-stack {
+      gap: 0.36rem;
     }
-    body.wizard-mode.wizard-cover-fit .quote-form--cover-compact .chip-group--segmented .chip {
-      min-height: 2.3rem;
-      padding: 0.22rem 0.25rem;
-    }
-    body.wizard-mode.wizard-cover-fit .quote-form--cover-compact .chip-group--segmented .chip .chip__line {
-      font-size: 0.8125rem;
-    }
-    body.wizard-mode.wizard-term-fit .quote-form--term-compact .form-group--term-q,
-    body.wizard-mode.wizard-home-fit .quote-form--home-compact .form-group--home-q {
-      margin-bottom: 0.28rem;
-    }
-    body.wizard-mode.wizard-term-fit .quote-form--term-compact .chip-group--segmented .chip,
-    body.wizard-mode.wizard-home-fit .quote-form--home-compact .chip-group--segmented .chip {
+    body.wizard-mode.wizard-term-fit .quote-form--term-compact .chip-group--segmented.chip-group--prominent .chip,
+    body.wizard-mode.wizard-home-fit .quote-form--home-compact .chip-group--segmented.chip-group--prominent .chip,
+    body.wizard-mode.wizard-motor-fit .quote-form--motor-compact .chip-group--segmented.chip-group--prominent .chip,
+    body.wizard-mode.wizard-medical-fit .quote-form--medical-compact .chip-group--segmented.chip-group--prominent .chip,
+    body.wizard-mode.wizard-cover-fit .quote-form--cover-compact .chip-group--segmented.chip-group--prominent .chip {
       min-height: 2.3rem;
       padding: 0.22rem 0.25rem;
     }
@@ -4708,49 +5068,32 @@ body.wizard-mode.wizard-members-fit .main > .app-view > .members-step-footer .qu
   z-index: 1;
 }
 body.wizard-mode.wizard-docked-step.wizard-members-fit .main > .app-view > .wizard-body.quote-form--members-compact {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
   padding-bottom: 0;
   overflow: hidden;
 }
 body.wizard-mode.wizard-docked-step.wizard-members-fit .members-step-fit {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-height: 0;
   padding-bottom: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+body.wizard-mode.wizard-docked-step.wizard-members-fit .members-step-scroll {
+  flex: 1 1 0;
+  min-height: 0;
 }
 body.wizard-mode.wizard-docked-step.wizard-members-fit .main > .app-view > .members-step-footer {
   position: relative;
   z-index: 3;
   isolation: isolate;
-}
-/* Members step — pin Continue above keyboard while age/pincode focused (no hide / flicker) */
-@media (pointer: coarse) {
-  body.wizard-mode.wizard-members-fit.wizard-members-input-focused .main > .app-view {
-    padding-bottom: calc(5.15rem + var(--safe-bottom));
-  }
-  body.wizard-mode.wizard-members-fit.wizard-members-input-focused .main > .app-view > .members-step-footer {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: max(0px, env(safe-area-inset-bottom, 0px));
-    width: 100%;
-    max-width: min(480px, 100%);
-    margin-left: auto;
-    margin-right: auto;
-    z-index: 30;
-    box-sizing: border-box;
-    background: linear-gradient(
-      180deg,
-      rgba(246, 248, 250, 0) 0%,
-      var(--color-cream) 22%,
-      var(--color-cream) 100%
-    );
-    box-shadow: 0 -8px 20px rgba(15, 23, 42, 0.08);
-  }
+  flex: 0 0 auto;
+  flex-shrink: 0;
 }
 body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-scroll {
-  scroll-padding-bottom: calc(5.5rem + var(--safe-bottom));
+  scroll-padding-bottom: 1.25rem;
 }
 .quote-form--members-compact .pincode-footer-row {
   display: flex;
@@ -4867,10 +5210,9 @@ body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-s
 .quote-form--members-compact {
   width: 100%;
   max-width: min(520px, 100%);
-  /* Selected member row baseline (~56px) — do not shrink below on any viewport */
-  --member-row-on-min-h: 3.5rem;
-  --member-row-on-control-h: 2.25rem;
-  --member-row-on-age-max-w: 5.75rem;
+  --member-row-on-min-h: 3.25rem;
+  --member-row-on-control-h: 2.0625rem;
+  --member-row-on-age-max-w: 5.5rem;
 }
 .quote-form--members-compact .quote-step-tip--compact {
   margin-bottom: 0.5rem;
@@ -4893,9 +5235,21 @@ body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-s
   color: var(--color-ink-muted);
 }
 .quote-form--members-compact .member-list-panel--compact {
-  margin-bottom: 0.35rem;
-  padding: 0.45rem;
-  border-radius: 12px;
+  margin-bottom: 0.3rem;
+  padding: 0.35rem;
+  border-radius: 11px;
+}
+.quote-form--members-compact .member-list-panel--compact .members-step-footer-fields {
+  margin-top: 0.45rem;
+  margin-bottom: 0.2rem;
+  padding: 0.45rem 0.5rem 0.5rem;
+  gap: 0.32rem;
+  border-radius: 10px;
+}
+.quote-form--members-compact .member-list-panel--compact .pincode-footer-row__field,
+.quote-form--members-compact .member-list-panel--compact .health-existing-row__toggle {
+  height: 2.25rem;
+  min-height: 2.25rem;
 }
 .quote-form--members-compact .member-list-panel--plan-type {
   margin-bottom: 0.35rem;
@@ -4930,12 +5284,12 @@ body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-s
   line-height: 1.15;
 }
 .quote-form--members-compact .member-list {
-  gap: 0.4rem;
+  gap: 0.28rem;
 }
 .quote-form--members-compact .member-list--grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.35rem 0.5rem;
+  gap: 0.28rem 0.45rem;
   align-items: start;
 }
 .quote-form--members-compact .member-list--grid .member-row--on,
@@ -4944,13 +5298,15 @@ body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-s
 }
 .quote-form--members-compact .member-list--grid .member-add-child {
   grid-column: 1 / -1;
-  min-height: var(--touch-target);
+  min-height: 2.5rem;
+  padding-top: 0.15rem;
+  padding-bottom: 0.15rem;
   font-size: 0.8125rem;
 }
 .quote-form--members-compact .member-row--on {
   align-items: center;
   min-height: var(--member-row-on-min-h);
-  padding: 0.45rem 0.55rem;
+  padding: 0.38rem 0.48rem;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
   flex-shrink: 0;
 }
@@ -4962,7 +5318,7 @@ body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-s
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 0.4rem 0.55rem;
+  gap: 0.32rem 0.45rem;
   min-height: var(--member-row-on-control-h);
   width: 100%;
   min-width: 0;
@@ -5002,7 +5358,7 @@ body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-s
   font-weight: 600;
 }
 .quote-form--members-compact .member-row--on .member-row__title {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
 }
 .quote-form--members-compact .member-row__cta {
   font-size: 0.75rem;
@@ -5093,7 +5449,7 @@ body.wizard-mode.wizard-members-fit.wizard-members-input-focused .members-step-s
   font-weight: 700;
 }
 .quote-form--members-compact .member-row--on .member-row__age {
-  font-size: 1.0625rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #0f172a;
   min-width: 1.35rem;
@@ -6162,6 +6518,9 @@ body.wizard-mode .main .page-header:not(.page-header--static) + .wizard-body {
 body.wizard-mode .app-view {
   min-height: calc(100dvh - var(--safe-top) - var(--header-status-gap));
 }
+body.wizard-mode.wizard-docked-step:not(.signup-mode) .main > .app-view {
+  min-height: 0;
+}
 .app-view__body {
   flex: 1;
   padding-top: var(--mobile-gutter);
@@ -6513,9 +6872,9 @@ body.wizard-mode .app-view {
 }
 .home-v2 .customer-tools--key-features .section__head--stack h2 {
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.25;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   margin: 0;
 }
 .home-v2 .customer-tools--key-features .customer-tools__intro {
@@ -6675,7 +7034,7 @@ body.wizard-mode .app-view {
   font-weight: 700;
   line-height: 1.22;
   letter-spacing: -0.01em;
-  color: var(--color-ink);
+  color: var(--home-text-primary);
   white-space: normal;
 }
 .home-v2 .customer-tools--key-features .customer-tools__grid--strip .customer-tool-tile__count {
@@ -6698,7 +7057,7 @@ body.wizard-mode .app-view {
 }
 .home-v2 .customer-tools--key-features .customer-tools__grid--strip .customer-tool-tile--lead .help-tile__label {
   color: var(--color-primary);
-  font-weight: 800;
+  font-weight: 700;
 }
 .home-v2 .customer-tools--key-features .customer-tools__grid--strip .customer-tool-tile--urgent {
   border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
@@ -6995,16 +7354,15 @@ body.wizard-mode .app-view {
 }
 .home-v2 .service-alerts__head h2 {
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.25;
   margin: 0;
-  letter-spacing: -0.02em;
-  color: var(--color-ink);
+  letter-spacing: -0.015em;
 }
 .home-v2 .service-alerts__count {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #6b7c8f;
+  color: var(--home-text-muted);
 }
 .home-v2 .service-alerts__panel {
   margin: 0;
@@ -7046,10 +7404,9 @@ body.wizard-mode .app-view {
   grid-column: 1;
   grid-row: 1;
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.32;
-  color: var(--color-ink);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -7115,9 +7472,9 @@ body.wizard-mode .app-view {
 }
 .home-v2 .home-trending h2 {
   font-size: 1.125rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.25;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   margin: 0;
 }
 .home-v2 .home-trending .trending-tabs {
@@ -7197,10 +7554,9 @@ body.wizard-mode .app-view {
 }
 .home-v2 .trending-mini__name {
   font-size: 0.875rem;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.32;
-  color: var(--color-ink);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
 }
 .home-v2 .trending-mini__price {
   font-size: 0.875rem;
@@ -7214,13 +7570,13 @@ body.wizard-mode .app-view {
 .home-v2 .trending-mini__price span {
   font-size: 0.6875rem;
   font-weight: 500;
-  color: #6b7c8f;
+  color: var(--home-text-muted);
 }
 .home-v2 .trending-mini__meta {
   font-size: 0.75rem;
   font-weight: 500;
   line-height: 1.4;
-  color: #6b7c8f;
+  color: var(--home-text-muted);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -9737,9 +10093,9 @@ body.wizard-mode .ai-fab { bottom: calc(1rem + var(--safe-bottom)); }
 #app .why-hollow-item__title { font-size: 0.875rem; }
 #app .why-hollow-item__desc { font-size: 0.8125rem; }
 #app .home-why-hollow__title { font-size: 1.0625rem; }
-#app .home-v2 .why-hollow-item__title { font-size: 0.875rem; font-weight: 800; color: var(--color-ink); }
-#app .home-v2 .why-hollow-item__desc { font-size: 0.75rem; font-weight: 500; color: #6b7c8f; }
-#app .home-v2 .home-why-hollow__title { font-size: 1.0625rem; font-weight: 800; }
+#app .home-v2 .why-hollow-item__title { font-size: 0.875rem; font-weight: 700; color: var(--color-ink-home); }
+#app .home-v2 .why-hollow-item__desc { font-size: 0.75rem; font-weight: 500; color: var(--home-text-muted); }
+#app .home-v2 .home-why-hollow__title { font-size: 1.0625rem; font-weight: 700; color: var(--color-ink-home); }
 #app .quick-action { font-size: var(--text-ui); }
 #app .quick-actions--v2 .quick-action { font-size: 0.75rem; font-weight: 700; }
 #app .stats-pro__label { font-size: var(--text-ui); }
@@ -9777,8 +10133,8 @@ body.wizard-mode .ai-fab { bottom: calc(1rem + var(--safe-bottom)); }
   padding: 0.5rem 0.48rem 0.5rem 0.52rem;
 }
 #app .home-after-section--compact .home-cat__icon { width: 38px; height: 38px; }
-#app .home-after-section--compact .home-cat__name { font-size: 0.875rem; font-weight: 800; }
-#app .home-after-section--compact .home-cat__tag { font-size: 0.75rem; color: #3f5166; }
+#app .home-v2 .home-after-section--compact .home-cat__name { font-size: 0.875rem; font-weight: 700; color: var(--home-text-primary); }
+#app .home-v2 .home-after-section--compact .home-cat__tag { font-size: 0.75rem; color: var(--home-text-muted); }
 
 @container hollow-app (max-width: 390px) {
   #app {
@@ -9845,28 +10201,18 @@ body.wizard-mode .ai-fab { bottom: calc(1rem + var(--safe-bottom)); }
     font-size: 0.8125rem;
   }
   .quote-form--members-compact {
-    --member-row-on-age-max-w: 4.85rem;
-    --member-row-on-control-h: 2.125rem;
-    --member-row-on-min-h: 3.25rem;
+    --member-row-on-age-max-w: 4.65rem;
+    --member-row-on-control-h: 1.9375rem;
+    --member-row-on-min-h: 3.0625rem;
   }
   .quote-form--members-compact .member-row--on {
-    padding: 0.4rem 0.45rem;
+    padding: 0.32rem 0.4rem;
   }
   .quote-form--members-compact .member-row--on .member-row__inputs {
     gap: 0.38rem;
   }
   .quote-form--members-compact .member-row--on .member-row__age {
     font-size: 1rem;
-  }
-  .quote-form--motor-compact .chip-group--segmented.chip-group--prominent:not(.chip-group--multi) .chip {
-    min-height: 2rem;
-    padding: 0.15rem 0.22rem;
-  }
-  .quote-form--motor-compact .chip-group--segmented.chip-group--prominent:not(.chip-group--multi) .chip .chip__line {
-    font-size: 0.75rem;
-  }
-  .quote-form--motor-compact .chip-group--segmented.chip-group--prominent:not(.chip-group--multi) .chip .chip__sub {
-    font-size: 0.5rem;
   }
   .quote-card--v2 .quote-card__row {
     --quote-row-control-h: 3.125rem;
